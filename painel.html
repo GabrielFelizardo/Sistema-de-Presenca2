@@ -6,12 +6,19 @@
     <title>Gestor de Eventos - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
         body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
         .sidebar { height: 100vh; background: white; border-right: 1px solid #dee2e6; position: fixed; width: 250px; z-index: 100;}
         .content { margin-left: 250px; padding: 20px; }
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; }
         textarea.form-control { font-family: monospace; font-size: 0.85rem; background-color: #fafafa; }
+        
+        /* Estilos dos Cards do Dashboard */
+        .card-stat { border: none; border-radius: 12px; transition: transform 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .card-stat:hover { transform: translateY(-3px); }
+        .stat-icon { font-size: 2rem; opacity: 0.2; position: absolute; right: 15px; top: 15px; }
         .btn-action { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
         .btn-action:hover { transform: scale(1.1); }
     </style>
@@ -27,13 +34,13 @@
     <h5 class="text-primary mb-4 fw-bold"><i class="fas fa-calendar-check me-2"></i>Gestor RSVP</h5>
     <div class="d-grid gap-2">
         <button class="btn btn-light text-start active fw-semibold shadow-sm" onclick="mostrarTela('dashboard')">
-            <i class="fas fa-list me-2 text-primary"></i>Meus Eventos
+            <i class="fas fa-chart-pie me-2 text-primary"></i>Dashboard
         </button>
         <button class="btn btn-light text-start fw-semibold shadow-sm" onclick="mostrarTela('novo')">
             <i class="fas fa-plus me-2 text-success"></i>Novo Evento
         </button>
     </div>
-    <div class="mt-auto text-muted small pt-3 border-top">v7.0 - Com Edição</div>
+    <div class="mt-auto text-muted small pt-3 border-top">v8.0 - Dashboard</div>
 </div>
 
 <div class="content">
@@ -45,9 +52,63 @@
                 <select id="select-eventos" class="form-select border-0 fw-bold text-primary" style="min-width: 250px;" onchange="carregarEventoEspecifico()">
                     <option value="">Carregando eventos...</option>
                 </select>
-                <button class="btn btn-light text-secondary rounded-circle" onclick="carregarEventoEspecifico()" title="Atualizar Tabela">
+                <button class="btn btn-light text-secondary rounded-circle" onclick="carregarEventoEspecifico()" title="Atualizar">
                     <i class="fas fa-sync-alt"></i>
                 </button>
+            </div>
+        </div>
+
+        <div id="area-stats" style="display:none;">
+            <div class="row mb-4 g-3">
+                <div class="col-md-3">
+                    <div class="card card-stat bg-white text-dark">
+                        <div class="card-body position-relative">
+                            <i class="fas fa-users stat-icon text-primary"></i>
+                            <h6 class="text-uppercase text-muted small fw-bold">Total</h6>
+                            <h2 class="fw-bold mb-0" id="stat-total">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-stat bg-success text-white">
+                        <div class="card-body position-relative">
+                            <i class="fas fa-check-circle stat-icon text-white"></i>
+                            <h6 class="text-uppercase text-white-50 small fw-bold">Confirmados</h6>
+                            <h2 class="fw-bold mb-0" id="stat-confirmados">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-stat bg-warning text-dark">
+                        <div class="card-body position-relative">
+                            <i class="fas fa-clock stat-icon text-dark"></i>
+                            <h6 class="text-uppercase text-muted small fw-bold">Pendentes</h6>
+                            <h2 class="fw-bold mb-0" id="stat-pendentes">0</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card card-stat bg-danger text-white">
+                        <div class="card-body position-relative">
+                            <i class="fas fa-times-circle stat-icon text-white"></i>
+                            <h6 class="text-uppercase text-white-50 small fw-bold">Recusados</h6>
+                            <h2 class="fw-bold mb-0" id="stat-recusados">0</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6 offset-md-3">
+                    <div class="card border-0 shadow-sm" style="border-radius: 15px;">
+                        <div class="card-body">
+                            <h6 class="text-center text-muted mb-3">Visão Geral</h6>
+                            <div style="height: 250px; position: relative;">
+                                <canvas id="meuGrafico"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -125,19 +186,15 @@
         <div class="modal-content">
             <div class="modal-header"><h5 class="modal-title">Link para Convidados</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body text-center">
-                <p class="text-muted">Envie este link para os convidados:</p>
+                <p class="text-muted">Link do Convite:</p>
                 <div class="input-group mb-3">
                     <input type="text" id="input-link-gerado" class="form-control text-center" readonly>
                     <button class="btn btn-outline-primary" onclick="copiarTextoLink()"><i class="fas fa-copy"></i></button>
                 </div>
-                <a id="btn-abrir-link" href="#" target="_blank" class="btn btn-light btn-sm"><i class="fas fa-external-link-alt"></i> Abrir para testar</a>
+                <a id="btn-abrir-link" href="#" target="_blank" class="btn btn-light btn-sm"><i class="fas fa-external-link-alt"></i> Abrir</a>
             </div>
         </div>
     </div>
-</div>
-
-<div class="modal fade" id="modalAdd" tabindex="-1">
-    <div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Adicionar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body" id="form-dinamico"></div><div class="modal-footer"><button class="btn btn-primary" onclick="enviarConvidado()">Salvar</button></div></div></div>
 </div>
 
 <div class="modal fade" id="modalEditar" tabindex="-1">
@@ -153,31 +210,29 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-warning fw-bold" onclick="salvarEdicao()">Atualizar</button>
+                <button type="button" class="btn btn-warning fw-bold" onclick="salvarEdicao()">Salvar Alterações</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modalImport" tabindex="-1">
-    <div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title">Importar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="check-headers" checked><label class="form-check-label">1ª linha é cabeçalho</label></div><textarea id="texto-importacao" class="form-control" rows="8"></textarea></div><div class="modal-footer"><button class="btn btn-success" onclick="processarImportacao()">Processar</button></div></div></div>
-</div>
+<div class="modal fade" id="modalAdd" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Adicionar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body" id="form-dinamico"></div><div class="modal-footer"><button class="btn btn-primary" onclick="enviarConvidado()">Salvar</button></div></div></div></div>
+<div class="modal fade" id="modalImport" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title">Importar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="check-headers" checked><label class="form-check-label">1ª linha é cabeçalho</label></div><textarea id="texto-importacao" class="form-control" rows="8"></textarea></div><div class="modal-footer"><button class="btn btn-success" onclick="processarImportacao()">Processar</button></div></div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // ============================================================
     // ⚙️ CONFIGURAÇÃO
     // ============================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbznlB0UzqjzlkneSPFv1mi_0Jqqtv6DkZsbPctw28isyZvAwyXOBv2tHnQUl1SM1QQ/exec"; 
-    
-    // URL AUTOMÁTICA DO GITHUB
+    const API_URL = "COLE_AQUI_A_SUA_URL_DO_GOOGLE_SCRIPT_QUE_TERMINA_EM_EXEC"; 
     const GITHUB_PAGES_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
 
     // ============================================================
 
     let colunasAtuais = [];
-    let dadosEventoAtual = []; // Armazena os dados para facilitar a edição
+    let dadosEventoAtual = []; 
     let eventoAtual = "";
+    let graficoInstance = null; // Para guardar o gráfico
 
     document.addEventListener('DOMContentLoaded', () => { carregarLista(); });
 
@@ -217,27 +272,80 @@
         if (!dados) return;
 
         colunasAtuais = dados.headers;
-        dadosEventoAtual = dados.rows; // Guarda para edição
+        dadosEventoAtual = dados.rows;
 
         document.getElementById('titulo-tabela').innerText = nome;
         document.getElementById('msg-sem-dados').style.display = 'none';
         document.getElementById('toolbar-acoes').style.display = 'block';
         
+        // Atualiza Dashboard e Tabela
+        atualizarDashboard(dados.headers, dados.rows);
         renderizarTabela(dados.headers, dados.rows);
     }
 
+    // --- DASHBOARD E GRÁFICOS (NOVO) ---
+    function atualizarDashboard(headers, rows) {
+        document.getElementById('area-stats').style.display = 'block';
+        
+        const indexStatus = headers.indexOf('Status');
+        let confirmados = 0;
+        let pendentes = 0;
+        let recusados = 0;
+        let total = rows.length;
+
+        if (indexStatus > -1) {
+            rows.forEach(row => {
+                const status = row[indexStatus] || "Pendente";
+                if (status === 'Confirmado') confirmados++;
+                else if (status === 'Não vai') recusados++;
+                else pendentes++;
+            });
+        } else {
+            // Se não tiver coluna status, tudo é pendente
+            pendentes = total;
+        }
+
+        // Atualiza números
+        document.getElementById('stat-total').innerText = total;
+        document.getElementById('stat-confirmados').innerText = confirmados;
+        document.getElementById('stat-pendentes').innerText = pendentes;
+        document.getElementById('stat-recusados').innerText = recusados;
+
+        // Desenha Gráfico
+        const ctx = document.getElementById('meuGrafico').getContext('2d');
+        if (graficoInstance) graficoInstance.destroy(); // Limpa anterior
+
+        graficoInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Confirmados', 'Pendentes', 'Recusados'],
+                datasets: [{
+                    data: [confirmados, pendentes, recusados],
+                    backgroundColor: ['#198754', '#ffc107', '#dc3545'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+
+    // --- TABELA COM BOTÃO DE EDITAR ---
     function renderizarTabela(headers, rows) {
         const thead = document.querySelector('#tabela-dados thead');
         const tbody = document.querySelector('#tabela-dados tbody');
         
-        // Cabeçalho (adiciona coluna Ações)
         let headerHTML = "<tr>";
         headers.forEach(h => headerHTML += `<th>${h}</th>`);
-        headerHTML += `<th class="text-center" style="width: 50px;">Ações</th>`;
+        headerHTML += `<th class="text-center" style="width: 60px;">Ações</th>`;
         headerHTML += "</tr>";
         thead.innerHTML = headerHTML;
         
-        // Corpo
         if (rows.length === 0) {
             tbody.innerHTML = `<tr><td colspan="${headers.length + 1}" class="text-center p-4">Vazio</td></tr>`;
         } else {
@@ -245,7 +353,6 @@
             rows.forEach((row, index) => {
                 bodyHTML += "<tr>";
                 row.forEach(cell => bodyHTML += `<td>${cell}</td>`);
-                // Botão de Editar
                 bodyHTML += `
                     <td class="text-center">
                         <button class="btn btn-light btn-action text-primary shadow-sm" onclick="abrirModalEditar(${index})" title="Editar">
@@ -258,20 +365,16 @@
         }
     }
 
-    // --- FUNÇÕES DE EDIÇÃO (NOVO) ---
-    
+    // --- FUNÇÕES DE EDIÇÃO ---
     function abrirModalEditar(rowIndex) {
-        // Pega os dados da linha clicada
         const dadosRow = dadosEventoAtual[rowIndex];
-        document.getElementById('edit-linha-index').value = rowIndex; // Guarda o índice para salvar depois
-
+        document.getElementById('edit-linha-index').value = rowIndex; 
         const form = document.getElementById('form-editar-dinamico');
         form.innerHTML = "";
 
         colunasAtuais.forEach((col, colIndex) => {
             const valorAtual = dadosRow[colIndex];
             let inputHTML = "";
-
             if (col === 'Status') {
                 inputHTML = `
                     <select class="form-select input-editar">
@@ -282,14 +385,8 @@
             } else {
                 inputHTML = `<input type="text" class="form-control input-editar" value="${valorAtual}">`;
             }
-
-            form.innerHTML += `
-                <div class="mb-3">
-                    <label class="fw-bold small text-muted">${col}</label>
-                    ${inputHTML}
-                </div>`;
+            form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`;
         });
-
         new bootstrap.Modal(document.getElementById('modalEditar')).show();
     }
 
@@ -297,25 +394,12 @@
         const rowIndex = parseInt(document.getElementById('edit-linha-index').value);
         const inputs = document.querySelectorAll('.input-editar');
         const novosDados = Array.from(inputs).map(i => i.value);
-
-        // Fecha modal
         bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
-
-        // Envia para o backend (Lembrando que linha no Sheet começa em 1, e temos cabeçalho, então index + 2)
-        const res = await chamarAPI('atualizarConvidado', { 
-            nomeEvento: eventoAtual, 
-            linha: rowIndex + 2, 
-            novosDados: novosDados 
-        });
-
-        if (res && res.sucesso) {
-            // Recarrega a tabela para mostrar mudanças
-            carregarEventoEspecifico();
-        }
+        const res = await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: rowIndex + 2, novosDados: novosDados });
+        if (res && res.sucesso) carregarEventoEspecifico();
     }
 
-    // --- FUNÇÕES ANTERIORES ---
-
+    // --- PADRÕES ---
     function abrirModalLink() {
         if(!eventoAtual) return;
         const link = `${GITHUB_PAGES_URL}index.html?evento=${encodeURIComponent(eventoAtual)}`;
@@ -332,14 +416,12 @@
     }
 
     function toggleAreaImportacao(mostrar) { document.getElementById('area-importacao-criacao').style.display = mostrar ? 'block' : 'none'; }
-
     async function handleCriarEvento(e) {
         e.preventDefault();
         const nome = document.getElementById('novo-nome').value;
         const tipo = document.querySelector('input[name="novo-tipo"]:checked').value;
         let dadosRaw = "";
         if (tipo === 'Importar') dadosRaw = document.getElementById('texto-criacao-import').value;
-        
         const res = await chamarAPI('criarNovoEvento', { nome: nome, template: tipo, dadosImportados: dadosRaw });
         if (res && res.sucesso) { alert("Evento criado!"); mostrarTela('dashboard'); carregarLista(); }
     }
