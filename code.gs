@@ -1,5 +1,5 @@
 // =======================================================================
-// ARQUIVO: CODE.GS (BACKEND v8 - COM EDIÇÃO)
+// ARQUIVO: CODE.GS (BACKEND v9 - ABAS NAVEGADOR)
 // =======================================================================
 
 function doGet(e) {
@@ -25,7 +25,6 @@ function doPost(e) {
     else if (acao === 'importarListaConvidados') resposta = importarListaInteligente(dados.nomeEvento, dados.matrizDados, dados.temCabecalho);
     else if (acao === 'buscarConvidado') resposta = buscarConvidado(dados.nomeEvento, dados.nomeBusca);
     else if (acao === 'salvarResposta') resposta = salvarResposta(dados.nomeEvento, dados.linha, dados.respostas);
-    // EDIÇÃO DE DADOS
     else if (acao === 'atualizarConvidado') resposta = atualizarConvidado(dados.nomeEvento, dados.linha, dados.novosDados);
     
     else resposta = { erro: "Ação desconhecida: " + acao };
@@ -118,15 +117,11 @@ function adicionarConvidado(nomeEvento, dados) {
   return { sucesso: true };
 }
 
-// NOVA FUNÇÃO DE EDIÇÃO
 function atualizarConvidado(nomeEvento, linhaReal, novosDados) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(nomeEvento);
   if (!sheet) throw new Error("Evento não encontrado.");
-  
-  // Atualiza a linha inteira com os novos dados
   sheet.getRange(linhaReal, 1, 1, novosDados.length).setValues([novosDados]);
-  
   return { sucesso: true };
 }
 
