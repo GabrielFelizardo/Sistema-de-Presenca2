@@ -17,7 +17,7 @@
 
 <div class="card-rsvp">
     <div class="header-bg">
-        <h2 id="nome-evento-titulo" class="fw-bold mb-0">Carregando evento...</h2>
+        <h2 id="nome-evento-titulo" class="fw-bold mb-0">Carregando...</h2>
         <p class="opacity-75 mb-0 mt-2">Confirmação de Presença</p>
     </div>
 
@@ -25,29 +25,23 @@
         
         <div id="loading" class="loading">
             <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2 text-muted">Verificando...</p>
+            <p class="mt-2 text-muted">Aguarde...</p>
         </div>
 
         <div id="passo-1">
-            <p class="text-center text-muted mb-4">Por favor, digite seu nome exatamente como está no convite para liberar seu acesso.</p>
-            
+            <p class="text-center text-muted mb-4">Digite seu nome para confirmar sua presença na lista.</p>
             <form onsubmit="verificarNome(event)">
                 <div class="mb-3">
-                    <label class="form-label fw-bold">Seu Nome</label>
                     <input type="text" id="input-nome-busca" class="form-control form-control-lg text-center" placeholder="Ex: Gabriel Felizardo" required>
                 </div>
                 <div class="d-grid">
-                    <button type="submit" class="btn btn-primary btn-lg rounded-pill">
-                        Verificar na Lista <i class="fas fa-arrow-right ms-2"></i>
-                    </button>
+                    <button type="submit" class="btn btn-primary btn-lg rounded-pill">Verificar</button>
                 </div>
             </form>
         </div>
 
         <div id="passo-2" style="display:none;">
-            <div class="alert alert-success border-0 text-center">
-                <i class="fas fa-check-circle me-1"></i> Olá, <strong id="nome-encontrado"></strong>!
-            </div>
+            <div class="alert alert-success border-0 text-center mb-4">Olá, <strong id="nome-encontrado"></strong>!</div>
             
             <form onsubmit="enviarResposta(event)">
                 <input type="hidden" id="linha-convidado">
@@ -55,32 +49,27 @@
                 <div class="mb-4 text-center">
                     <label class="form-label fw-bold d-block mb-3">Você poderá comparecer?</label>
                     <div class="btn-group w-100" role="group">
-                        <input type="radio" class="btn-check" name="resp-Status" id="status-sim" value="Confirmado" checked>
-                        <label class="btn btn-outline-success py-3" for="status-sim">Sim, eu vou! 🎉</label>
+                        <input type="radio" class="btn-check" name="resp-Status" id="sim" value="Confirmado" checked>
+                        <label class="btn btn-outline-success py-2" for="sim">Sim, eu vou!</label>
 
-                        <input type="radio" class="btn-check" name="resp-Status" id="status-nao" value="Não vai">
-                        <label class="btn btn-outline-danger py-3" for="status-nao">Não poderei ir 😢</label>
+                        <input type="radio" class="btn-check" name="resp-Status" id="nao" value="Não vai">
+                        <label class="btn btn-outline-danger py-2" for="nao">Não poderei ir</label>
                     </div>
                 </div>
 
                 <div id="perguntas-extras"></div>
 
                 <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg rounded-pill">
-                        Confirmar Presença
-                    </button>
+                    <button type="submit" class="btn btn-primary btn-lg rounded-pill">Enviar Confirmação</button>
                 </div>
             </form>
         </div>
 
         <div id="passo-3" style="display:none;" class="text-center py-4">
-            <div class="mb-3">
-                <i class="fas fa-check-circle text-success fa-5x"></i>
-            </div>
-            <h3 class="fw-bold text-dark">Obrigado!</h3>
-            <p class="text-muted">Sua resposta foi registrada com sucesso.</p>
+            <i class="fas fa-check-circle text-success fa-5x mb-3"></i>
+            <h3 class="fw-bold">Obrigado!</h3>
+            <p class="text-muted">Sua resposta foi registrada.</p>
         </div>
-
     </div>
 </div>
 
@@ -88,23 +77,25 @@
     // ============================================================
     // CONFIGURAÇÃO
     // ============================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbznlB0UzqjzlkneSPFv1mi_0Jqqtv6DkZsbPctw28isyZvAwyXOBv2tHnQUl1SM1QQ/exec"; 
+    
+    // COLE AQUI A MESMA URL QUE COLOCOU NO PAINEL
+    const API_URL = "COLE_AQUI_A_SUA_URL_DO_GOOGLE_SCRIPT_QUE_TERMINA_EM_EXEC"; 
 
-    // Pega o nome do evento da URL (?evento=Nome)
+    // ============================================================
+
     const urlParams = new URLSearchParams(window.location.search);
     const eventoNome = urlParams.get('evento');
 
     if (eventoNome) {
         document.getElementById('nome-evento-titulo').innerText = eventoNome;
     } else {
-        document.getElementById('nome-evento-titulo').innerText = "Evento não especificado";
-        alert("Erro: Link incompleto. Falta o nome do evento.");
+        document.getElementById('nome-evento-titulo').innerText = "Evento";
+        alert("Link inválido: Nome do evento não encontrado.");
     }
 
     async function chamarAPI(acao, dados = {}) {
         document.getElementById('loading').style.display = 'block';
         document.getElementById('passo-1').style.display = 'none';
-        
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
@@ -125,19 +116,15 @@
     async function verificarNome(e) {
         e.preventDefault();
         const nomeBusca = document.getElementById('input-nome-busca').value;
-        
         const res = await chamarAPI('buscarConvidado', { nomeEvento: eventoNome, nomeBusca: nomeBusca });
         
         if (res && res.encontrado) {
             document.getElementById('nome-encontrado').innerText = res.nomeCompleto;
             document.getElementById('linha-convidado').value = res.linha;
             gerarFormulario(res.colunas, res.dadosAtuais);
-            
-            // Troca de tela
-            document.getElementById('passo-1').style.display = 'none';
             document.getElementById('passo-2').style.display = 'block';
         } else {
-            alert("Nome não encontrado na lista deste evento. Tente digitar apenas o primeiro nome.");
+            alert("Nome não encontrado nesta lista.");
             document.getElementById('passo-1').style.display = 'block';
         }
     }
@@ -145,51 +132,33 @@
     function gerarFormulario(colunas, dadosAtuais) {
         const container = document.getElementById('perguntas-extras');
         container.innerHTML = "";
-
         colunas.forEach((col, index) => {
-            // Ignora colunas padrão que já tratamos ou não queremos mostrar
             if (col === "Nome" || col === "Status" || col === "Telefone" || col === "Email") return;
-
-            const valorAtual = dadosAtuais[index];
-            const div = document.createElement('div');
-            div.className = "mb-3";
-            
-            div.innerHTML = `
-                <label class="form-label fw-bold">${col}</label>
-                <input type="text" class="form-control" name="extra-${col}" value="${valorAtual}" placeholder="Sua resposta...">
-            `;
-            container.appendChild(div);
+            const valor = dadosAtuais[index];
+            container.innerHTML += `
+                <div class="mb-3">
+                    <label class="form-label fw-bold">${col}</label>
+                    <input type="text" class="form-control" name="extra-${col}" value="${valor}" placeholder="Sua resposta...">
+                </div>`;
         });
     }
 
     async function enviarResposta(e) {
         e.preventDefault();
-        
         const linha = document.getElementById('linha-convidado').value;
         const status = document.querySelector('input[name="resp-Status"]:checked').value;
-        
-        // Coleta respostas extras
         let respostas = { "Status": status };
         
-        // Pega todos os inputs extras gerados
-        const inputsExtras = document.querySelectorAll('input[name^="extra-"]');
-        inputsExtras.forEach(input => {
-            const nomeColuna = input.name.replace("extra-", "");
-            respostas[nomeColuna] = input.value;
+        document.querySelectorAll('input[name^="extra-"]').forEach(input => {
+            respostas[input.name.replace("extra-", "")] = input.value;
         });
 
-        const res = await chamarAPI('salvarResposta', { 
-            nomeEvento: eventoNome, 
-            linha: linha, 
-            respostas: respostas 
-        });
-
+        const res = await chamarAPI('salvarResposta', { nomeEvento: eventoNome, linha: linha, respostas: respostas });
         if (res && res.sucesso) {
             document.getElementById('passo-2').style.display = 'none';
             document.getElementById('passo-3').style.display = 'block';
         }
     }
 </script>
-
 </body>
 </html>
