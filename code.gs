@@ -1,9 +1,10 @@
 // =======================================================================
-// ARQUIVO: CODE.GS (BACKEND v9 - ABAS NAVEGADOR)
+// ARQUIVO: CODE.GS (BACKEND FINAL - v13)
 // =======================================================================
 
 function doGet(e) {
-  return ContentService.createTextOutput("Sistema Online! Backend funcionando.")
+  // Retorna texto simples para confirmar que a API está no ar
+  return ContentService.createTextOutput("Sistema v13 Online! Aceda pelo link do GitHub.")
       .setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -17,7 +18,7 @@ function doPost(e) {
     const acao = dados.acao;
     let resposta = {};
 
-    // --- ROTEADOR ---
+    // --- ROTEADOR DE AÇÕES ---
     if (acao === 'listarEventos') resposta = listarEventos();
     else if (acao === 'criarNovoEvento') resposta = criarNovoEvento(dados.nome, dados.template, dados.dadosImportados);
     else if (acao === 'obterDadosEvento') resposta = obterDadosEvento(dados.nomeEvento);
@@ -26,6 +27,9 @@ function doPost(e) {
     else if (acao === 'buscarConvidado') resposta = buscarConvidado(dados.nomeEvento, dados.nomeBusca);
     else if (acao === 'salvarResposta') resposta = salvarResposta(dados.nomeEvento, dados.linha, dados.respostas);
     else if (acao === 'atualizarConvidado') resposta = atualizarConvidado(dados.nomeEvento, dados.linha, dados.novosDados);
+    
+    // --- AÇÃO DE EXCLUIR (CRUCIAL PARA O NOVO PAINEL) ---
+    else if (acao === 'excluirConvidado') resposta = excluirConvidado(dados.nomeEvento, dados.linha);
     
     else resposta = { erro: "Ação desconhecida: " + acao };
 
@@ -46,19 +50,22 @@ function getSpreadsheetId() {
   const props = PropertiesService.getUserProperties();
   let id = props.getProperty('ID_MINHA_PLANILHA');
   if (!id) {
-    const ss = SpreadsheetApp.create("Meus Eventos (Sistema RSVP)");
-    id = ss.getId();
-    props.setProperty('ID_MINHA_PLANILHA', id);
-    const sheet = ss.getSheets()[0];
-    sheet.setName("Exemplo");
-    sheet.appendRow(["Nome", "Telefone", "Status"]);
+    try {
+      const ss = SpreadsheetApp.create("Meus Eventos (Sistema RSVP)");
+      id = ss.getId();
+      props.setProperty('ID_MINHA_PLANILHA', id);
+      const sheet = ss.getSheets()[0];
+      sheet.setName("Exemplo");
+      sheet.appendRow(["Nome", "Telefone", "Status"]);
+    } catch (e) { throw new Error("Erro ao criar planilha."); }
   }
   return id;
 }
 
 function getSpreadsheet() { return SpreadsheetApp.openById(getSpreadsheetId()); }
 
-// --- ADMIN ---
+// --- FUNÇÕES DE ADMINISTRAÇÃO ---
+
 function listarEventos() {
   const ss = getSpreadsheet();
   return ss.getSheets().map(s => ({ nome: s.getName(), id: s.getSheetId() }));
@@ -66,7 +73,7 @@ function listarEventos() {
 
 function criarNovoEvento(nome, tipo, dadosRaw) {
   const ss = getSpreadsheet();
-  if (ss.getSheetByName(nome)) throw new Error("Evento já existe!");
+  if (ss.getSheetByName(nome)) throw new Error("Já existe um evento com este nome!");
   
   const sheet = ss.insertSheet(nome);
   let colunas = [];
@@ -121,7 +128,20 @@ function atualizarConvidado(nomeEvento, linhaReal, novosDados) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(nomeEvento);
   if (!sheet) throw new Error("Evento não encontrado.");
+  
+  // Atualiza a linha inteira com os novos dados
   sheet.getRange(linhaReal, 1, 1, novosDados.length).setValues([novosDados]);
+  
+  return { sucesso: true };
+}
+
+// --- FUNÇÃO DE EXCLUSÃO (NECESSÁRIA) ---
+function excluirConvidado(nomeEvento, linhaReal) {
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(nomeEvento);
+  if (!sheet) throw new Error("Evento não encontrado.");
+  
+  sheet.deleteRow(linhaReal);
   return { sucesso: true };
 }
 
@@ -170,7 +190,8 @@ function importarListaInteligente(nomeEvento, matrizDados, temCabecalho) {
   return { sucesso: true, qtd: matrizFinal.length };
 }
 
-// --- CONVIDADO ---
+// --- FUNÇÕES DO CONVIDADO (RSVP) ---
+
 function buscarConvidado(nomeEvento, nomeBusca) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(nomeEvento);
