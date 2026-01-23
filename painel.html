@@ -7,6 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <style>
         body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
@@ -26,6 +27,9 @@
         .nav-tabs .nav-link:hover { color: #0d6efd; border-color: transparent; }
         .nav-tabs .nav-link.active { color: #0d6efd; font-weight: bold; border-bottom: 3px solid #0d6efd; background: transparent; }
         .nav-tabs { border-bottom: 2px solid #e9ecef; margin-bottom: 20px; }
+        
+        /* QR Code Container */
+        #qrcode { display: flex; justify-content: center; margin: 20px 0; }
     </style>
 </head>
 <body>
@@ -45,7 +49,7 @@
             <i class="fas fa-plus me-2 text-success"></i>Novo Evento
         </button>
     </div>
-    <div class="mt-auto text-muted small pt-3 border-top">v9.0 - Abas Navegador</div>
+    <div class="mt-auto text-muted small pt-3 border-top">v10.0 - Excluir + QR</div>
 </div>
 
 <div class="content">
@@ -92,7 +96,7 @@
                     
                     <div id="toolbar-acoes" style="display:none;">
                         <button class="btn btn-outline-primary me-2 shadow-sm" onclick="abrirModalLink()">
-                            <i class="fas fa-link me-2"></i>Link Convite
+                            <i class="fas fa-qrcode me-2"></i>Link & QR
                         </button>
                         <button class="btn btn-success me-2 shadow-sm" onclick="abrirModalImport()">
                             <i class="fas fa-file-excel me-2"></i>Importar
@@ -154,7 +158,22 @@
 </div>
 
 <div class="modal fade" id="modalLink" tabindex="-1">
-    <div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Link para Convidados</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><p class="text-muted">Link do Convite:</p><div class="input-group mb-3"><input type="text" id="input-link-gerado" class="form-control text-center" readonly><button class="btn btn-outline-primary" onclick="copiarTextoLink()"><i class="fas fa-copy"></i></button></div><a id="btn-abrir-link" href="#" target="_blank" class="btn btn-light btn-sm"><i class="fas fa-external-link-alt"></i> Abrir</a></div></div></div>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Link & QR Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body text-center">
+                
+                <div id="qrcode"></div>
+                <p class="small text-muted mb-4">Escaneie para testar</p>
+
+                <div class="input-group mb-3">
+                    <input type="text" id="input-link-gerado" class="form-control text-center" readonly>
+                    <button class="btn btn-outline-primary" onclick="copiarTextoLink()"><i class="fas fa-copy"></i></button>
+                </div>
+                <a id="btn-abrir-link" href="#" target="_blank" class="btn btn-light btn-sm"><i class="fas fa-external-link-alt"></i> Abrir link</a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="modal fade" id="modalEditar" tabindex="-1">
@@ -169,7 +188,7 @@
     // ============================================================
     // ⚙️ CONFIGURAÇÃO
     // ============================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbznlB0UzqjzlkneSPFv1mi_0Jqqtv6DkZsbPctw28isyZvAwyXOBv2tHnQUl1SM1QQ/exec"; 
+    const API_URL = "COLE_AQUI_A_SUA_URL_DO_GOOGLE_SCRIPT_QUE_TERMINA_EM_EXEC"; 
     const GITHUB_PAGES_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
 
     // ============================================================
@@ -205,35 +224,28 @@
         if (!dados) return;
 
         const tabContainer = document.getElementById('tab-lista-eventos');
-        tabContainer.innerHTML = ''; // Limpa abas antigas
+        tabContainer.innerHTML = ''; 
 
         if (dados.length === 0) {
              tabContainer.innerHTML = '<li class="nav-item"><a class="nav-link disabled">Nenhum evento criado</a></li>';
              return;
         }
 
-        // Gera as abas
         dados.forEach((ev, index) => {
             const li = document.createElement('li');
             li.className = 'nav-item';
-            
             const btn = document.createElement('button');
-            // Se for o primeiro, já marca como ativo
             btn.className = index === 0 ? 'nav-link active' : 'nav-link';
             btn.innerText = ev.nome;
             btn.onclick = () => {
-                // Remove active de todos
                 document.querySelectorAll('#tab-lista-eventos .nav-link').forEach(el => el.classList.remove('active'));
-                // Adiciona active neste
                 btn.classList.add('active');
                 carregarEventoEspecifico(ev.nome);
             };
-            
             li.appendChild(btn);
             tabContainer.appendChild(li);
         });
 
-        // Carrega o primeiro evento automaticamente
         if (dados.length > 0) {
             carregarEventoEspecifico(dados[0].nome);
         }
@@ -249,15 +261,13 @@
         colunasAtuais = dados.headers;
         dadosEventoAtual = dados.rows;
 
-        // Atualiza Dashboard e Tabela
         atualizarDashboard(dados.headers, dados.rows);
         renderizarTabela(dados.headers, dados.rows);
 
         document.getElementById('toolbar-acoes').style.display = 'block';
     }
 
-    // --- DASHBOARD E GRÁFICOS ---
-    function atualizarDashboard(headers, rows) {
+    function actualizarDashboard(headers, rows) {
         document.getElementById('area-stats').style.display = 'block';
         const indexStatus = headers.indexOf('Status');
         let confirmados = 0, pendentes = 0, recusados = 0, total = rows.length;
@@ -293,14 +303,13 @@
         });
     }
 
-    // --- TABELA ---
     function renderizarTabela(headers, rows) {
         const thead = document.querySelector('#tabela-dados thead');
         const tbody = document.querySelector('#tabela-dados tbody');
         
         let headerHTML = "<tr>";
         headers.forEach(h => headerHTML += `<th>${h}</th>`);
-        headerHTML += `<th class="text-center" style="width: 60px;">Ações</th></tr>`;
+        headerHTML += `<th class="text-center" style="width: 100px;">Ações</th></tr>`;
         thead.innerHTML = headerHTML;
         
         if (rows.length === 0) {
@@ -310,13 +319,30 @@
             rows.forEach((row, index) => {
                 bodyHTML += "<tr>";
                 row.forEach(cell => bodyHTML += `<td>${cell}</td>`);
-                bodyHTML += `<td class="text-center"><button class="btn btn-light btn-action text-primary shadow-sm" onclick="abrirModalEditar(${index})" title="Editar"><i class="fas fa-pen"></i></button></td></tr>`;
+                bodyHTML += `
+                    <td class="text-center">
+                        <button class="btn btn-light btn-action text-primary shadow-sm me-1" onclick="abrirModalEditar(${index})" title="Editar"><i class="fas fa-pen"></i></button>
+                        <button class="btn btn-light btn-action text-danger shadow-sm" onclick="confirmarExclusao(${index})" title="Excluir"><i class="fas fa-trash"></i></button>
+                    </td>`;
+                bodyHTML += "</tr>";
             });
             tbody.innerHTML = bodyHTML;
         }
     }
 
-    // --- FUNÇÕES DE EDIÇÃO E MODAIS ---
+    // --- AÇÃO EXCLUIR (NOVO) ---
+    async function confirmarExclusao(index) {
+        if(!confirm("Tem certeza que deseja EXCLUIR este convidado? Esta ação não pode ser desfeita.")) return;
+        
+        // Backend usa índice 1-based e tem cabeçalho, logo: index + 2
+        const res = await chamarAPI('excluirConvidado', { nomeEvento: eventoAtual, linha: index + 2 });
+        
+        if(res && res.sucesso) {
+            // Recarrega para atualizar a tabela
+            carregarEventoEspecifico(eventoAtual);
+        }
+    }
+
     function abrirModalEditar(rowIndex) {
         const dadosRow = dadosEventoAtual[rowIndex];
         document.getElementById('edit-linha-index').value = rowIndex; 
@@ -345,13 +371,28 @@
         if (res && res.sucesso) carregarEventoEspecifico(eventoAtual);
     }
 
+    // --- QR CODE (NOVO) ---
     function abrirModalLink() {
         if(!eventoAtual) return;
         const link = `${GITHUB_PAGES_URL}index.html?evento=${encodeURIComponent(eventoAtual)}`;
         document.getElementById('input-link-gerado').value = link;
         document.getElementById('btn-abrir-link').href = link;
+        
+        // Gera QR Code
+        const qrContainer = document.getElementById('qrcode');
+        qrContainer.innerHTML = ""; // Limpa anterior
+        new QRCode(qrContainer, {
+            text: link,
+            width: 128,
+            height: 128,
+            colorDark : "#000000",
+            colorLight : "#ffffff",
+            correctLevel : QRCode.CorrectLevel.H
+        });
+
         new bootstrap.Modal(document.getElementById('modalLink')).show();
     }
+
     function copiarTextoLink() { const i = document.getElementById('input-link-gerado'); i.select(); navigator.clipboard.writeText(i.value); alert("Link copiado!"); }
     function toggleAreaImportacao(mostrar) { document.getElementById('area-importacao-criacao').style.display = mostrar ? 'block' : 'none'; }
     async function handleCriarEvento(e) { e.preventDefault(); const n = document.getElementById('novo-nome').value; const t = document.querySelector('input[name="novo-tipo"]:checked').value; let d = ""; if (t === 'Importar') d = document.getElementById('texto-criacao-import').value; const res = await chamarAPI('criarNovoEvento', { nome: n, template: t, dadosImportados: d }); if (res && res.sucesso) { alert("Evento criado!"); mostrarTela('dashboard'); carregarLista(); } }
@@ -360,6 +401,7 @@
     function abrirModalAdd() { const f = document.getElementById('form-dinamico'); f.innerHTML = ""; colunasAtuais.forEach(c => { let i = c === 'Status' ? `<select class="form-select input-dinamico"><option>Pendente</option><option>Confirmado</option><option>Não vai</option></select>` : `<input type="text" class="form-control input-dinamico">`; f.innerHTML += `<div class="mb-3"><label class="fw-bold small">${c}</label>${i}</div>`; }); new bootstrap.Modal(document.getElementById('modalAdd')).show(); }
     async function enviarConvidado() { const v = Array.from(document.querySelectorAll('.input-dinamico')).map(i => i.value); bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide(); const res = await chamarAPI('adicionarConvidado', { nomeEvento: eventoAtual, arrayDados: v }); if (res && res.sucesso) carregarEventoEspecifico(eventoAtual); }
     function mostrarTela(t) { document.getElementById('tela-dashboard').style.display = t === 'dashboard' ? 'block' : 'none'; document.getElementById('tela-novo').style.display = t === 'novo' ? 'block' : 'none'; }
+    function atualizarDashboard(h, r) { actualizarDashboard(h, r); } // Alias fix
 </script>
 </body>
 </html>
