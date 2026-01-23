@@ -31,7 +31,7 @@
             <i class="fas fa-plus me-2 text-success"></i>Novo Evento
         </button>
     </div>
-    <div class="mt-auto text-muted small pt-3 border-top">v5.1 - Link Modal</div>
+    <div class="mt-auto text-muted small pt-3 border-top">v6.0 - GitHub Conectado</div>
 </div>
 
 <div class="content">
@@ -55,7 +55,6 @@
                         <button class="btn btn-outline-primary me-2 shadow-sm" onclick="abrirModalLink()">
                             <i class="fas fa-link me-2"></i>Link Convite
                         </button>
-                        
                         <button class="btn btn-success me-2 shadow-sm" onclick="abrirModalImport()">
                             <i class="fas fa-file-excel me-2"></i>Importar
                         </button>
@@ -119,28 +118,14 @@
 <div class="modal fade" id="modalLink" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Link para Convidados</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
+            <div class="modal-header"><h5 class="modal-title">Link para Convidados</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body text-center">
-                <p class="text-muted">Envie este link para que os convidados confirmem presença:</p>
-                
+                <p class="text-muted">Envie este link para os convidados:</p>
                 <div class="input-group mb-3">
                     <input type="text" id="input-link-gerado" class="form-control text-center" readonly>
-                    <button class="btn btn-outline-primary" type="button" onclick="copiarTextoLink()">
-                        <i class="fas fa-copy"></i> Copiar
-                    </button>
+                    <button class="btn btn-outline-primary" onclick="copiarTextoLink()"><i class="fas fa-copy"></i></button>
                 </div>
-
-                <div class="d-grid">
-                    <a id="btn-abrir-link" href="#" target="_blank" class="btn btn-light btn-sm">
-                        <i class="fas fa-external-link-alt me-1"></i> Abrir para testar
-                    </a>
-                </div>
-                <div id="msg-copiado" class="text-success small fw-bold mt-2" style="display:none;">
-                    Link copiado com sucesso!
-                </div>
+                <a id="btn-abrir-link" href="#" target="_blank" class="btn btn-light btn-sm"><i class="fas fa-external-link-alt"></i> Abrir para testar</a>
             </div>
         </div>
     </div>
@@ -159,8 +144,16 @@
     // ============================================================
     // CONFIGURAÇÃO
     // ============================================================
-    // COLE SUA URL AQUI
-    const API_URL = "https://script.google.com/macros/s/AKfycbznlB0UzqjzlkneSPFv1mi_0Jqqtv6DkZsbPctw28isyZvAwyXOBv2tHnQUl1SM1QQ/exec"; 
+    
+    // 1. URL DO GOOGLE APPS SCRIPT (BACKEND)
+    const API_URL = "COLE_AQUI_A_SUA_URL_DO_GOOGLE_SCRIPT_QUE_TERMINA_EM_EXEC"; 
+
+    // 2. URL DO SEU SITE NO GITHUB PAGES (FRONTEND)
+    // Exemplo: "https://seu-usuario.github.io/seu-repositorio/"
+    // IMPORTANTE: Deve terminar com barra /
+    const GITHUB_PAGES_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+
+    // ============================================================
 
     let colunasAtuais = [];
     let eventoAtual = "";
@@ -181,7 +174,9 @@
             return json;
         } catch (e) {
             document.getElementById('loading').style.display = 'none';
-            alert("Erro de conexão."); return null;
+            console.error(e);
+            alert("Erro de conexão. Verifique se a URL do Script está correta no código."); 
+            return null;
         }
     }
 
@@ -213,42 +208,27 @@
         else tbody.innerHTML = dados.rows.map(r => "<tr>" + r.map(c => `<td>${c}</td>`).join('') + "</tr>").join('');
     }
 
-    // --- NOVA LÓGICA DE GERAR LINK (MODAL) ---
+    // --- GERAR LINK DO GITHUB ---
     function abrirModalLink() {
         if(!eventoAtual) return;
         
-        // 1. Gera o Link
-        const baseUrl = API_URL.replace("COLE_SUA_URL_AQUI", "").split("?")[0];
-        const link = `${baseUrl}?page=form&evento=${encodeURIComponent(eventoAtual)}`;
+        // Usa a URL atual onde o painel está hospedado como base
+        // Se estiver no GitHub, vai gerar o link do GitHub
+        const link = `${GITHUB_PAGES_URL}index.html?evento=${encodeURIComponent(eventoAtual)}`;
         
-        // 2. Coloca no Input e no Botão Abrir
         document.getElementById('input-link-gerado').value = link;
         document.getElementById('btn-abrir-link').href = link;
-        
-        // 3. Reseta mensagem de copiado
-        document.getElementById('msg-copiado').style.display = 'none';
-
-        // 4. Abre o Modal
         new bootstrap.Modal(document.getElementById('modalLink')).show();
     }
 
     function copiarTextoLink() {
-        const inputLink = document.getElementById('input-link-gerado');
-        
-        // Seleciona o texto
-        inputLink.select();
-        inputLink.setSelectionRange(0, 99999); // Mobile
-
-        // Copia
-        navigator.clipboard.writeText(inputLink.value).then(() => {
-            document.getElementById('msg-copiado').style.display = 'block';
-            setTimeout(() => {
-                document.getElementById('msg-copiado').style.display = 'none';
-            }, 3000);
-        });
+        const input = document.getElementById('input-link-gerado');
+        input.select();
+        navigator.clipboard.writeText(input.value);
+        alert("Link copiado!");
     }
 
-    // --- OUTRAS FUNÇÕES ---
+    // --- MODAIS E AÇÕES ---
     function toggleAreaImportacao(mostrar) { document.getElementById('area-importacao-criacao').style.display = mostrar ? 'block' : 'none'; }
 
     async function handleCriarEvento(e) {
