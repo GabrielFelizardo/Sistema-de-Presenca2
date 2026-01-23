@@ -7,21 +7,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* ===== DESIGN TOKENS ===== */
         :root {
             --primary-blue: #1e3a8a;
             --primary-light: #3b82f6;
             --success: #10b981;
             --warning: #f59e0b;
             --danger: #ef4444;
-            --spacing-xs: 0.25rem;
-            --spacing-sm: 0.5rem;
-            --spacing-md: 1rem;
-            --spacing-lg: 1.5rem;
-            --spacing-xl: 2rem;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 6px rgba(0,0,0,0.07);
-            --shadow-lg: 0 10px 15px rgba(0,0,0,0.1);
             --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
         }
 
@@ -46,14 +37,8 @@
         }
 
         @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .header-bg { 
@@ -81,41 +66,9 @@
             50% { transform: scale(1.1); opacity: 0.8; }
         }
 
-        .header-bg h2, .header-bg p {
-            position: relative;
-            z-index: 1;
-        }
+        .header-bg h2, .header-bg p { position: relative; z-index: 1; }
+        .loading { display: none; text-align: center; padding: 40px; }
 
-        /* ===== LOADING SKELETON ===== */
-        .loading { 
-            display: none; 
-            text-align: center; 
-            padding: 40px; 
-        }
-
-        .skeleton-container {
-            padding: 20px;
-        }
-
-        .skeleton-line {
-            height: 16px;
-            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-            background-size: 1000px 100%;
-            animation: shimmer 2s infinite;
-            border-radius: 8px;
-            margin-bottom: 12px;
-        }
-
-        .skeleton-line.short {
-            width: 60%;
-        }
-
-        @keyframes shimmer {
-            0% { background-position: -1000px 0; }
-            100% { background-position: 1000px 0; }
-        }
-
-        /* ===== INPUTS COM MICRO-INTERAÇÕES ===== */
         .form-control {
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border: 2px solid #e5e7eb;
@@ -128,52 +81,17 @@
             transform: translateY(-2px);
         }
 
-        /* ===== BOTÕES COM EFEITO RIPPLE ===== */
         .btn {
             position: relative;
             overflow: hidden;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             border-radius: 50px;
             font-weight: 600;
-            letter-spacing: 0.5px;
         }
 
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.4);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
+        .btn:active { transform: translateY(0); }
 
-        .btn:active::before {
-            width: 300px;
-            height: 300px;
-        }
-
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-
-        .btn:active {
-            transform: translateY(0);
-        }
-
-        /* ===== BADGES DE STATUS ===== */
-        .badge {
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 0.875rem;
-        }
-
-        /* ===== RADIO BUTTONS PERSONALIZADOS ===== */
         .btn-check:checked + .btn-outline-success {
             background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
             border-color: var(--success);
@@ -189,13 +107,9 @@
         .btn-group .btn {
             padding: 12px 20px;
             border-radius: 12px !important;
-        }
-
-        .btn-group .btn:first-child {
             margin-right: 8px;
         }
 
-        /* ===== ÍCONE DE SUCESSO ANIMADO ===== */
         .success-icon {
             animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
@@ -205,7 +119,6 @@
             100% { transform: scale(1) rotate(0); }
         }
 
-        /* ===== TOAST NOTIFICATIONS ===== */
         #toast-container {
             position: fixed;
             top: 20px;
@@ -226,26 +139,15 @@
             min-width: 300px;
         }
 
-        .toast-notification.slide-out {
-            animation: slideOut 0.3s ease-out;
-        }
+        .toast-notification.slide-out { animation: slideOut 0.3s ease-out; }
 
         @keyframes slideIn {
-            from {
-                transform: translateX(400px);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(400px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
 
         @keyframes slideOut {
-            to {
-                transform: translateX(400px);
-                opacity: 0;
-            }
+            to { transform: translateX(400px); opacity: 0; }
         }
 
         .toast-icon {
@@ -257,57 +159,55 @@
             justify-content: center;
             font-weight: bold;
             font-size: 1rem;
-            flex-shrink: 0;
         }
 
         .toast-icon.success { background: var(--success); color: white; }
         .toast-icon.error { background: var(--danger); color: white; }
-        .toast-icon.info { background: var(--primary-light); color: white; }
         .toast-icon.warning { background: var(--warning); color: white; }
 
-        .toast-message {
-            color: #374151;
-            font-weight: 500;
-            flex-grow: 1;
+        .toast-message { color: #374151; font-weight: 500; flex-grow: 1; }
+
+        .review-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
-        /* ===== RESPONSIVIDADE ===== */
+        .review-item:last-child { border-bottom: none; }
+        .review-item:hover { background: #f9fafb; }
+
+        .review-label {
+            font-weight: 600;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
+        .review-value { color: #111827; font-weight: 500; }
+
+        .search-hint {
+            background: #eff6ff;
+            border-left: 4px solid var(--primary-light);
+            padding: 12px;
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 0.875rem;
+            color: #1e40af;
+        }
+
         @media (max-width: 576px) {
-            body {
-                padding: 10px;
-            }
-
-            .card-rsvp {
-                border-radius: 15px;
-            }
-
-            .header-bg {
-                padding: 30px 15px;
-            }
-
-            .btn-group {
-                flex-direction: column;
-            }
-
-            .btn-group .btn:first-child {
-                margin-right: 0;
-                margin-bottom: 8px;
-            }
-
-            #toast-container {
-                right: 10px;
-                left: 10px;
-            }
-
-            .toast-notification {
-                min-width: auto;
-            }
+            body { padding: 10px; }
+            .card-rsvp { border-radius: 15px; }
+            .header-bg { padding: 30px 15px; }
+            .btn-group { flex-direction: column; }
+            .btn-group .btn { margin-right: 0; margin-bottom: 8px; }
+            #toast-container { right: 10px; left: 10px; }
+            .toast-notification { min-width: auto; }
         }
     </style>
 </head>
 <body>
 
-<!-- Toast Container -->
 <div id="toast-container"></div>
 
 <div class="card-rsvp">
@@ -318,19 +218,23 @@
 
     <div class="card-body p-4 bg-white">
         
-        <!-- Loading -->
         <div id="loading" class="loading">
             <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
             <p class="mt-3 text-muted fw-semibold">Processando...</p>
         </div>
 
-        <!-- Passo 1: Busca de Nome -->
+        <!-- Passo 1: Busca -->
         <div id="passo-1">
-            <p class="text-center text-muted mb-4">Digite seu nome para confirmar sua presença na lista.</p>
+            <p class="text-center text-muted mb-4">Digite seu nome para confirmar sua presença.</p>
             <form onsubmit="verificarNome(event)">
                 <div class="mb-3">
                     <input type="text" id="input-nome-busca" class="form-control form-control-lg text-center" 
                            placeholder="Ex: Gabriel Felizardo" required autofocus>
+                    
+                    <div class="search-hint mt-3" style="display: none;" id="search-hint">
+                        <i class="fas fa-lightbulb me-2"></i>
+                        <strong>Dica:</strong> Tente apenas o primeiro nome ou sobrenome
+                    </div>
                 </div>
                 <div class="d-grid">
                     <button type="submit" class="btn btn-primary btn-lg">
@@ -340,13 +244,13 @@
             </form>
         </div>
 
-        <!-- Passo 2: Formulário de Resposta -->
+        <!-- Passo 2: Formulário -->
         <div id="passo-2" style="display:none;">
             <div class="alert alert-success border-0 text-center mb-4" style="border-radius: 12px;">
                 <i class="fas fa-user-check me-2"></i>Olá, <strong id="nome-encontrado"></strong>!
             </div>
             
-            <form onsubmit="enviarResposta(event)">
+            <form onsubmit="mostrarConfirmacao(event)">
                 <input type="hidden" id="linha-convidado">
                 
                 <div class="mb-4 text-center">
@@ -368,19 +272,45 @@
 
                 <div class="d-grid mt-4">
                     <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-paper-plane me-2"></i>Enviar Confirmação
+                        <i class="fas fa-arrow-right me-2"></i>Continuar
                     </button>
                 </div>
             </form>
+        </div>
+
+        <!-- Passo 2.5: Confirmação -->
+        <div id="passo-2-5" style="display:none;">
+            <div class="card border-primary mb-3" style="border-radius: 12px;">
+                <div class="card-header bg-primary text-white">
+                    <i class="fas fa-clipboard-check me-2"></i>Confirme seus dados
+                </div>
+                <div class="card-body p-0">
+                    <div id="resumo-confirmacao"></div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info border-0 mb-3" style="border-radius: 12px;">
+                <i class="fas fa-info-circle me-2"></i>
+                <small>Revise antes de enviar</small>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button class="btn btn-outline-secondary" onclick="voltarParaFormulario()">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar
+                </button>
+                <button class="btn btn-success btn-lg" onclick="confirmarEnvio()">
+                    <i class="fas fa-check-circle me-2"></i>Confirmar
+                </button>
+            </div>
         </div>
 
         <!-- Passo 3: Sucesso -->
         <div id="passo-3" style="display:none;" class="text-center py-5">
             <i class="fas fa-check-circle text-success success-icon" style="font-size: 5rem;"></i>
             <h3 class="fw-bold mt-4">Obrigado!</h3>
-            <p class="text-muted">Sua resposta foi registrada com sucesso.</p>
+            <p class="text-muted">Sua resposta foi registrada.</p>
             <button class="btn btn-outline-primary mt-3" onclick="window.location.reload()">
-                <i class="fas fa-redo me-2"></i>Fazer nova confirmação
+                <i class="fas fa-redo me-2"></i>Nova confirmação
             </button>
         </div>
     </div>
@@ -388,76 +318,66 @@
 
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbznlB0UzqjzlkneSPFv1mi_0Jqqtv6DkZsbPctw28isyZvAwyXOBv2tHnQUl1SM1QQ/exec"; 
-
     const urlParams = new URLSearchParams(window.location.search);
     const eventoNome = urlParams.get('evento');
+    let dadosFormulario = {};
+    let tentativasBusca = 0;
 
-    // ===== TOAST NOTIFICATIONS =====
     function mostrarToast(mensagem, tipo = 'success') {
         const container = document.getElementById('toast-container');
         const toast = document.createElement('div');
-        
-        const icons = {
-            success: '✓',
-            error: '✕',
-            info: 'i',
-            warning: '⚠'
-        };
+        const icons = { success: '✓', error: '✕', warning: '⚠' };
         
         toast.className = 'toast-notification';
         toast.innerHTML = `
             <span class="toast-icon ${tipo}">${icons[tipo]}</span>
             <span class="toast-message">${mensagem}</span>
         `;
-        
         container.appendChild(toast);
-        
         setTimeout(() => {
             toast.classList.add('slide-out');
             setTimeout(() => toast.remove(), 300);
-        }, 3000);
+        }, 3500);
     }
 
-    // ===== VALIDAÇÃO DO EVENTO =====
     if (eventoNome) {
         document.getElementById('nome-evento-titulo').innerText = eventoNome;
     } else {
         document.getElementById('nome-evento-titulo').innerText = "Evento";
-        mostrarToast("Link inválido: Nome do evento não encontrado.", "error");
+        mostrarToast("Link inválido.", "error");
     }
 
-    // ===== CHAMADA À API =====
     async function chamarAPI(acao, dados = {}) {
         document.getElementById('loading').style.display = 'block';
-        document.getElementById('passo-1').style.display = 'none';
+        ['passo-1', 'passo-2', 'passo-2-5'].forEach(id => document.getElementById(id).style.display = 'none');
+        
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ acao: acao, ...dados })
+                body: JSON.stringify({ acao, ...dados })
             });
             const json = await response.json();
             document.getElementById('loading').style.display = 'none';
             return json;
         } catch (e) {
-            mostrarToast("Erro de conexão com o servidor.", "error");
+            mostrarToast("Erro de conexão.", "error");
             document.getElementById('loading').style.display = 'none';
             document.getElementById('passo-1').style.display = 'block';
             return null;
         }
     }
 
-    // ===== VERIFICAR NOME =====
     async function verificarNome(e) {
         e.preventDefault();
         const nomeBusca = document.getElementById('input-nome-busca').value.trim();
         
         if (!nomeBusca) {
-            mostrarToast("Por favor, digite um nome.", "warning");
+            mostrarToast("Digite um nome.", "warning");
             return;
         }
 
-        const res = await chamarAPI('buscarConvidado', { nomeEvento: eventoNome, nomeBusca: nomeBusca });
+        const res = await chamarAPI('buscarConvidado', { nomeEvento: eventoNome, nomeBusca });
         
         if (res && res.encontrado) {
             document.getElementById('nome-encontrado').innerText = res.nomeCompleto;
@@ -465,19 +385,25 @@
             gerarFormulario(res.colunas, res.dadosAtuais);
             document.getElementById('passo-2').style.display = 'block';
             mostrarToast("Nome encontrado!", "success");
+            tentativasBusca = 0;
         } else {
-            mostrarToast("Nome não encontrado nesta lista.", "error");
+            tentativasBusca++;
+            if (tentativasBusca === 1) {
+                document.getElementById('search-hint').style.display = 'block';
+                mostrarToast("Nome não encontrado. Veja a dica.", "warning");
+            } else {
+                mostrarToast("Nome não encontrado.", "error");
+            }
             document.getElementById('passo-1').style.display = 'block';
         }
     }
 
-    // ===== GERAR FORMULÁRIO DINÂMICO =====
     function gerarFormulario(colunas, dadosAtuais) {
         const container = document.getElementById('perguntas-extras');
         container.innerHTML = "";
         
         colunas.forEach((col, index) => {
-            if (col === "Nome" || col === "Status" || col === "Telefone" || col === "Email") return;
+            if (["Nome", "Status", "Telefone", "Email"].includes(col)) return;
             
             const valor = dadosAtuais[index] || "";
             container.innerHTML += `
@@ -489,41 +415,86 @@
         });
     }
 
-    // ===== ENVIAR RESPOSTA =====
-    async function enviarResposta(e) {
+    function mostrarConfirmacao(e) {
         e.preventDefault();
         
         const linha = document.getElementById('linha-convidado').value;
+        const nomeCompleto = document.getElementById('nome-encontrado').innerText;
         const status = document.querySelector('input[name="resp-Status"]:checked').value;
-        let respostas = { "Status": status };
         
+        dadosFormulario = {
+            linha: parseInt(linha),
+            nome: nomeCompleto,
+            respostas: { "Status": status }
+        };
+        
+        const extrasHTML = [];
         document.querySelectorAll('input[name^="extra-"]').forEach(input => {
-            respostas[input.name.replace("extra-", "")] = input.value;
+            const coluna = input.name.replace("extra-", "");
+            const valor = input.value;
+            dadosFormulario.respostas[coluna] = valor;
+            if (valor) extrasHTML.push({ label: coluna, value: valor });
         });
+        
+        let resumoHTML = `
+            <div class="review-item">
+                <span class="review-label">Nome</span>
+                <span class="review-value">${nomeCompleto}</span>
+            </div>
+            <div class="review-item">
+                <span class="review-label">Confirmação</span>
+                <span class="review-value">
+                    ${status === 'Confirmado' 
+                        ? '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Confirmado</span>' 
+                        : '<span class="badge bg-danger"><i class="fas fa-times me-1"></i>Não vai</span>'}
+                </span>
+            </div>
+        `;
+        
+        extrasHTML.forEach(item => {
+            resumoHTML += `
+                <div class="review-item">
+                    <span class="review-label">${item.label}</span>
+                    <span class="review-value">${item.value}</span>
+                </div>`;
+        });
+        
+        document.getElementById('resumo-confirmacao').innerHTML = resumoHTML;
+        document.getElementById('passo-2').style.display = 'none';
+        document.getElementById('passo-2-5').style.display = 'block';
+    }
 
+    function voltarParaFormulario() {
+        document.getElementById('passo-2-5').style.display = 'none';
+        document.getElementById('passo-2').style.display = 'block';
+    }
+
+    async function confirmarEnvio() {
         const res = await chamarAPI('salvarResposta', { 
             nomeEvento: eventoNome, 
-            linha: parseInt(linha), 
-            respostas: respostas 
+            linha: dadosFormulario.linha, 
+            respostas: dadosFormulario.respostas 
         });
         
         if (res && res.sucesso) {
-            document.getElementById('passo-2').style.display = 'none';
+            document.getElementById('passo-2-5').style.display = 'none';
             document.getElementById('passo-3').style.display = 'block';
-            mostrarToast("Confirmação registrada com sucesso!", "success");
+            mostrarToast("Confirmação registrada!", "success");
         } else {
-            mostrarToast("Erro ao salvar resposta. Tente novamente.", "error");
+            mostrarToast("Erro ao salvar.", "error");
+            document.getElementById('passo-2-5').style.display = 'none';
+            document.getElementById('passo-2').style.display = 'block';
         }
     }
 
-    // ===== ATALHOS DE TECLADO =====
     document.addEventListener('keydown', (e) => {
-        // ESC para limpar busca
         if (e.key === 'Escape') {
             const input = document.getElementById('input-nome-busca');
             if (input && document.getElementById('passo-1').style.display !== 'none') {
                 input.value = '';
                 input.focus();
+                document.getElementById('search-hint').style.display = 'none';
+                tentativasBusca = 0;
             }
         }
     });
