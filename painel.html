@@ -15,12 +15,17 @@
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; }
         textarea.form-control { font-family: monospace; font-size: 0.85rem; background-color: #fafafa; }
         
-        /* Estilos dos Cards do Dashboard */
         .card-stat { border: none; border-radius: 12px; transition: transform 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .card-stat:hover { transform: translateY(-3px); }
         .stat-icon { font-size: 2rem; opacity: 0.2; position: absolute; right: 15px; top: 15px; }
         .btn-action { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
         .btn-action:hover { transform: scale(1.1); }
+
+        /* Estilo das Abas de Navegador */
+        .nav-tabs .nav-link { color: #495057; font-weight: 500; border: none; border-bottom: 3px solid transparent; background: transparent; }
+        .nav-tabs .nav-link:hover { color: #0d6efd; border-color: transparent; }
+        .nav-tabs .nav-link.active { color: #0d6efd; font-weight: bold; border-bottom: 3px solid #0d6efd; background: transparent; }
+        .nav-tabs { border-bottom: 2px solid #e9ecef; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -40,62 +45,30 @@
             <i class="fas fa-plus me-2 text-success"></i>Novo Evento
         </button>
     </div>
-    <div class="mt-auto text-muted small pt-3 border-top">v8.0 - Dashboard</div>
+    <div class="mt-auto text-muted small pt-3 border-top">v9.0 - Abas Navegador</div>
 </div>
 
 <div class="content">
     
     <div id="tela-dashboard">
-        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-            <h3 class="fw-bold text-dark m-0">Painel de Controle</h3>
-            <div class="card p-2 shadow-sm border-0 bg-white d-flex flex-row gap-2 align-items-center">
-                <select id="select-eventos" class="form-select border-0 fw-bold text-primary" style="min-width: 250px;" onchange="carregarEventoEspecifico()">
-                    <option value="">Carregando eventos...</option>
-                </select>
-                <button class="btn btn-light text-secondary rounded-circle" onclick="carregarEventoEspecifico()" title="Atualizar">
-                    <i class="fas fa-sync-alt"></i>
-                </button>
-            </div>
+        
+        <h3 class="fw-bold text-dark mb-4">Painel de Controle</h3>
+
+        <div class="d-flex align-items-center">
+            <ul class="nav nav-tabs flex-grow-1" id="tab-lista-eventos">
+                <li class="nav-item"><a class="nav-link disabled">Carregando eventos...</a></li>
+            </ul>
+            <button class="btn btn-light text-secondary rounded-circle ms-2 mb-3 shadow-sm" onclick="carregarEventoEspecifico(eventoAtual)" title="Atualizar">
+                <i class="fas fa-sync-alt"></i>
+            </button>
         </div>
 
         <div id="area-stats" style="display:none;">
             <div class="row mb-4 g-3">
-                <div class="col-md-3">
-                    <div class="card card-stat bg-white text-dark">
-                        <div class="card-body position-relative">
-                            <i class="fas fa-users stat-icon text-primary"></i>
-                            <h6 class="text-uppercase text-muted small fw-bold">Total</h6>
-                            <h2 class="fw-bold mb-0" id="stat-total">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card card-stat bg-success text-white">
-                        <div class="card-body position-relative">
-                            <i class="fas fa-check-circle stat-icon text-white"></i>
-                            <h6 class="text-uppercase text-white-50 small fw-bold">Confirmados</h6>
-                            <h2 class="fw-bold mb-0" id="stat-confirmados">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card card-stat bg-warning text-dark">
-                        <div class="card-body position-relative">
-                            <i class="fas fa-clock stat-icon text-dark"></i>
-                            <h6 class="text-uppercase text-muted small fw-bold">Pendentes</h6>
-                            <h2 class="fw-bold mb-0" id="stat-pendentes">0</h2>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="card card-stat bg-danger text-white">
-                        <div class="card-body position-relative">
-                            <i class="fas fa-times-circle stat-icon text-white"></i>
-                            <h6 class="text-uppercase text-white-50 small fw-bold">Recusados</h6>
-                            <h2 class="fw-bold mb-0" id="stat-recusados">0</h2>
-                        </div>
-                    </div>
-                </div>
+                <div class="col-md-3"><div class="card card-stat bg-white text-dark"><div class="card-body position-relative"><i class="fas fa-users stat-icon text-primary"></i><h6 class="text-uppercase text-muted small fw-bold">Total</h6><h2 class="fw-bold mb-0" id="stat-total">0</h2></div></div></div>
+                <div class="col-md-3"><div class="card card-stat bg-success text-white"><div class="card-body position-relative"><i class="fas fa-check-circle stat-icon text-white"></i><h6 class="text-uppercase text-white-50 small fw-bold">Confirmados</h6><h2 class="fw-bold mb-0" id="stat-confirmados">0</h2></div></div></div>
+                <div class="col-md-3"><div class="card card-stat bg-warning text-dark"><div class="card-body position-relative"><i class="fas fa-clock stat-icon text-dark"></i><h6 class="text-uppercase text-muted small fw-bold">Pendentes</h6><h2 class="fw-bold mb-0" id="stat-pendentes">0</h2></div></div></div>
+                <div class="col-md-3"><div class="card card-stat bg-danger text-white"><div class="card-body position-relative"><i class="fas fa-times-circle stat-icon text-white"></i><h6 class="text-uppercase text-white-50 small fw-bold">Recusados</h6><h2 class="fw-bold mb-0" id="stat-recusados">0</h2></div></div></div>
             </div>
 
             <div class="row mb-4">
@@ -115,7 +88,7 @@
         <div class="card shadow-sm border-0">
             <div class="card-body p-4">
                 <div class="d-flex justify-content-between mb-4 align-items-center border-bottom pb-3">
-                    <h5 class="m-0 text-muted" id="titulo-tabela"><i class="fas fa-arrow-left me-2"></i>Selecione um evento</h5>
+                    <h5 class="m-0 text-muted" id="titulo-tabela">Detalhes do Evento</h5>
                     
                     <div id="toolbar-acoes" style="display:none;">
                         <button class="btn btn-outline-primary me-2 shadow-sm" onclick="abrirModalLink()">
@@ -135,7 +108,6 @@
                         <thead class="table-light text-secondary text-uppercase small"></thead>
                         <tbody></tbody>
                     </table>
-                    <div id="msg-sem-dados" class="text-center p-5 text-muted">Aguardando seleção...</div>
                 </div>
             </div>
         </div>
@@ -182,38 +154,11 @@
 </div>
 
 <div class="modal fade" id="modalLink" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header"><h5 class="modal-title">Link para Convidados</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
-            <div class="modal-body text-center">
-                <p class="text-muted">Link do Convite:</p>
-                <div class="input-group mb-3">
-                    <input type="text" id="input-link-gerado" class="form-control text-center" readonly>
-                    <button class="btn btn-outline-primary" onclick="copiarTextoLink()"><i class="fas fa-copy"></i></button>
-                </div>
-                <a id="btn-abrir-link" href="#" target="_blank" class="btn btn-light btn-sm"><i class="fas fa-external-link-alt"></i> Abrir</a>
-            </div>
-        </div>
-    </div>
+    <div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Link para Convidados</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><p class="text-muted">Link do Convite:</p><div class="input-group mb-3"><input type="text" id="input-link-gerado" class="form-control text-center" readonly><button class="btn btn-outline-primary" onclick="copiarTextoLink()"><i class="fas fa-copy"></i></button></div><a id="btn-abrir-link" href="#" target="_blank" class="btn btn-light btn-sm"><i class="fas fa-external-link-alt"></i> Abrir</a></div></div></div>
 </div>
 
 <div class="modal fade" id="modalEditar" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-warning">
-                <h5 class="modal-title text-dark">Editar Convidado</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="edit-linha-index">
-                <div id="form-editar-dinamico"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-warning fw-bold" onclick="salvarEdicao()">Salvar Alterações</button>
-            </div>
-        </div>
-    </div>
+    <div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-warning"><h5 class="modal-title text-dark">Editar Convidado</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="edit-linha-index"><div id="form-editar-dinamico"></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-warning fw-bold" onclick="salvarEdicao()">Salvar Alterações</button></div></div></div>
 </div>
 
 <div class="modal fade" id="modalAdd" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Adicionar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body" id="form-dinamico"></div><div class="modal-footer"><button class="btn btn-primary" onclick="enviarConvidado()">Salvar</button></div></div></div></div>
@@ -232,7 +177,7 @@
     let colunasAtuais = [];
     let dadosEventoAtual = []; 
     let eventoAtual = "";
-    let graficoInstance = null; // Para guardar o gráfico
+    let graficoInstance = null;
 
     document.addEventListener('DOMContentLoaded', () => { carregarLista(); });
 
@@ -258,13 +203,43 @@
     async function carregarLista() {
         const dados = await chamarAPI('listarEventos');
         if (!dados) return;
-        const select = document.getElementById('select-eventos');
-        select.innerHTML = '<option value="" disabled selected>Selecione um evento...</option>';
-        dados.forEach(ev => select.innerHTML += `<option value="${ev.nome}">${ev.nome}</option>`);
+
+        const tabContainer = document.getElementById('tab-lista-eventos');
+        tabContainer.innerHTML = ''; // Limpa abas antigas
+
+        if (dados.length === 0) {
+             tabContainer.innerHTML = '<li class="nav-item"><a class="nav-link disabled">Nenhum evento criado</a></li>';
+             return;
+        }
+
+        // Gera as abas
+        dados.forEach((ev, index) => {
+            const li = document.createElement('li');
+            li.className = 'nav-item';
+            
+            const btn = document.createElement('button');
+            // Se for o primeiro, já marca como ativo
+            btn.className = index === 0 ? 'nav-link active' : 'nav-link';
+            btn.innerText = ev.nome;
+            btn.onclick = () => {
+                // Remove active de todos
+                document.querySelectorAll('#tab-lista-eventos .nav-link').forEach(el => el.classList.remove('active'));
+                // Adiciona active neste
+                btn.classList.add('active');
+                carregarEventoEspecifico(ev.nome);
+            };
+            
+            li.appendChild(btn);
+            tabContainer.appendChild(li);
+        });
+
+        // Carrega o primeiro evento automaticamente
+        if (dados.length > 0) {
+            carregarEventoEspecifico(dados[0].nome);
+        }
     }
 
-    async function carregarEventoEspecifico() {
-        const nome = document.getElementById('select-eventos').value;
+    async function carregarEventoEspecifico(nome) {
         if (!nome) return;
         eventoAtual = nome;
         
@@ -274,24 +249,18 @@
         colunasAtuais = dados.headers;
         dadosEventoAtual = dados.rows;
 
-        document.getElementById('titulo-tabela').innerText = nome;
-        document.getElementById('msg-sem-dados').style.display = 'none';
-        document.getElementById('toolbar-acoes').style.display = 'block';
-        
         // Atualiza Dashboard e Tabela
         atualizarDashboard(dados.headers, dados.rows);
         renderizarTabela(dados.headers, dados.rows);
+
+        document.getElementById('toolbar-acoes').style.display = 'block';
     }
 
-    // --- DASHBOARD E GRÁFICOS (NOVO) ---
+    // --- DASHBOARD E GRÁFICOS ---
     function atualizarDashboard(headers, rows) {
         document.getElementById('area-stats').style.display = 'block';
-        
         const indexStatus = headers.indexOf('Status');
-        let confirmados = 0;
-        let pendentes = 0;
-        let recusados = 0;
-        let total = rows.length;
+        let confirmados = 0, pendentes = 0, recusados = 0, total = rows.length;
 
         if (indexStatus > -1) {
             rows.forEach(row => {
@@ -300,20 +269,15 @@
                 else if (status === 'Não vai') recusados++;
                 else pendentes++;
             });
-        } else {
-            // Se não tiver coluna status, tudo é pendente
-            pendentes = total;
-        }
+        } else { pendentes = total; }
 
-        // Atualiza números
         document.getElementById('stat-total').innerText = total;
         document.getElementById('stat-confirmados').innerText = confirmados;
         document.getElementById('stat-pendentes').innerText = pendentes;
         document.getElementById('stat-recusados').innerText = recusados;
 
-        // Desenha Gráfico
         const ctx = document.getElementById('meuGrafico').getContext('2d');
-        if (graficoInstance) graficoInstance.destroy(); // Limpa anterior
+        if (graficoInstance) graficoInstance.destroy();
 
         graficoInstance = new Chart(ctx, {
             type: 'doughnut',
@@ -325,25 +289,18 @@
                     borderWidth: 0
                 }]
             },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: { position: 'bottom' }
-                }
-            }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
     }
 
-    // --- TABELA COM BOTÃO DE EDITAR ---
+    // --- TABELA ---
     function renderizarTabela(headers, rows) {
         const thead = document.querySelector('#tabela-dados thead');
         const tbody = document.querySelector('#tabela-dados tbody');
         
         let headerHTML = "<tr>";
         headers.forEach(h => headerHTML += `<th>${h}</th>`);
-        headerHTML += `<th class="text-center" style="width: 60px;">Ações</th>`;
-        headerHTML += "</tr>";
+        headerHTML += `<th class="text-center" style="width: 60px;">Ações</th></tr>`;
         thead.innerHTML = headerHTML;
         
         if (rows.length === 0) {
@@ -353,19 +310,13 @@
             rows.forEach((row, index) => {
                 bodyHTML += "<tr>";
                 row.forEach(cell => bodyHTML += `<td>${cell}</td>`);
-                bodyHTML += `
-                    <td class="text-center">
-                        <button class="btn btn-light btn-action text-primary shadow-sm" onclick="abrirModalEditar(${index})" title="Editar">
-                            <i class="fas fa-pen"></i>
-                        </button>
-                    </td>`;
-                bodyHTML += "</tr>";
+                bodyHTML += `<td class="text-center"><button class="btn btn-light btn-action text-primary shadow-sm" onclick="abrirModalEditar(${index})" title="Editar"><i class="fas fa-pen"></i></button></td></tr>`;
             });
             tbody.innerHTML = bodyHTML;
         }
     }
 
-    // --- FUNÇÕES DE EDIÇÃO ---
+    // --- FUNÇÕES DE EDIÇÃO E MODAIS ---
     function abrirModalEditar(rowIndex) {
         const dadosRow = dadosEventoAtual[rowIndex];
         document.getElementById('edit-linha-index').value = rowIndex; 
@@ -376,12 +327,7 @@
             const valorAtual = dadosRow[colIndex];
             let inputHTML = "";
             if (col === 'Status') {
-                inputHTML = `
-                    <select class="form-select input-editar">
-                        <option value="Pendente" ${valorAtual === 'Pendente' ? 'selected' : ''}>Pendente</option>
-                        <option value="Confirmado" ${valorAtual === 'Confirmado' ? 'selected' : ''}>Confirmado</option>
-                        <option value="Não vai" ${valorAtual === 'Não vai' ? 'selected' : ''}>Não vai</option>
-                    </select>`;
+                inputHTML = `<select class="form-select input-editar"><option value="Pendente" ${valorAtual === 'Pendente' ? 'selected' : ''}>Pendente</option><option value="Confirmado" ${valorAtual === 'Confirmado' ? 'selected' : ''}>Confirmado</option><option value="Não vai" ${valorAtual === 'Não vai' ? 'selected' : ''}>Não vai</option></select>`;
             } else {
                 inputHTML = `<input type="text" class="form-control input-editar" value="${valorAtual}">`;
             }
@@ -396,10 +342,9 @@
         const novosDados = Array.from(inputs).map(i => i.value);
         bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide();
         const res = await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: rowIndex + 2, novosDados: novosDados });
-        if (res && res.sucesso) carregarEventoEspecifico();
+        if (res && res.sucesso) carregarEventoEspecifico(eventoAtual);
     }
 
-    // --- PADRÕES ---
     function abrirModalLink() {
         if(!eventoAtual) return;
         const link = `${GITHUB_PAGES_URL}index.html?evento=${encodeURIComponent(eventoAtual)}`;
@@ -407,56 +352,14 @@
         document.getElementById('btn-abrir-link').href = link;
         new bootstrap.Modal(document.getElementById('modalLink')).show();
     }
-
-    function copiarTextoLink() {
-        const input = document.getElementById('input-link-gerado');
-        input.select();
-        navigator.clipboard.writeText(input.value);
-        alert("Link copiado!");
-    }
-
+    function copiarTextoLink() { const i = document.getElementById('input-link-gerado'); i.select(); navigator.clipboard.writeText(i.value); alert("Link copiado!"); }
     function toggleAreaImportacao(mostrar) { document.getElementById('area-importacao-criacao').style.display = mostrar ? 'block' : 'none'; }
-    async function handleCriarEvento(e) {
-        e.preventDefault();
-        const nome = document.getElementById('novo-nome').value;
-        const tipo = document.querySelector('input[name="novo-tipo"]:checked').value;
-        let dadosRaw = "";
-        if (tipo === 'Importar') dadosRaw = document.getElementById('texto-criacao-import').value;
-        const res = await chamarAPI('criarNovoEvento', { nome: nome, template: tipo, dadosImportados: dadosRaw });
-        if (res && res.sucesso) { alert("Evento criado!"); mostrarTela('dashboard'); carregarLista(); }
-    }
-
+    async function handleCriarEvento(e) { e.preventDefault(); const n = document.getElementById('novo-nome').value; const t = document.querySelector('input[name="novo-tipo"]:checked').value; let d = ""; if (t === 'Importar') d = document.getElementById('texto-criacao-import').value; const res = await chamarAPI('criarNovoEvento', { nome: n, template: t, dadosImportados: d }); if (res && res.sucesso) { alert("Evento criado!"); mostrarTela('dashboard'); carregarLista(); } }
     function abrirModalImport() { document.getElementById('texto-importacao').value = ""; new bootstrap.Modal(document.getElementById('modalImport')).show(); }
-    async function processarImportacao() {
-        const texto = document.getElementById('texto-importacao').value;
-        const temCabecalho = document.getElementById('check-headers').checked;
-        const linhas = texto.trim().split('\n');
-        const matriz = linhas.map(l => l.split('\t')); 
-        bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide();
-        const res = await chamarAPI('importarListaConvidados', { nomeEvento: eventoAtual, matrizDados: matriz, temCabecalho: temCabecalho });
-        if (res && res.sucesso) carregarEventoEspecifico();
-    }
-
-    function abrirModalAdd() {
-        const form = document.getElementById('form-dinamico');
-        form.innerHTML = "";
-        colunasAtuais.forEach(col => {
-            let inputHTML = col === 'Status' ? `<select class="form-select input-dinamico"><option>Pendente</option><option>Confirmado</option><option>Não vai</option></select>` : `<input type="text" class="form-control input-dinamico">`;
-            form.innerHTML += `<div class="mb-3"><label class="fw-bold small">${col}</label>${inputHTML}</div>`;
-        });
-        new bootstrap.Modal(document.getElementById('modalAdd')).show();
-    }
-    async function enviarConvidado() {
-        const vals = Array.from(document.querySelectorAll('.input-dinamico')).map(i => i.value);
-        bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide();
-        const res = await chamarAPI('adicionarConvidado', { nomeEvento: eventoAtual, arrayDados: vals });
-        if (res && res.sucesso) carregarEventoEspecifico();
-    }
-
-    function mostrarTela(tela) {
-        document.getElementById('tela-dashboard').style.display = tela === 'dashboard' ? 'block' : 'none';
-        document.getElementById('tela-novo').style.display = tela === 'novo' ? 'block' : 'none';
-    }
+    async function processarImportacao() { const t = document.getElementById('texto-importacao').value; const h = document.getElementById('check-headers').checked; const l = t.trim().split('\n'); const m = l.map(l => l.split('\t')); bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide(); const res = await chamarAPI('importarListaConvidados', { nomeEvento: eventoAtual, matrizDados: m, temCabecalho: h }); if (res && res.sucesso) carregarEventoEspecifico(eventoAtual); }
+    function abrirModalAdd() { const f = document.getElementById('form-dinamico'); f.innerHTML = ""; colunasAtuais.forEach(c => { let i = c === 'Status' ? `<select class="form-select input-dinamico"><option>Pendente</option><option>Confirmado</option><option>Não vai</option></select>` : `<input type="text" class="form-control input-dinamico">`; f.innerHTML += `<div class="mb-3"><label class="fw-bold small">${c}</label>${i}</div>`; }); new bootstrap.Modal(document.getElementById('modalAdd')).show(); }
+    async function enviarConvidado() { const v = Array.from(document.querySelectorAll('.input-dinamico')).map(i => i.value); bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide(); const res = await chamarAPI('adicionarConvidado', { nomeEvento: eventoAtual, arrayDados: v }); if (res && res.sucesso) carregarEventoEspecifico(eventoAtual); }
+    function mostrarTela(t) { document.getElementById('tela-dashboard').style.display = t === 'dashboard' ? 'block' : 'none'; document.getElementById('tela-novo').style.display = t === 'novo' ? 'block' : 'none'; }
 </script>
 </body>
 </html>
