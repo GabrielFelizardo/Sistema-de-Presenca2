@@ -1,49 +1,34 @@
 // =======================================================================
-// ARQUIVO: CODE.GS (BACKEND v5 - COMPLETO COM FORMULÁRIO PÚBLICO)
+// ARQUIVO: CODE.GS (BACKEND v8 - COM EDIÇÃO)
 // =======================================================================
 
 function doGet(e) {
-  // ROTEAMENTO: Decide qual HTML mostrar baseado na URL
-  // Ex: .../exec?page=form -> Mostra Formulário
-  // Ex: .../exec -> Mostra Painel Admin
-  
-  if (e.parameter.page === 'form') {
-    return HtmlService.createTemplateFromFile('form')
-        .evaluate()
-        .setTitle('Confirmar Presença')
-        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-        .addMetaTag('viewport', 'width=device-width, initial-scale=1');
-  }
-
-  return HtmlService.createTemplateFromFile('painel')
-      .evaluate()
-      .setTitle('Gestor de Eventos - Admin')
-      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
-      .addMetaTag('viewport', 'width=device-width, initial-scale=1');
+  return ContentService.createTextOutput("Sistema Online! Backend funcionando.")
+      .setMimeType(ContentService.MimeType.TEXT);
 }
 
-// ROTEADOR API (POST)
 function doPost(e) {
   const lock = LockService.getScriptLock();
   lock.tryLock(10000);
 
   try {
+    if (!e || !e.postData || !e.postData.contents) throw new Error("Sem dados.");
     const dados = JSON.parse(e.postData.contents);
     const acao = dados.acao;
     let resposta = {};
 
-    // --- AÇÕES DO ADMIN ---
+    // --- ROTEADOR ---
     if (acao === 'listarEventos') resposta = listarEventos();
     else if (acao === 'criarNovoEvento') resposta = criarNovoEvento(dados.nome, dados.template, dados.dadosImportados);
     else if (acao === 'obterDadosEvento') resposta = obterDadosEvento(dados.nomeEvento);
     else if (acao === 'adicionarConvidado') resposta = adicionarConvidado(dados.nomeEvento, dados.arrayDados);
     else if (acao === 'importarListaConvidados') resposta = importarListaInteligente(dados.nomeEvento, dados.matrizDados, dados.temCabecalho);
-    
-    // --- AÇÕES DO CONVIDADO (NOVO) ---
     else if (acao === 'buscarConvidado') resposta = buscarConvidado(dados.nomeEvento, dados.nomeBusca);
     else if (acao === 'salvarResposta') resposta = salvarResposta(dados.nomeEvento, dados.linha, dados.respostas);
+    // EDIÇÃO DE DADOS
+    else if (acao === 'atualizarConvidado') resposta = atualizarConvidado(dados.nomeEvento, dados.linha, dados.novosDados);
     
-    else resposta = { erro: "Ação desconhecida" };
+    else resposta = { erro: "Ação desconhecida: " + acao };
 
     return ContentService.createTextOutput(JSON.stringify(resposta)).setMimeType(ContentService.MimeType.JSON);
 
@@ -74,7 +59,7 @@ function getSpreadsheetId() {
 
 function getSpreadsheet() { return SpreadsheetApp.openById(getSpreadsheetId()); }
 
-// --- FUNÇÕES ADMIN ---
+// --- ADMIN ---
 function listarEventos() {
   const ss = getSpreadsheet();
   return ss.getSheets().map(s => ({ nome: s.getName(), id: s.getSheetId() }));
@@ -120,7 +105,7 @@ function criarNovoEvento(nome, tipo, dadosRaw) {
 function obterDadosEvento(nome) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(nome);
-  if (!sheet) throw new Error("Aba não encontrada");
+  if (!sheet) throw new Error("Evento não encontrado.");
   const data = sheet.getDataRange().getValues();
   if (data.length === 0) return { headers: [], rows: [] };
   return { headers: data[0], rows: data.slice(1) };
@@ -133,10 +118,21 @@ function adicionarConvidado(nomeEvento, dados) {
   return { sucesso: true };
 }
 
+// NOVA FUNÇÃO DE EDIÇÃO
+function atualizarConvidado(nomeEvento, linhaReal, novosDados) {
+  const ss = getSpreadsheet();
+  const sheet = ss.getSheetByName(nomeEvento);
+  if (!sheet) throw new Error("Evento não encontrado.");
+  
+  // Atualiza a linha inteira com os novos dados
+  sheet.getRange(linhaReal, 1, 1, novosDados.length).setValues([novosDados]);
+  
+  return { sucesso: true };
+}
+
 function importarListaInteligente(nomeEvento, matrizDados, temCabecalho) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(nomeEvento);
-  if (!sheet) throw new Error("Evento não encontrado");
   
   let colunasAtuais = sheet.getDataRange().getValues()[0] || [];
   let dadosParaInserir = matrizDados;
@@ -152,7 +148,6 @@ function importarListaInteligente(nomeEvento, matrizDados, temCabecalho) {
       }
     });
   }
-
   if (!colunasAtuais.includes("Status")) {
     const novaColIndex = colunasAtuais.length + 1;
     sheet.getRange(1, novaColIndex).setValue("Status").setFontWeight("bold");
@@ -180,53 +175,43 @@ function importarListaInteligente(nomeEvento, matrizDados, temCabecalho) {
   return { sucesso: true, qtd: matrizFinal.length };
 }
 
-// --- FUNÇÕES DO CONVIDADO (RSVP) ---
-
+// --- CONVIDADO ---
 function buscarConvidado(nomeEvento, nomeBusca) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(nomeEvento);
-  if (!sheet) throw new Error("Evento não encontrado (verifique o link).");
+  if (!sheet) throw new Error("Evento não encontrado.");
 
   const data = sheet.getDataRange().getValues();
+  if (data.length < 2) return { sucesso: true, encontrado: false };
+
   const headers = data[0];
   const linhas = data.slice(1);
   const nomeLimpo = nomeBusca.toLowerCase().trim();
 
-  // Procura o nome (busca simples por "contém")
-  // Retorna a primeira ocorrência encontrada
   for (let i = 0; i < linhas.length; i++) {
     const row = linhas[i];
-    // Assume que o Nome é a primeira coluna (índice 0)
     if (row[0].toString().toLowerCase().includes(nomeLimpo)) {
       return {
         sucesso: true,
         encontrado: true,
         nomeCompleto: row[0],
-        linha: i + 2, // +2 porque pula cabeçalho e array começa em 0
+        linha: i + 2,
         colunas: headers,
         dadosAtuais: row
       };
     }
   }
-
   return { sucesso: true, encontrado: false };
 }
 
 function salvarResposta(nomeEvento, linha, respostas) {
   const ss = getSpreadsheet();
   const sheet = ss.getSheetByName(nomeEvento);
-  
-  // Atualiza as colunas necessárias
-  // respostas é um objeto: { "Status": "Confirmado", "Alergia": "Gluten" }
-  
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   
   for (const [coluna, valor] of Object.entries(respostas)) {
     const colIndex = headers.indexOf(coluna);
-    if (colIndex > -1) {
-      sheet.getRange(linha, colIndex + 1).setValue(valor);
-    }
+    if (colIndex > -1) sheet.getRange(linha, colIndex + 1).setValue(valor);
   }
-  
   return { sucesso: true };
 }
