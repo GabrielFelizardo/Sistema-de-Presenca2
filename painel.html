@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Eventos - Admin</title>
+    <title>Gestor de Eventos - Master</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -14,22 +14,33 @@
     <style>
         :root { --primary-blue: #1e3a8a; --primary-light: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
         body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
-        .sidebar { height: 100vh; background: white; border-right: 1px solid #dee2e6; position: fixed; width: 250px; z-index: 100; }
+        .sidebar { height: 100vh; background: white; border-right: 1px solid #dee2e6; position: fixed; width: 250px; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
         .content { margin-left: 250px; padding: 30px; }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; }
-        .card-stat { border: none; border-radius: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .nav-tabs .nav-link { color: #495057; border: none; border-bottom: 3px solid transparent; }
-        .nav-tabs .nav-link.active { color: var(--primary-light); font-weight: bold; border-bottom: 3px solid var(--primary-light); }
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
-        .toast-notification { background: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); margin-bottom: 10px; display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s; }
-        @keyframes slideIn { from { transform: translateX(400px); } to { transform: translateX(0); } }
-        .toolbar-massa { background: #eff6ff; border-left: 4px solid var(--primary-blue); padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; }
-        .ocultar-pdf { display: table-cell; }
-        .btn-action { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; }
+        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; backdrop-filter: blur(4px); }
         
-        /* NOVO: Estilo para lista de colunas */
-        .lista-colunas-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid #eee; }
-        .lista-colunas-item:last-child { border-bottom: none; }
+        /* Cards & Tabs */
+        .card-stat { border: none; border-radius: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        .card-stat:hover { transform: translateY(-4px); }
+        .stat-icon { font-size: 2.5rem; opacity: 0.15; position: absolute; right: 15px; top: 15px; }
+        .nav-tabs .nav-link { color: #495057; border: none; border-bottom: 3px solid transparent; padding: 12px 20px; transition: all 0.2s; }
+        .nav-tabs .nav-link.active { color: var(--primary-light); font-weight: bold; border-bottom: 3px solid var(--primary-light); }
+        
+        /* Toolbar */
+        .toolbar-massa { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 4px solid var(--primary-blue); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: none; }
+        .check-convidado { cursor: pointer; width: 18px; height: 18px; }
+        
+        /* PDF Helper */
+        .ocultar-pdf { display: table-cell; }
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
+        .toast-notification { background: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; animation: slideIn 0.3s; }
+        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+        
+        .toast-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
+        .toast-icon.success { background: var(--success); }
+        .toast-icon.error { background: var(--danger); }
+        .toast-icon.warning { background: var(--warning); }
+        
+        .list-group-item-action { cursor: pointer; }
     </style>
 </head>
 <body>
@@ -40,89 +51,115 @@
 <div class="sidebar p-4 d-flex flex-column">
     <h5 class="text-primary mb-4 fw-bold"><i class="fas fa-calendar-check me-2"></i>Gestor RSVP</h5>
     <div class="d-grid gap-2">
-        <button class="btn btn-light active fw-semibold text-start" onclick="mostrarTela('dashboard')"><i class="fas fa-chart-pie me-2"></i>Dashboard</button>
-        <button class="btn btn-light fw-semibold text-start" onclick="mostrarTela('novo')"><i class="fas fa-plus me-2"></i>Novo Evento</button>
+        <button class="btn btn-light active fw-semibold text-start" onclick="mostrarTela('dashboard')"><i class="fas fa-chart-pie me-2 text-primary"></i>Dashboard</button>
+        <button class="btn btn-light fw-semibold text-start" onclick="mostrarTela('novo')"><i class="fas fa-plus me-2 text-success"></i>Novo Evento</button>
     </div>
-    <div class="mt-auto text-muted small pt-3 border-top">v14.0 - Mailchimp & Config</div>
+    <div class="mt-auto text-muted small pt-3 border-top">v14.0 - Master</div>
 </div>
 
 <div class="content">
+    
     <div id="tela-dashboard">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <div class="d-flex align-items-center gap-3">
-                <h3 class="fw-bold text-dark m-0">Painel de Controle</h3>
-                <button class="btn btn-light shadow-sm" onclick="abrirModalConfig()" title="Configurações do Evento">
-                    <i class="fas fa-cog text-secondary"></i>
+            <h3 class="fw-bold text-dark m-0">Painel de Controle</h3>
+            <div>
+                <button class="btn btn-light text-secondary me-2" onclick="abrirModalConfig()" title="Configurações do Evento">
+                    <i class="fas fa-cog"></i>
+                </button>
+                <button class="btn btn-light text-secondary" onclick="carregarEventoEspecifico(eventoAtual)" title="Atualizar">
+                    <i class="fas fa-sync-alt"></i>
                 </button>
             </div>
-            <button class="btn btn-light text-secondary" onclick="carregarEventoEspecifico(eventoAtual)" title="Atualizar"><i class="fas fa-sync-alt"></i></button>
         </div>
 
-        <div class="d-flex align-items-center mb-4">
-            <ul class="nav nav-tabs flex-grow-1" id="tab-lista-eventos"><li class="nav-item"><a class="nav-link disabled">Carregando...</a></li></ul>
-        </div>
+        <ul class="nav nav-tabs mb-4 flex-grow-1" id="tab-lista-eventos">
+            <li class="nav-item"><a class="nav-link disabled">Carregando...</a></li>
+        </ul>
 
         <div id="area-stats" style="display:none;">
             <div class="row mb-4 g-3">
-                <div class="col-md-3"><div class="card card-stat bg-white text-dark p-3"><h6 class="text-muted small fw-bold">Total</h6><h2 class="fw-bold mb-0" id="stat-total">0</h2></div></div>
-                <div class="col-md-3"><div class="card card-stat bg-success text-white p-3"><h6 class="text-white-50 small fw-bold">Confirmados</h6><h2 class="fw-bold mb-0" id="stat-confirmados">0</h2></div></div>
-                <div class="col-md-3"><div class="card card-stat bg-warning text-dark p-3"><h6 class="text-muted small fw-bold">Pendentes</h6><h2 class="fw-bold mb-0" id="stat-pendentes">0</h2></div></div>
-                <div class="col-md-3"><div class="card card-stat bg-danger text-white p-3"><h6 class="text-white-50 small fw-bold">Recusados</h6><h2 class="fw-bold mb-0" id="stat-recusados">0</h2></div></div>
+                <div class="col-md-3"><div class="card card-stat bg-white text-dark"><div class="card-body position-relative"><i class="fas fa-users stat-icon text-primary"></i><h6 class="text-uppercase text-muted small fw-bold">Total</h6><h2 class="fw-bold mb-0" id="stat-total">0</h2></div></div></div>
+                <div class="col-md-3"><div class="card card-stat bg-success text-white"><div class="card-body position-relative"><i class="fas fa-check-circle stat-icon text-white"></i><h6 class="text-uppercase text-white-50 small fw-bold">Confirmados</h6><h2 class="fw-bold mb-0" id="stat-confirmados">0</h2></div></div></div>
+                <div class="col-md-3"><div class="card card-stat bg-warning text-dark"><div class="card-body position-relative"><i class="fas fa-clock stat-icon text-dark"></i><h6 class="text-uppercase text-muted small fw-bold">Pendentes</h6><h2 class="fw-bold mb-0" id="stat-pendentes">0</h2></div></div></div>
+                <div class="col-md-3"><div class="card card-stat bg-danger text-white"><div class="card-body position-relative"><i class="fas fa-times-circle stat-icon text-white"></i><h6 class="text-uppercase text-white-50 small fw-bold">Recusados</h6><h2 class="fw-bold mb-0" id="stat-recusados">0</h2></div></div></div>
+            </div>
+            
+            <div class="row mb-4 justify-content-center">
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm rounded-4">
+                        <div class="card-body text-center">
+                            <h6 class="text-muted mb-3">Visão Geral</h6>
+                            <div style="height: 200px; position: relative;"><canvas id="meuGrafico"></canvas></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div id="toolbar-massa" class="toolbar-massa">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                <div><strong><span id="count-selecionados">0</span> selecionados</strong></div>
+                <strong><i class="fas fa-check-square me-2"></i><span id="count-selecionados">0</span> selecionados</strong>
                 <div class="btn-group">
                     <button class="btn btn-sm btn-success" onclick="atualizarEmMassa('Confirmado')">Confirmar</button>
+                    <button class="btn btn-sm btn-warning" onclick="atualizarEmMassa('Pendente')">Pendente</button>
                     <button class="btn btn-sm btn-danger" onclick="atualizarEmMassa('Não vai')">Recusar</button>
                 </div>
-                <button id="btn-email-massa" class="btn btn-sm btn-primary" onclick="abrirModalEmail()" style="display:none;">
-                    <i class="fas fa-envelope me-1"></i> Enviar Convites
+                
+                <button id="btn-massa-email" class="btn btn-sm btn-primary" style="display:none;" onclick="abrirModalEmail()">
+                    <i class="fas fa-envelope me-1"></i>Enviar Convite
                 </button>
+
                 <button class="btn btn-sm btn-light" onclick="limparSelecao()">Limpar</button>
             </div>
         </div>
 
-        <div class="card shadow-sm border-0" style="border-radius: 16px;">
+        <div class="card shadow-sm border-0 rounded-4">
             <div class="card-body p-4">
-                <div class="d-flex justify-content-between mb-4 align-items-center pb-3 flex-wrap gap-3">
-                    <h5 class="m-0 text-muted fw-semibold" id="titulo-tabela">Detalhes</h5>
+                <div class="d-flex justify-content-between mb-4 align-items-center flex-wrap gap-3">
+                    <div class="input-group" style="max-width: 300px;">
+                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search"></i></span>
+                        <input type="text" id="busca-rapida" class="form-control border-start-0" placeholder="Buscar..." onkeyup="filtrarTabela()">
+                    </div>
+                    
                     <div id="toolbar-acoes" style="display:none;">
                         <div class="btn-group me-2">
-                            <button class="btn btn-outline-danger" onclick="gerarPDF()"><i class="fas fa-file-pdf"></i></button>
-                            <button class="btn btn-outline-success" onclick="gerarExcel()"><i class="fas fa-file-excel"></i></button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="gerarPDF()">PDF</button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="gerarExcel()">XLS</button>
                         </div>
-                        <button class="btn btn-outline-primary me-2" onclick="abrirModalLink()"><i class="fas fa-qrcode me-2"></i> Link</button>
-                        <button class="btn btn-success me-2" onclick="abrirModalImport()"><i class="fas fa-file-import"></i></button>
-                        <button class="btn btn-primary" onclick="abrirModalAdd()"><i class="fas fa-plus"></i></button>
+                        <button class="btn btn-outline-primary btn-sm me-2" onclick="abrirModalLink()"><i class="fas fa-qrcode me-1"></i>Link</button>
+                        <button class="btn btn-success btn-sm me-2" onclick="abrirModalImport()"><i class="fas fa-file-excel me-1"></i>Importar</button>
+                        <button class="btn btn-primary btn-sm" onclick="abrirModalAdd()"><i class="fas fa-plus me-1"></i>Novo</button>
                     </div>
                 </div>
+
                 <div id="container-tabela-exportar" class="table-responsive">
-                    <table class="table table-hover align-middle" id="tabela-dados"><thead></thead><tbody></tbody></table>
+                    <table class="table table-hover align-middle" id="tabela-dados">
+                        <thead></thead><tbody></tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="tela-novo" style="display:none;">
-        <h3 class="mb-4">Novo Evento</h3>
-        <div class="card shadow-sm border-0 p-4" style="max-width: 600px;">
+        <h3 class="mb-4">Criar Novo Evento</h3>
+        <div class="card shadow-sm border-0 rounded-4 p-4" style="max-width: 600px;">
             <form onsubmit="handleCriarEvento(event)">
-                <div class="mb-3"><label class="fw-bold">Nome</label><input type="text" id="novo-nome" class="form-control" required></div>
-                <div class="mb-3"><label class="fw-bold">Tipo</label>
-                    <select class="form-select" id="novo-tipo-select" onchange="toggleAreaImportacao(this.value === 'Importar')">
-                        <option value="Casamento">Casamento</option>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nome</label>
+                    <input type="text" id="novo-nome" class="form-control" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Modelo</label>
+                    <select id="novo-tipo" class="form-select mb-2" onchange="toggleAreaImportacao(this.value === 'Importar')">
+                        <option value="Casamento">Casamento (com E-mail)</option>
                         <option value="Corporativo">Corporativo</option>
                         <option value="Basico">Básico</option>
-                        <option value="Importar">Importar Excel</option>
+                        <option value="Importar">Importar do Excel</option>
                     </select>
+                    <textarea id="texto-criacao-import" class="form-control" rows="5" style="display:none;" placeholder="Cole aqui..."></textarea>
                 </div>
-                <div id="area-importacao-criacao" class="mb-3" style="display:none;">
-                    <textarea id="texto-criacao-import" class="form-control" rows="5" placeholder="Cole dados..."></textarea>
-                </div>
-                <button type="submit" class="btn btn-primary w-100">Criar</button>
+                <button class="btn btn-primary w-100">Criar</button>
             </form>
         </div>
     </div>
@@ -132,142 +169,125 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-light">
-                <h5 class="modal-title"><i class="fas fa-cog me-2"></i>Configurações do Evento</h5>
+                <h5 class="modal-title">Configurações</h5>
                 <button class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Renomear Evento</label>
-                    <div class="input-group">
-                        <input type="text" id="config-novo-nome" class="form-control">
-                        <button class="btn btn-outline-primary" onclick="renomearEventoAtual()">Salvar</button>
-                    </div>
-                    <div class="form-text text-danger">Atenção: Links antigos enviados podem parar de funcionar.</div>
+                <h6 class="fw-bold">Renomear Evento</h6>
+                <div class="input-group mb-4">
+                    <input type="text" id="input-renomear" class="form-control">
+                    <button class="btn btn-outline-primary" onclick="salvarRenomeacao()">Salvar</button>
                 </div>
-                <hr>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Gerenciar Colunas</label>
-                    <div id="lista-colunas-config" class="border rounded mb-3" style="max-height: 200px; overflow-y: auto;"></div>
-                    
-                    <div class="input-group">
-                        <input type="text" id="nova-coluna-nome" class="form-control" placeholder="Nova Coluna (ex: Email)">
-                        <button class="btn btn-success" onclick="adicionarColuna()">Adicionar</button>
-                    </div>
+                
+                <h6 class="fw-bold">Gerenciar Colunas</h6>
+                <div class="input-group mb-2">
+                    <input type="text" id="input-nova-coluna" class="form-control" placeholder="Nova Coluna (Ex: Empresa)">
+                    <button class="btn btn-outline-success" onclick="addColuna()">Adicionar</button>
                 </div>
+                <ul class="list-group" id="lista-colunas-config"></ul>
             </div>
         </div>
     </div>
 </div>
 
 <div class="modal fade" id="modalEmail" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title"><i class="fas fa-paper-plane me-2"></i>Enviar Convites</h5>
                 <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="alert alert-info">
-                    Você enviará e-mails para <strong><span id="email-count-destinatarios">0</span></strong> pessoas.
+                <p class="text-muted small">Serão enviados e-mails para os contatos selecionados que possuam endereço válido.</p>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Assunto</label>
+                    <input type="text" id="email-assunto" class="form-control" value="Convite para {Nome}">
                 </div>
                 <div class="mb-3">
-                    <label class="form-label">Assunto</label>
-                    <input type="text" id="email-assunto" class="form-control" value="Convite para {Evento}">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Mensagem</label>
-                    <textarea id="email-mensagem" class="form-control" rows="6">Olá {Nome},
+                    <label class="form-label fw-bold">Mensagem</label>
+                    <textarea id="email-mensagem" class="form-control" rows="5">Olá {Nome},
 
-Você foi convidado para {Evento}!
-Por favor, confirme sua presença no link abaixo:
-
+Gostaríamos muito da sua presença!
+Confirme no link abaixo:
 {Link}
 
-Esperamos você!</textarea>
-                    <div class="form-text">Variáveis disponíveis: {Nome}, {Evento}, {Link}</div>
+Atenciosamente.</textarea>
+                    <div class="form-text">Use {Nome} e {Link} onde quiser que apareçam.</div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-primary" onclick="enviarEmailsConfirmar()">
-                    <i class="fas fa-paper-plane me-1"></i> Enviar Agora
-                </button>
+                <button class="btn btn-primary" onclick="processarEnvioEmails()">Enviar Agora</button>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="modalLink" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Link & QR</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><div id="qrcode" class="mb-3"></div><input type="text" id="input-link-gerado" class="form-control text-center mb-2" readonly><button class="btn btn-outline-primary w-100" onclick="copiarTextoLink()">Copiar Link</button></div></div></div></div>
+<div class="modal fade" id="modalLink" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Link</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><div id="qrcode"></div><input type="text" id="input-link-gerado" class="form-control mt-3 mb-2" readonly><button class="btn btn-primary btn-sm" onclick="copiarTextoLink()">Copiar</button> <a id="btn-abrir-link" href="#" target="_blank" class="btn btn-light btn-sm">Abrir</a></div></div></div></div>
 <div class="modal fade" id="modalEditar" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-warning"><h5 class="modal-title">Editar</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="edit-linha-index"><div id="form-editar-dinamico"></div></div><div class="modal-footer"><button class="btn btn-warning" onclick="salvarEdicao()">Salvar</button></div></div></div></div>
 <div class="modal fade" id="modalAdd" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Adicionar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body" id="form-dinamico"></div><div class="modal-footer"><button class="btn btn-primary" onclick="enviarConvidado()">Salvar</button></div></div></div></div>
 <div class="modal fade" id="modalImport" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title">Importar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="check-headers" checked><label class="form-check-label">1ª linha é cabeçalho</label></div><textarea id="texto-importacao" class="form-control" rows="8"></textarea></div><div class="modal-footer"><button class="btn btn-success" onclick="processarImportacao()">Processar</button></div></div></div></div>
-<div class="modal fade" id="modalConfirmacao" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-body text-center p-4"><h4 id="confirm-titulo">Confirmar?</h4><p class="text-muted" id="confirm-mensagem"></p><div class="d-flex gap-2 mt-4"><button class="btn btn-light w-50" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-danger w-50" id="confirm-btn-ok">Confirmar</button></div></div></div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ============================================================
-    // ⚙️ CONFIGURAÇÃO
-    // ============================================================
-    const API_URL = "https://script.google.com/macros/s/AKfycbznlB0UzqjzlkneSPFv1mi_0Jqqtv6DkZsbPctw28isyZvAwyXOBv2tHnQUl1SM1QQ/exec"; 
+    // CONFIGURAÇÃO
+    const API_URL = "COLE_AQUI_A_SUA_URL_DO_GOOGLE_SCRIPT_QUE_TERMINA_EM_EXEC"; 
     const GITHUB_PAGES_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
 
-    // ============================================================
-
     let colunasAtuais = [];
-    let dadosEventoAtual = []; 
+    let dadosEventoAtual = [];
     let eventoAtual = "";
     let graficoInstance = null;
     let convidadosSelecionados = [];
 
     document.addEventListener('DOMContentLoaded', () => { carregarLista(); });
 
-    function mostrarToast(mensagem, tipo = 'success') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        toast.className = `toast-notification border-start border-5 border-${tipo === 'success' ? 'success' : 'danger'}`;
-        toast.innerHTML = `<span class="fw-bold">${tipo === 'success' ? '✓' : '✕'}</span> <span>${mensagem}</span>`;
-        container.appendChild(toast);
-        setTimeout(() => toast.remove(), 3500);
-    }
-
-    function confirmarAcao(titulo, mensagem) {
-        return new Promise((resolve) => {
-            document.getElementById('confirm-titulo').innerText = titulo;
-            document.getElementById('confirm-mensagem').innerText = mensagem;
-            const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
-            document.getElementById('confirm-btn-ok').onclick = () => { modal.hide(); resolve(true); };
-            document.getElementById('modalConfirmacao').addEventListener('hidden.bs.modal', () => resolve(false), { once: true });
-            modal.show();
-        });
+    function mostrarToast(msg, tipo='success') {
+        const div = document.getElementById('toast-container');
+        const el = document.createElement('div');
+        el.className = 'toast-notification';
+        el.innerHTML = `<div class="toast-icon ${tipo}"></div> ${msg}`;
+        div.appendChild(el);
+        setTimeout(() => el.remove(), 3000);
     }
 
     async function chamarAPI(acao, dados = {}) {
         document.getElementById('loading').style.display = 'flex';
         try {
-            const response = await fetch(API_URL, { method: 'POST', headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify({ acao, ...dados }) });
-            const json = await response.json();
+            const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao, ...dados }) });
+            const j = await r.json();
             document.getElementById('loading').style.display = 'none';
-            if (json.erro) { mostrarToast(json.erro, "error"); return null; }
-            return json;
+            if (j.erro) { mostrarToast(j.erro, 'error'); return null; }
+            return j;
         } catch (e) {
             document.getElementById('loading').style.display = 'none';
-            mostrarToast("Erro de conexão.", "error"); return null;
+            mostrarToast("Erro de conexão", 'error');
+            return null;
         }
     }
 
+    // --- CARREGAMENTO ---
     async function carregarLista() {
         const dados = await chamarAPI('listarEventos');
         if (!dados) return;
-        const tabContainer = document.getElementById('tab-lista-eventos');
-        tabContainer.innerHTML = ''; 
-        if (dados.length === 0) { tabContainer.innerHTML = '<li class="nav-item"><a class="nav-link disabled">Nenhum evento</a></li>'; return; }
-        dados.forEach((ev, index) => {
+        const ul = document.getElementById('tab-lista-eventos');
+        ul.innerHTML = '';
+        if(dados.length === 0) { ul.innerHTML = '<li class="nav-item"><a class="nav-link disabled">Vazio</a></li>'; return; }
+        
+        dados.forEach((ev, idx) => {
             const li = document.createElement('li'); li.className = 'nav-item';
-            const btn = document.createElement('button'); btn.className = index === 0 ? 'nav-link active' : 'nav-link';
-            btn.innerText = ev.nome; btn.onclick = () => { document.querySelectorAll('#tab-lista-eventos .nav-link').forEach(el => el.classList.remove('active')); btn.classList.add('active'); carregarEventoEspecifico(ev.nome); };
-            li.appendChild(btn); tabContainer.appendChild(li);
+            const a = document.createElement('button');
+            a.className = idx === 0 ? 'nav-link active' : 'nav-link';
+            a.innerText = ev.nome;
+            a.onclick = () => {
+                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
+                a.classList.add('active');
+                carregarEventoEspecifico(ev.nome);
+            };
+            li.appendChild(a);
+            ul.appendChild(li);
         });
-        if (dados.length > 0) carregarEventoEspecifico(dados[0].nome);
+        if(dados.length > 0) carregarEventoEspecifico(dados[0].nome);
     }
 
     async function carregarEventoEspecifico(nome) {
@@ -275,196 +295,189 @@ Esperamos você!</textarea>
         eventoAtual = nome;
         const dados = await chamarAPI('obterDadosEvento', { nomeEvento: nome });
         if (!dados) return;
+        
         colunasAtuais = dados.headers;
         dadosEventoAtual = dados.rows;
         convidadosSelecionados = [];
         
-        // Verifica se tem Email para habilitar botão
-        verificarColunaEmail();
-
-        atualizarDashboard(dados.headers, dados.rows);
         renderizarTabela(dados.headers, dados.rows);
+        atualizarDashboard(dados.headers, dados.rows);
+        
+        // Verifica se existe coluna de email para mostrar botão
+        const temEmail = dados.headers.some(h => h.toLowerCase() === 'email' || h.toLowerCase() === 'e-mail');
+        document.getElementById('btn-massa-email').style.display = temEmail ? 'inline-block' : 'none';
+        
         document.getElementById('toolbar-acoes').style.display = 'block';
-        document.getElementById('area-stats').style.display = 'block';
+        document.getElementById('toolbar-massa').style.display = 'none';
     }
 
-    // --- LÓGICA DE E-MAIL (NOVO) ---
-    function verificarColunaEmail() {
-        const temEmail = colunasAtuais.includes("Email");
-        const btnMassa = document.getElementById('btn-email-massa');
-        if (temEmail) btnMassa.style.display = 'inline-block';
-        else btnMassa.style.display = 'none';
-    }
-
-    function abrirModalEmail() {
-        if (convidadosSelecionados.length === 0) { mostrarToast("Selecione alguém na lista.", "warning"); return; }
-        document.getElementById('email-count-destinatarios').innerText = convidadosSelecionados.length;
-        // Atualiza template com nome do evento
-        let assunto = document.getElementById('email-assunto').value;
-        if(assunto.includes('{Evento}')) document.getElementById('email-assunto').value = assunto.replace('{Evento}', eventoAtual);
+    // --- TABELA E CHECKBOXES ---
+    function renderizarTabela(headers, rows) {
+        const thead = document.querySelector('#tabela-dados thead');
+        const tbody = document.querySelector('#tabela-dados tbody');
         
-        new bootstrap.Modal(document.getElementById('modalEmail')).show();
-    }
-
-    async function enviarEmailsConfirmar() {
-        const assunto = document.getElementById('email-assunto').value;
-        const mensagem = document.getElementById('email-mensagem').value;
+        let headHTML = `<tr><th class="ocultar-pdf"><input type="checkbox" onchange="selecionarTodos(this.checked)"></th>`;
+        headers.forEach(h => headHTML += `<th>${h}</th>`);
+        headHTML += `<th class="text-center ocultar-pdf">Ações</th></tr>`;
+        thead.innerHTML = headHTML;
         
-        bootstrap.Modal.getInstance(document.getElementById('modalEmail')).hide();
-        
-        const res = await chamarAPI('enviarConvitesEmMassa', { 
-            nomeEvento: eventoAtual, 
-            indices: convidadosSelecionados,
-            assunto: assunto,
-            mensagem: mensagem,
-            linkBase: GITHUB_PAGES_URL
-        });
-
-        if (res && res.sucesso) {
-            mostrarToast(`Sucesso! ${res.enviados} enviados. ${res.erros} erros.`, "success");
-            limparSelecao();
+        if (rows.length === 0) tbody.innerHTML = `<tr><td colspan="${headers.length + 2}" class="text-center p-4">Vazio</td></tr>`;
+        else {
+            let bodyHTML = "";
+            rows.forEach((row, i) => {
+                bodyHTML += `<tr><td class="ocultar-pdf"><input type="checkbox" class="check-convidado" data-index="${i}" onchange="toggleSelecao(${i})"></td>`;
+                row.forEach(cell => bodyHTML += `<td>${cell}</td>`);
+                bodyHTML += `<td class="text-center ocultar-pdf">
+                    <button class="btn btn-sm btn-light text-primary" onclick="abrirModalEditar(${i})"><i class="fas fa-pen"></i></button>
+                    <button class="btn btn-sm btn-light text-danger" onclick="confirmarExclusao(${i})"><i class="fas fa-trash"></i></button>
+                </td></tr>`;
+            });
+            tbody.innerHTML = bodyHTML;
         }
+    }
+
+    function selecionarTodos(chk) {
+        document.querySelectorAll('.check-convidado').forEach(c => {
+            c.checked = chk;
+            const idx = parseInt(c.dataset.index);
+            if(chk && !convidadosSelecionados.includes(idx)) convidadosSelecionados.push(idx);
+        });
+        if(!chk) convidadosSelecionados = [];
+        atualizarToolbarMassa();
+    }
+
+    function toggleSelecao(idx) {
+        const chk = document.querySelector(`.check-convidado[data-index="${idx}"]`);
+        if(chk.checked) convidadosSelecionados.push(idx);
+        else convidadosSelecionados = convidadosSelecionados.filter(i => i !== idx);
+        atualizarToolbarMassa();
+    }
+
+    function atualizarToolbarMassa() {
+        const div = document.getElementById('toolbar-massa');
+        div.style.display = convidadosSelecionados.length > 0 ? 'block' : 'none';
+        document.getElementById('count-selecionados').innerText = convidadosSelecionados.length;
+    }
+
+    async function atualizarEmMassa(status) {
+        if(!confirm(`Mudar ${convidadosSelecionados.length} para ${status}?`)) return;
+        const indexStatus = colunasAtuais.indexOf("Status");
+        if(indexStatus === -1) return alert("Sem coluna Status!");
+        
+        for (const idx of convidadosSelecionados) {
+            const novos = [...dadosEventoAtual[idx]];
+            novos[indexStatus] = status;
+            await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: idx + 2, novosDados: novos });
+        }
+        carregarEventoEspecifico(eventoAtual);
+    }
+
+    function limparSelecao() {
+        convidadosSelecionados = [];
+        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+        atualizarToolbarMassa();
     }
 
     // --- CONFIGURAÇÕES (NOVO) ---
     function abrirModalConfig() {
-        document.getElementById('config-novo-nome').value = eventoAtual;
-        renderizarListaColunasConfig();
+        document.getElementById('input-renomear').value = eventoAtual;
+        const ul = document.getElementById('lista-colunas-config');
+        ul.innerHTML = '';
+        colunasAtuais.forEach(col => {
+            ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
+                ${col} <button class="btn btn-sm btn-outline-danger" onclick="rmColuna('${col}')"><i class="fas fa-trash"></i></button>
+            </li>`;
+        });
         new bootstrap.Modal(document.getElementById('modalConfig')).show();
     }
 
-    function renderizarListaColunasConfig() {
-        const container = document.getElementById('lista-colunas-config');
-        container.innerHTML = "";
-        colunasAtuais.forEach(col => {
-            const div = document.createElement('div');
-            div.className = 'lista-colunas-item';
-            div.innerHTML = `<span>${col}</span>`;
-            
-            // Impede deletar colunas vitais
-            if (!['Nome', 'Status'].includes(col)) {
-                div.innerHTML += `<button class="btn btn-sm btn-outline-danger" onclick="removerColuna('${col}')"><i class="fas fa-trash"></i></button>`;
-            }
-            container.appendChild(div);
-        });
-    }
-
-    async function renomearEventoAtual() {
-        const novoNome = document.getElementById('config-novo-nome').value.trim();
-        if (!novoNome || novoNome === eventoAtual) return;
-        
-        if (!await confirmarAcao("Renomear Evento?", "Links antigos podem parar de funcionar.")) return;
-
-        const res = await chamarAPI('renomearEvento', { antigoNome: eventoAtual, novoNome: novoNome });
-        if (res && res.sucesso) {
+    async function salvarRenomeacao() {
+        const novo = document.getElementById('input-renomear').value;
+        if(!novo || novo === eventoAtual) return;
+        const res = await chamarAPI('renomearEvento', { nomeAntigo: eventoAtual, nomeNovo: novo });
+        if(res && res.sucesso) {
             bootstrap.Modal.getInstance(document.getElementById('modalConfig')).hide();
-            mostrarToast("Renomeado com sucesso! Recarregando...", "success");
-            setTimeout(() => carregarLista(), 1500);
+            carregarLista();
         }
     }
 
-    async function adicionarColuna() {
-        const novaCol = document.getElementById('nova-coluna-nome').value.trim();
-        if (!novaCol) return;
-        const res = await chamarAPI('gerenciarColuna', { nomeEvento: eventoAtual, tipo: 'adicionar', nomeColuna: novaCol });
-        if (res && res.sucesso) {
-            document.getElementById('nova-coluna-nome').value = "";
-            carregarEventoEspecifico(eventoAtual); // Recarrega tudo
-            bootstrap.Modal.getInstance(document.getElementById('modalConfig')).hide(); // Fecha config para atualizar dados
-            mostrarToast("Coluna adicionada!", "success");
-        }
+    async function addColuna() {
+        const col = document.getElementById('input-nova-coluna').value;
+        if(!col) return;
+        const res = await chamarAPI('adicionarColuna', { nomeEvento: eventoAtual, novaColuna: col });
+        if(res && res.sucesso) { abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }
     }
 
-    async function removerColuna(nomeCol) {
-        if (!await confirmarAcao(`Apagar coluna "${nomeCol}"?`, "Todos os dados desta coluna serão perdidos!")) return;
-        const res = await chamarAPI('gerenciarColuna', { nomeEvento: eventoAtual, tipo: 'remover', nomeColuna: nomeCol });
-        if (res && res.sucesso) {
-            carregarEventoEspecifico(eventoAtual);
-            bootstrap.Modal.getInstance(document.getElementById('modalConfig')).hide();
-            mostrarToast("Coluna removida.", "success");
-        }
+    async function rmColuna(col) {
+        if(!confirm(`ATENÇÃO: Apagar '${col}' deletará TODOS os dados dessa coluna.\nContinuar?`)) return;
+        const res = await chamarAPI('removerColuna', { nomeEvento: eventoAtual, nomeColuna: col });
+        if(res && res.sucesso) { abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }
     }
 
-    // --- FUNÇÕES BÁSICAS (Dashboard, Tabela, Etc) ---
-    function atualizarDashboard(h, r) { /* (Mantido igual à V13) */
-        const iS = h.indexOf('Status'); let c=0, p=0, rec=0, t=r.length;
-        if(iS>-1) r.forEach(x=>{ let s=x[iS]||"Pendente"; if(s==='Confirmado')c++; else if(s==='Não vai')rec++; else p++; }); else p=t;
-        document.getElementById('stat-total').innerText=t; document.getElementById('stat-confirmados').innerText=c; document.getElementById('stat-pendentes').innerText=p; document.getElementById('stat-recusados').innerText=rec;
-        const ctx=document.getElementById('meuGrafico').getContext('2d'); if(graficoInstance)graficoInstance.destroy();
-        graficoInstance=new Chart(ctx,{type:'doughnut',data:{labels:['Confirmados','Pendentes','Recusados'],datasets:[{data:[c,p,rec],backgroundColor:['#10b981','#f59e0b','#ef4444'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom'}}}});
+    // --- EMAIL (NOVO) ---
+    function abrirModalEmail() {
+        new bootstrap.Modal(document.getElementById('modalEmail')).show();
     }
 
-    function renderizarTabela(headers, rows) {
-        const thead = document.querySelector('#tabela-dados thead');
-        const tbody = document.querySelector('#tabela-dados tbody');
-        let headerHTML = "<tr><th class='ocultar-pdf' style='width: 40px;'><input type='checkbox' onchange='selecionarTodos(this.checked)'></th>";
-        headers.forEach(h => headerHTML += `<th>${h}</th>`);
-        headerHTML += `<th class="text-center ocultar-pdf" style="width: 100px;">Ações</th></tr>`;
-        thead.innerHTML = headerHTML;
+    async function processarEnvioEmails() {
+        const assunto = document.getElementById('email-assunto').value;
+        const mensagem = document.getElementById('email-mensagem').value;
+        const linkBase = `${GITHUB_PAGES_URL}index.html`; // Base do link do convidado
         
-        if (rows.length === 0) { tbody.innerHTML = `<tr><td colspan="${headers.length + 2}" class="text-center p-5 text-muted">Vazio</td></tr>`; return; }
-        
-        const statusBadges = { 'Confirmado': '<span class="badge bg-success">Confirmado</span>', 'Pendente': '<span class="badge bg-warning text-dark">Pendente</span>', 'Não vai': '<span class="badge bg-danger">Não vai</span>' };
-        const indexStatus = headers.indexOf('Status');
-        
-        let bodyHTML = "";
-        rows.forEach((row, index) => {
-            bodyHTML += "<tr>";
-            bodyHTML += `<td class="ocultar-pdf"><input type="checkbox" class="check-convidado" data-index="${index}" onchange="toggleSelecao(${index})"></td>`;
-            row.forEach((cell, colIndex) => {
-                if (colIndex === indexStatus && statusBadges[cell]) bodyHTML += `<td>${statusBadges[cell]}</td>`;
-                else bodyHTML += `<td>${cell}</td>`;
-            });
-            bodyHTML += `<td class="text-center ocultar-pdf">
-                <button class="btn btn-light btn-action text-primary me-1" onclick="abrirModalEditar(${index})"><i class="fas fa-pen"></i></button>
-                <button class="btn btn-light btn-action text-danger" onclick="confirmarExclusao(${index})"><i class="fas fa-trash"></i></button>
-            </td></tr>`;
+        // Passa indices selecionados
+        const res = await chamarAPI('enviarEmails', {
+            nomeEvento: eventoAtual,
+            indices: convidadosSelecionados,
+            assunto: assunto,
+            mensagem: mensagem,
+            linkBase: linkBase
         });
-        tbody.innerHTML = bodyHTML;
-    }
 
-    // --- SELEÇÃO EM MASSA ---
-    function selecionarTodos(c) { convidadosSelecionados=[]; document.querySelectorAll('.check-convidado').forEach(cb=>{cb.checked=c; if(c)convidadosSelecionados.push(parseInt(cb.dataset.index));}); atualizarToolbarMassa(); }
-    function toggleSelecao(i) { const cb=document.querySelector(`.check-convidado[data-index="${i}"]`); if(cb.checked){if(!convidadosSelecionados.includes(i))convidadosSelecionados.push(i);}else{convidadosSelecionados=convidadosSelecionados.filter(x=>x!==i);} atualizarToolbarMassa(); }
-    function atualizarToolbarMassa() { 
-        document.getElementById('count-selecionados').innerText=convidadosSelecionados.length; 
-        document.getElementById('toolbar-massa').style.display=convidadosSelecionados.length>0?'block':'none'; 
-    }
-    function limparSelecao() { convidadosSelecionados=[]; document.querySelectorAll('.check-convidado').forEach(cb=>cb.checked=false); document.querySelector('thead input').checked=false; atualizarToolbarMassa(); }
-    
-    async function atualizarEmMassa(status) {
-        if(!await confirmarAcao(`Marcar ${convidadosSelecionados.length} como ${status}?`, "Esta ação atualizará todos selecionados.")) return;
-        // Loop simples para atualizar (idealmente seria batch no backend, mas assim funciona)
-        for(let i of convidadosSelecionados) {
-            let dados = [...dadosEventoAtual[i]];
-            let idx = colunasAtuais.indexOf('Status');
-            dados[idx] = status;
-            await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: i+2, novosDados: dados });
+        if (res && res.sucesso) {
+            alert(`Enviados: ${res.enviados}\nErros: ${res.erros}`);
+            bootstrap.Modal.getInstance(document.getElementById('modalEmail')).hide();
+            limparSelecao();
         }
-        limparSelecao(); carregarEventoEspecifico(eventoAtual); mostrarToast("Atualizados!", "success");
     }
 
-    // --- AÇÕES CRUD ---
-    async function confirmarExclusao(i) { if(await confirmarAcao("Excluir?", "Não pode desfazer.")) { const res = await chamarAPI('excluirConvidado', { nomeEvento: eventoAtual, linha: i+2 }); if(res && res.sucesso) carregarEventoEspecifico(eventoAtual); } }
-    function abrirModalEditar(i) { const d=dadosEventoAtual[i]; document.getElementById('edit-linha-index').value=i; const f=document.getElementById('form-editar-dinamico'); f.innerHTML=""; colunasAtuais.forEach((c,ci)=>{ const v=d[ci]; let inp = c==='Status'?`<select class="form-control input-editar"><option value="Pendente" ${v==='Pendente'?'selected':''}>Pendente</option><option value="Confirmado" ${v==='Confirmado'?'selected':''}>Confirmado</option><option value="Não vai" ${v==='Não vai'?'selected':''}>Não vai</option></select>`:`<input type="text" class="form-control input-editar" value="${v}">`; f.innerHTML+=`<div class="mb-2"><label class="fw-bold small">${c}</label>${inp}</div>`; }); new bootstrap.Modal(document.getElementById('modalEditar')).show(); }
-    async function salvarEdicao() { const i=parseInt(document.getElementById('edit-linha-index').value); const v=Array.from(document.querySelectorAll('.input-editar')).map(x=>x.value); bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide(); await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: i+2, novosDados: v }); carregarEventoEspecifico(eventoAtual); mostrarToast("Salvo!", "success"); }
+    // --- DASHBOARD ---
+    function atualizarDashboard(h, r) {
+        const idx = h.indexOf("Status");
+        let c=0, p=0, rec=0;
+        if(idx > -1) r.forEach(row => { if(row[idx]==='Confirmado') c++; else if(row[idx]==='Não vai') rec++; else p++; });
+        else p = r.length;
+        
+        document.getElementById('stat-total').innerText = r.length;
+        document.getElementById('stat-confirmados').innerText = c;
+        document.getElementById('stat-pendentes').innerText = p;
+        document.getElementById('stat-recusados').innerText = rec;
+
+        const ctx = document.getElementById('meuGrafico').getContext('2d');
+        if(graficoInstance) graficoInstance.destroy();
+        graficoInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Confirmados','Pendentes','Recusados'], datasets:[{ data:[c,p,rec], backgroundColor:['#10b981','#f59e0b','#ef4444'], borderWidth:0 }] } });
+    }
+
+    // --- PADRÕES ---
+    function toggleAreaImportacao(b) { document.getElementById('area-importacao-criacao').style.display = b ? 'block' : 'none'; }
+    async function handleCriarEvento(e) { e.preventDefault(); const n=document.getElementById('novo-nome').value; const t=document.getElementById('novo-tipo').value; let d=""; if(t==='Importar') d=document.getElementById('texto-criacao-import').value; const r=await chamarAPI('criarNovoEvento',{nome:n,template:t,dadosImportados:d}); if(r&&r.sucesso){ mostrarTela('dashboard'); carregarLista(); } }
+    function abrirModalImport() { new bootstrap.Modal(document.getElementById('modalImport')).show(); }
+    async function processarImportacao() { const t=document.getElementById('texto-importacao').value; const h=document.getElementById('check-headers').checked; const m=t.trim().split('\n').map(l=>l.split('\t')); await chamarAPI('importarListaConvidados',{nomeEvento:eventoAtual,matrizDados:m,temCabecalho:h}); carregarEventoEspecifico(eventoAtual); bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide(); }
+    function abrirModalAdd() { const f=document.getElementById('form-dinamico'); f.innerHTML=''; colunasAtuais.forEach(c=>{ f.innerHTML+=`<div class="mb-2"><label>${c}</label><input class="form-control input-dinamico"></div>`; }); new bootstrap.Modal(document.getElementById('modalAdd')).show(); }
+    async function enviarConvidado() { const v=Array.from(document.querySelectorAll('.input-dinamico')).map(i=>i.value); await chamarAPI('adicionarConvidado',{nomeEvento:eventoAtual,arrayDados:v}); carregarEventoEspecifico(eventoAtual); bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide(); }
+    async function confirmarExclusao(i) { if(confirm("Excluir?")) { await chamarAPI('excluirConvidado',{nomeEvento:eventoAtual,linha:i+2}); carregarEventoEspecifico(eventoAtual); } }
+    function abrirModalEditar(i) { const d=dadosEventoAtual[i]; document.getElementById('edit-linha-index').value=i; const f=document.getElementById('form-editar-dinamico'); f.innerHTML=''; colunasAtuais.forEach((c,idx)=>{ f.innerHTML+=`<div class="mb-2"><label>${c}</label><input class="form-control input-editar" value="${d[idx]}"></div>`; }); new bootstrap.Modal(document.getElementById('modalEditar')).show(); }
+    async function salvarEdicao() { const i=parseInt(document.getElementById('edit-linha-index').value); const v=Array.from(document.querySelectorAll('.input-editar')).map(x=>x.value); await chamarAPI('atualizarConvidado',{nomeEvento:eventoAtual,linha:i+2,novosDados:v}); carregarEventoEspecifico(eventoAtual); bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide(); }
     
-    // --- UTILITÁRIOS (Link, PDF, etc - Mantidos simplificados) ---
-    function abrirModalLink() { if(!eventoAtual)return; const l=`${GITHUB_PAGES_URL}index.html?evento=${encodeURIComponent(eventoAtual)}`; document.getElementById('input-link-gerado').value=l; new QRCode(document.getElementById('qrcode'),{text:l,width:128,height:128,colorDark:"#1e3a8a"}); new bootstrap.Modal(document.getElementById('modalLink')).show(); }
-    function copiarTextoLink() { document.getElementById('input-link-gerado').select(); navigator.clipboard.writeText(document.getElementById('input-link-gerado').value); mostrarToast("Copiado!"); }
-    function gerarPDF() { const e=document.getElementById('container-tabela-exportar').cloneNode(true); e.querySelectorAll('.ocultar-pdf').forEach(x=>x.remove()); html2pdf().set({margin:10,filename:'Relatorio.pdf',jsPDF:{orientation:'landscape'}}).from(e).save(); }
-    function gerarExcel() { const ws=XLSX.utils.aoa_to_sheet([colunasAtuais,...dadosEventoAtual]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Sheet1"); XLSX.writeFile(wb,"Relatorio.xlsx"); }
-    function gerarTXT() { let t=colunasAtuais.join("\t")+"\n"; dadosEventoAtual.forEach(r=>t+=r.join("\t")+"\n"); const b=new Blob([t],{type:'text/plain'}); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="Relatorio.txt"; a.click(); }
+    // Exports
+    function gerarPDF() { const e=document.getElementById('container-tabela-exportar'); const c=e.cloneNode(true); c.querySelectorAll('.ocultar-pdf').forEach(x=>x.remove()); html2pdf().from(c).save(`Lista_${eventoAtual}.pdf`); }
+    function gerarTXT() { let t=`EVENTO: ${eventoAtual}\n\n`+colunasAtuais.join("\t")+"\n"; dadosEventoAtual.forEach(r=>t+=r.join("\t")+"\n"); const b=new Blob([t]); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="lista.txt"; a.click(); }
+    function gerarExcel() { const ws=XLSX.utils.aoa_to_sheet([colunasAtuais,...dadosEventoAtual]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Lista"); XLSX.writeFile(wb, "lista.xlsx"); }
     
-    // --- IMPORTAR/ADD ---
-    async function handleCriarEvento(e) { e.preventDefault(); const n=document.getElementById('novo-nome').value; const t=document.querySelector('#novo-tipo-select').value; let d=""; if(t==='Importar') d=document.getElementById('texto-criacao-import').value; await chamarAPI('criarNovoEvento', {nome:n, template:t, dadosImportados:d}); mostrarTela('dashboard'); carregarLista(); }
-    function toggleAreaImportacao( show ) { document.getElementById('area-importacao-criacao').style.display = show ? 'block' : 'none'; }
-    function abrirModalImport() { document.getElementById('texto-importacao').value=""; new bootstrap.Modal(document.getElementById('modalImport')).show(); }
-    async function processarImportacao() { const t=document.getElementById('texto-importacao').value; const h=document.getElementById('check-headers').checked; const m=t.trim().split('\n').map(x=>x.split('\t')); await chamarAPI('importarListaConvidados', {nomeEvento:eventoAtual, matrizDados:m, temCabecalho:h}); carregarEventoEspecifico(eventoAtual); bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide(); }
-    function abrirModalAdd() { const f=document.getElementById('form-dinamico'); f.innerHTML=""; colunasAtuais.forEach(c=>{ let i=c==='Status'?`<select class="form-control input-dinamico"><option>Pendente</option></select>`:`<input class="form-control input-dinamico">`; f.innerHTML+=`<div class="mb-2"><label>${c}</label>${i}</div>`; }); new bootstrap.Modal(document.getElementById('modalAdd')).show(); }
-    async function enviarConvidado() { const v=Array.from(document.querySelectorAll('.input-dinamico')).map(x=>x.value); await chamarAPI('adicionarConvidado', {nomeEvento:eventoAtual, arrayDados:v}); carregarEventoEspecifico(eventoAtual); bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide(); }
-    
-    function mostrarTela(t) { document.getElementById('tela-dashboard').style.display = t === 'dashboard' ? 'block' : 'none'; document.getElementById('tela-novo').style.display = t === 'novo' ? 'block' : 'none'; }
+    // Link
+    function abrirModalLink() { const l=`${GITHUB_PAGES_URL}index.html?evento=${encodeURIComponent(eventoAtual)}`; document.getElementById('input-link-gerado').value=l; document.getElementById('btn-abrir-link').href=l; document.getElementById('qrcode').innerHTML=''; new QRCode(document.getElementById('qrcode'),{text:l,width:128,height:128}); new bootstrap.Modal(document.getElementById('modalLink')).show(); }
+    function copiarTextoLink() { document.getElementById('input-link-gerado').select(); navigator.clipboard.writeText(document.getElementById('input-link-gerado').value); }
+    function filtrarTabela() { const q=document.getElementById('busca-rapida').value.toLowerCase(); document.querySelectorAll('#tabela-dados tbody tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(q)?'':'none'); }
+    function mostrarTela(t) { document.getElementById('tela-dashboard').style.display=t==='dashboard'?'block':'none'; document.getElementById('tela-novo').style.display=t==='novo'?'block':'none'; }
 </script>
 </body>
 </html>
