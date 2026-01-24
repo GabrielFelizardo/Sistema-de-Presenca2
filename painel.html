@@ -12,54 +12,134 @@
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
     <style>
-        :root { --primary-blue: #1e3a8a; --primary-light: #3b82f6; --success: #10b981; --warning: #f59e0b; --danger: #ef4444; }
+        :root {
+            --primary-blue: #1e3a8a;
+            --primary-light: #3b82f6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
+        }
+
         body { background-color: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
-        .sidebar { height: 100vh; background: white; border-right: 1px solid #dee2e6; position: fixed; width: 250px; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .content { margin-left: 250px; padding: 30px; }
+        .sidebar { height: 100vh; background: white; border-right: 1px solid #dee2e6; position: fixed; width: 250px; z-index: 100; box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
+        .content { margin-left: 250px; padding: 30px; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
         .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.95); z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; backdrop-filter: blur(4px); }
         
-        /* Cards & Tabs */
-        .card-stat { border: none; border-radius: 16px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: transform 0.2s; }
-        .card-stat:hover { transform: translateY(-4px); }
+        .card-stat { border: none; border-radius: 16px; transition: transform 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .card-stat:hover { transform: translateY(-4px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
         .stat-icon { font-size: 2.5rem; opacity: 0.15; position: absolute; right: 15px; top: 15px; }
-        .nav-tabs .nav-link { color: #495057; border: none; border-bottom: 3px solid transparent; padding: 12px 20px; transition: all 0.2s; }
+        .btn-action { width: 32px; height: 32px; padding: 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 50%; transition: all 0.2s; }
+        .btn-action:hover { transform: scale(1.1); }
+        
+        .nav-tabs { border-bottom: 2px solid #e9ecef; margin-bottom: 20px; }
+        .nav-tabs .nav-link { color: #495057; font-weight: 500; border: none; border-bottom: 3px solid transparent; background: transparent; padding: 12px 20px; transition: all 0.2s; }
+        .nav-tabs .nav-link:hover { color: var(--primary-light); }
         .nav-tabs .nav-link.active { color: var(--primary-light); font-weight: bold; border-bottom: 3px solid var(--primary-light); }
         
-        /* Toolbar */
-        .toolbar-massa { background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-left: 4px solid var(--primary-blue); border-radius: 12px; padding: 16px 20px; margin-bottom: 20px; display: none; }
+        #qrcode { display: flex; justify-content: center; margin: 20px 0; }
+        .ocultar-pdf { display: table-cell; }
+        
+        .btn { transition: all 0.2s; border-radius: 10px; font-weight: 500; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
+        .btn:active { transform: translateY(0); }
+        
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.8rem; }
+        
+        .toolbar-search { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .search-input { border-radius: 10px; border: 2px solid #e5e7eb; padding: 10px 16px; transition: all 0.2s; }
+        .search-input:focus { border-color: var(--primary-light); box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        
+        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
+        .toast-notification { background: white; padding: 16px 20px; border-radius: 12px; box-shadow: var(--shadow-xl); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; animation: slideIn 0.3s; min-width: 320px; }
+        .toast-notification.slide-out { animation: slideOut 0.3s; }
+        @keyframes slideIn { from { transform: translateX(400px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes slideOut { to { transform: translateX(400px); opacity: 0; } }
+        
+        .toast-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
+        .toast-icon.success { background: var(--success); color: white; }
+        .toast-icon.error { background: var(--danger); color: white; }
+        .toast-icon.warning { background: var(--warning); color: white; }
+        .toast-message { color: #374151; font-weight: 500; flex-grow: 1; }
+        
+        .modal-content { border: none; border-radius: 16px; box-shadow: var(--shadow-xl); }
+        .modal-header { border-top-left-radius: 16px; border-top-right-radius: 16px; padding: 20px 24px; }
+        .modal-body { padding: 24px; }
+        
+        .table thead th { background-color: #f8f9fa; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; padding: 16px 12px; border-bottom: 2px solid #e9ecef; }
+        .table tbody tr { transition: all 0.2s; }
+        .table tbody tr:hover { background-color: #f8f9fa; }
+        
+        .sidebar .btn { border-radius: 10px; padding: 12px 16px; transition: all 0.2s; text-align: left; }
+        .sidebar .btn:hover { background-color: #f3f4f6; transform: translateX(4px); }
+        .sidebar .btn.active { background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-light) 100%); color: white; }
+        
+        .metrics-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .metric-item { text-align: center; padding: 12px; }
+        .metric-value { font-size: 2rem; font-weight: 700; color: var(--primary-blue); }
+        .metric-label { font-size: 0.875rem; color: #6b7280; text-transform: uppercase; }
+        
+        /* Toolbar de Seleção em Massa */
+        .toolbar-massa { 
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); 
+            border-left: 4px solid var(--primary-blue);
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            display: none;
+            animation: slideDown 0.3s;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
         .check-convidado { cursor: pointer; width: 18px; height: 18px; }
         
-        /* PDF Helper */
-        .ocultar-pdf { display: table-cell; }
-        #toast-container { position: fixed; top: 20px; right: 20px; z-index: 10000; }
-        .toast-notification { background: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 15px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; animation: slideIn 0.3s; }
-        @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-        
-        .toast-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; }
-        .toast-icon.success { background: var(--success); }
-        .toast-icon.error { background: var(--danger); }
-        .toast-icon.warning { background: var(--warning); }
-        
-        .list-group-item-action { cursor: pointer; }
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; height: auto; position: relative; }
+            .content { margin-left: 0; padding: 15px; }
+            #toast-container { right: 10px; left: 10px; }
+            .toast-notification { min-width: auto; }
+        }
     </style>
 </head>
 <body>
 
 <div id="toast-container"></div>
-<div id="loading" class="loading-overlay"><div class="spinner-border text-primary" role="status"></div><span class="mt-3 fw-bold text-secondary">Processando...</span></div>
+
+<div id="loading" class="loading-overlay">
+    <div class="spinner-border text-primary" role="status" style="width: 4rem; height: 4rem;"></div>
+    <span class="mt-3 fw-bold text-secondary fs-5">Carregando...</span>
+</div>
 
 <div class="sidebar p-4 d-flex flex-column">
-    <h5 class="text-primary mb-4 fw-bold"><i class="fas fa-calendar-check me-2"></i>Gestor RSVP</h5>
+    <h5 class="text-primary mb-4 fw-bold">
+        <i class="fas fa-calendar-check me-2"></i>Gestor RSVP
+    </h5>
     <div class="d-grid gap-2">
-        <button class="btn btn-light active fw-semibold text-start" onclick="mostrarTela('dashboard')"><i class="fas fa-chart-pie me-2 text-primary"></i>Dashboard</button>
-        <button class="btn btn-light fw-semibold text-start" onclick="mostrarTela('novo')"><i class="fas fa-plus me-2 text-success"></i>Novo Evento</button>
+        <button class="btn btn-light active fw-semibold" onclick="mostrarTela('dashboard')">
+            <i class="fas fa-chart-pie me-2 text-primary"></i>Dashboard
+        </button>
+        <button class="btn btn-light fw-semibold" onclick="mostrarTela('novo')">
+            <i class="fas fa-plus me-2 text-success"></i>Novo Evento
+        </button>
     </div>
-    <div class="mt-auto text-muted small pt-3 border-top">v14.0 - Master</div>
+    <div class="mt-auto text-muted small pt-3 border-top">
+        <div class="d-flex align-items-center justify-content-between">
+            <span>v14.0 - Master</span>
+            <i class="fas fa-rocket text-primary"></i>
+        </div>
+    </div>
 </div>
 
 <div class="content">
     
     <div id="tela-dashboard">
+        
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h3 class="fw-bold text-dark m-0">Painel de Controle</h3>
             <div>
@@ -72,9 +152,11 @@
             </div>
         </div>
 
-        <ul class="nav nav-tabs mb-4 flex-grow-1" id="tab-lista-eventos">
-            <li class="nav-item"><a class="nav-link disabled">Carregando...</a></li>
-        </ul>
+        <div class="d-flex align-items-center mb-4">
+            <ul class="nav nav-tabs flex-grow-1" id="tab-lista-eventos">
+                <li class="nav-item"><a class="nav-link disabled">Carregando eventos...</a></li>
+            </ul>
+        </div>
 
         <div id="area-stats" style="display:none;">
             <div class="row mb-4 g-3">
@@ -83,13 +165,34 @@
                 <div class="col-md-3"><div class="card card-stat bg-warning text-dark"><div class="card-body position-relative"><i class="fas fa-clock stat-icon text-dark"></i><h6 class="text-uppercase text-muted small fw-bold">Pendentes</h6><h2 class="fw-bold mb-0" id="stat-pendentes">0</h2></div></div></div>
                 <div class="col-md-3"><div class="card card-stat bg-danger text-white"><div class="card-body position-relative"><i class="fas fa-times-circle stat-icon text-white"></i><h6 class="text-uppercase text-white-50 small fw-bold">Recusados</h6><h2 class="fw-bold mb-0" id="stat-recusados">0</h2></div></div></div>
             </div>
-            
-            <div class="row mb-4 justify-content-center">
+
+            <div class="row mb-4">
                 <div class="col-md-6">
-                    <div class="card border-0 shadow-sm rounded-4">
-                        <div class="card-body text-center">
-                            <h6 class="text-muted mb-3">Visão Geral</h6>
-                            <div style="height: 200px; position: relative;"><canvas id="meuGrafico"></canvas></div>
+                    <div class="metrics-card">
+                        <h6 class="text-center text-muted mb-3 fw-semibold">Métricas</h6>
+                        <div class="row">
+                            <div class="col-6 metric-item border-end">
+                                <div class="metric-value" id="taxa-resposta">0%</div>
+                                <div class="metric-label">Taxa Resposta</div>
+                            </div>
+                            <div class="col-6 metric-item">
+                                <div class="metric-value text-success" id="percentual-confirmados">0%</div>
+                                <div class="metric-label">% Confirmados</div>
+                            </div>
+                        </div>
+                        <div class="text-center mt-3 pt-3 border-top">
+                            <small class="text-muted"><i class="fas fa-clock me-1"></i>Atualizado: <span id="ultima-atualizacao">-</span></small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm" style="border-radius: 16px;">
+                        <div class="card-body">
+                            <h6 class="text-center text-muted mb-3 fw-semibold">Visão Geral</h6>
+                            <div style="height: 220px; position: relative;">
+                                <canvas id="meuGrafico"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -98,43 +201,68 @@
 
         <div id="toolbar-massa" class="toolbar-massa">
             <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-                <strong><i class="fas fa-check-square me-2"></i><span id="count-selecionados">0</span> selecionados</strong>
-                <div class="btn-group">
-                    <button class="btn btn-sm btn-success" onclick="atualizarEmMassa('Confirmado')">Confirmar</button>
-                    <button class="btn btn-sm btn-warning" onclick="atualizarEmMassa('Pendente')">Pendente</button>
-                    <button class="btn btn-sm btn-danger" onclick="atualizarEmMassa('Não vai')">Recusar</button>
+                <div>
+                    <strong><i class="fas fa-check-square me-2"></i><span id="count-selecionados">0</span> selecionados</strong>
+                </div>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-sm btn-success" onclick="atualizarEmMassa('Confirmado')"><i class="fas fa-check me-1"></i>Confirmar</button>
+                    <button class="btn btn-sm btn-warning" onclick="atualizarEmMassa('Pendente')"><i class="fas fa-clock me-1"></i>Pendente</button>
+                    <button class="btn btn-sm btn-danger" onclick="atualizarEmMassa('Não vai')"><i class="fas fa-times me-1"></i>Recusar</button>
                 </div>
                 
                 <button id="btn-massa-email" class="btn btn-sm btn-primary" style="display:none;" onclick="abrirModalEmail()">
                     <i class="fas fa-envelope me-1"></i>Enviar Convite
                 </button>
 
-                <button class="btn btn-sm btn-light" onclick="limparSelecao()">Limpar</button>
+                <button class="btn btn-sm btn-light" onclick="limparSelecao()">
+                    <i class="fas fa-times me-1"></i>Limpar
+                </button>
             </div>
         </div>
 
-        <div class="card shadow-sm border-0 rounded-4">
-            <div class="card-body p-4">
-                <div class="d-flex justify-content-between mb-4 align-items-center flex-wrap gap-3">
-                    <div class="input-group" style="max-width: 300px;">
-                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search"></i></span>
-                        <input type="text" id="busca-rapida" class="form-control border-start-0" placeholder="Buscar..." onkeyup="filtrarTabela()">
+        <div id="toolbar-busca" class="toolbar-search" style="display:none;">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                        <input type="text" id="busca-rapida" class="form-control border-start-0 search-input" placeholder="Buscar... (Ctrl+K)" onkeyup="filtrarTabela()">
                     </div>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select search-input" onchange="filtrarPorStatus(this.value)">
+                        <option value="">Todos</option>
+                        <option value="Confirmado">✓ Confirmados</option>
+                        <option value="Pendente">⏱ Pendentes</option>
+                        <option value="Não vai">✕ Recusados</option>
+                    </select>
+                </div>
+                <div class="col-md-3 text-end">
+                    <span class="text-muted small"><i class="fas fa-filter me-1"></i><span id="contador-filtrados">0</span> resultados</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm border-0" style="border-radius: 16px;">
+            <div class="card-body p-4">
+                <div class="d-flex justify-content-between mb-4 align-items-center pb-3 flex-wrap gap-3">
+                    <h5 class="m-0 text-muted fw-semibold" id="titulo-tabela"><i class="fas fa-list me-2"></i>Detalhes</h5>
                     
                     <div id="toolbar-acoes" style="display:none;">
-                        <div class="btn-group me-2">
-                            <button class="btn btn-outline-secondary btn-sm" onclick="gerarPDF()">PDF</button>
-                            <button class="btn btn-outline-secondary btn-sm" onclick="gerarExcel()">XLS</button>
+                        <div class="btn-group me-2" role="group">
+                            <button class="btn btn-outline-danger" onclick="gerarPDF()"><i class="fas fa-file-pdf me-1"></i> PDF</button>
+                            <button class="btn btn-outline-secondary" onclick="gerarTXT()"><i class="fas fa-file-alt me-1"></i> TXT</button>
+                            <button class="btn btn-outline-success" onclick="gerarExcel()"><i class="fas fa-file-excel me-1"></i> Excel</button>
                         </div>
-                        <button class="btn btn-outline-primary btn-sm me-2" onclick="abrirModalLink()"><i class="fas fa-qrcode me-1"></i>Link</button>
-                        <button class="btn btn-success btn-sm me-2" onclick="abrirModalImport()"><i class="fas fa-file-excel me-1"></i>Importar</button>
-                        <button class="btn btn-primary btn-sm" onclick="abrirModalAdd()"><i class="fas fa-plus me-1"></i>Novo</button>
+                        <button class="btn btn-outline-primary me-2" onclick="abrirModalLink()"><i class="fas fa-qrcode me-2"></i>Link</button>
+                        <button class="btn btn-success me-2" onclick="abrirModalImport()"><i class="fas fa-file-excel me-2"></i>Importar</button>
+                        <button class="btn btn-primary" onclick="abrirModalAdd()"><i class="fas fa-user-plus me-2"></i>Novo</button>
                     </div>
                 </div>
 
                 <div id="container-tabela-exportar" class="table-responsive">
                     <table class="table table-hover align-middle" id="tabela-dados">
-                        <thead></thead><tbody></tbody>
+                        <thead></thead>
+                        <tbody></tbody>
                     </table>
                 </div>
             </div>
@@ -142,25 +270,41 @@
     </div>
 
     <div id="tela-novo" style="display:none;">
-        <h3 class="mb-4">Criar Novo Evento</h3>
-        <div class="card shadow-sm border-0 rounded-4 p-4" style="max-width: 600px;">
-            <form onsubmit="handleCriarEvento(event)">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nome</label>
-                    <input type="text" id="novo-nome" class="form-control" required>
+        <h3 class="fw-bold mb-4"><i class="fas fa-plus-circle text-success me-2"></i>Criar Novo Evento</h3>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card shadow-sm border-0" style="border-radius: 16px;">
+                    <div class="card-body p-4">
+                        <form onsubmit="handleCriarEvento(event)">
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Nome do Evento</label>
+                                <input type="text" id="novo-nome" class="form-control form-control-lg" placeholder="Ex: Festa 2024" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Modelo</label>
+                                <div class="list-group mb-3">
+                                    <label class="list-group-item list-group-item-action d-flex gap-3 py-3 bg-light" style="cursor: pointer; border-radius: 10px; margin-bottom: 10px;">
+                                        <input class="form-check-input" type="radio" name="novo-tipo" value="Importar" onchange="toggleAreaImportacao(true)">
+                                        <div><strong><i class="fas fa-file-excel text-success me-2"></i>Importar Excel</strong><br><small class="text-muted">Cole dados do Excel</small></div>
+                                    </label>
+                                    <label class="list-group-item list-group-item-action d-flex gap-3 py-3" style="cursor: pointer; border-radius: 10px; margin-bottom: 10px;">
+                                        <input class="form-check-input" type="radio" name="novo-tipo" value="Casamento" checked onchange="toggleAreaImportacao(false)">
+                                        <div><strong>💍 Casamento</strong><br><small class="text-muted">Mesa, restrição, acompanhantes</small></div>
+                                    </label>
+                                    <label class="list-group-item list-group-item-action d-flex gap-3 py-3" style="cursor: pointer; border-radius: 10px;">
+                                        <input class="form-check-input" type="radio" name="novo-tipo" value="Basico" onchange="toggleAreaImportacao(false)">
+                                        <div><strong>📝 Básico</strong><br><small class="text-muted">Nome, telefone, status</small></div>
+                                    </label>
+                                </div>
+                                <div id="area-importacao-criacao" class="p-3 bg-light border rounded-3" style="display:none;">
+                                    <textarea id="texto-criacao-import" class="form-control mb-2" rows="8" placeholder="Cole aqui..."></textarea>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-lg w-100"><i class="fas fa-rocket me-2"></i>Criar</button>
+                        </form>
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Modelo</label>
-                    <select id="novo-tipo" class="form-select mb-2" onchange="toggleAreaImportacao(this.value === 'Importar')">
-                        <option value="Casamento">Casamento (com E-mail)</option>
-                        <option value="Corporativo">Corporativo</option>
-                        <option value="Basico">Básico</option>
-                        <option value="Importar">Importar do Excel</option>
-                    </select>
-                    <textarea id="texto-criacao-import" class="form-control" rows="5" style="display:none;" placeholder="Cole aqui..."></textarea>
-                </div>
-                <button class="btn btn-primary w-100">Criar</button>
-            </form>
+            </div>
         </div>
     </div>
 </div>
@@ -223,71 +367,86 @@ Atenciosamente.</textarea>
     </div>
 </div>
 
-<div class="modal fade" id="modalLink" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Link</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body text-center"><div id="qrcode"></div><input type="text" id="input-link-gerado" class="form-control mt-3 mb-2" readonly><button class="btn btn-primary btn-sm" onclick="copiarTextoLink()">Copiar</button> <a id="btn-abrir-link" href="#" target="_blank" class="btn btn-light btn-sm">Abrir</a></div></div></div></div>
-<div class="modal fade" id="modalEditar" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-warning"><h5 class="modal-title">Editar</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="edit-linha-index"><div id="form-editar-dinamico"></div></div><div class="modal-footer"><button class="btn btn-warning" onclick="salvarEdicao()">Salvar</button></div></div></div></div>
-<div class="modal fade" id="modalAdd" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title">Adicionar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body" id="form-dinamico"></div><div class="modal-footer"><button class="btn btn-primary" onclick="enviarConvidado()">Salvar</button></div></div></div></div>
-<div class="modal fade" id="modalImport" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title">Importar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="check-headers" checked><label class="form-check-label">1ª linha é cabeçalho</label></div><textarea id="texto-importacao" class="form-control" rows="8"></textarea></div><div class="modal-footer"><button class="btn btn-success" onclick="processarImportacao()">Processar</button></div></div></div></div>
+<div class="modal fade" id="modalLink" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="fas fa-qrcode me-2"></i>Compartilhar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center p-4"><div id="qrcode" class="mb-3"></div><p class="small text-muted mb-4"><i class="fas fa-mobile-alt me-1"></i>Escaneie ou compartilhe</p><div class="input-group mb-3"><input type="text" id="input-link-gerado" class="form-control text-center fw-semibold" readonly><button class="btn btn-outline-primary" onclick="copiarTextoLink()"><i class="fas fa-copy"></i></button></div><div class="d-grid gap-2 mt-3"><button class="btn btn-success" onclick="compartilharWhatsApp()"><i class="fab fa-whatsapp me-2"></i>Compartilhar via WhatsApp</button><button class="btn btn-primary" onclick="compartilharEmail()"><i class="fas fa-envelope me-2"></i>Enviar por Email</button><a id="btn-abrir-link" href="#" target="_blank" class="btn btn-light"><i class="fas fa-external-link-alt me-1"></i>Abrir</a></div></div></div></div></div>
+<div class="modal fade" id="modalEditar" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-warning"><h5 class="modal-title text-dark"><i class="fas fa-edit me-2"></i>Editar</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="edit-linha-index"><div id="form-editar-dinamico"></div></div><div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-warning fw-bold" onclick="salvarEdicao()"><i class="fas fa-save me-1"></i>Salvar</button></div></div></div></div>
+<div class="modal fade" id="modalAdd" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Adicionar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body" id="form-dinamico"></div><div class="modal-footer"><button class="btn btn-primary fw-bold" onclick="enviarConvidado()"><i class="fas fa-check me-1"></i>Salvar</button></div></div></div></div>
+<div class="modal fade" id="modalImport" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title"><i class="fas fa-file-excel me-2"></i>Importar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="check-headers" checked><label class="form-check-label fw-semibold"><i class="fas fa-table me-1"></i>1ª linha é cabeçalho</label></div><textarea id="texto-importacao" class="form-control" rows="10" placeholder="Cole..."></textarea></div><div class="modal-footer"><button class="btn btn-success fw-bold" onclick="processarImportacao()"><i class="fas fa-upload me-1"></i>Processar</button></div></div></div></div>
+<div class="modal fade" id="modalConfirmacao" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow-lg"><div class="modal-body text-center p-5"><div class="mb-4"><i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem;"></i></div><h4 class="fw-bold mb-3" id="confirm-titulo">Confirmar?</h4><p class="text-muted" id="confirm-mensagem">Esta ação não pode ser desfeita.</p><div class="d-flex gap-3 mt-4"><button class="btn btn-light flex-fill" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-danger flex-fill fw-bold" id="confirm-btn-ok">Confirmar</button></div></div></div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // CONFIGURAÇÃO
-    const API_URL = "https://script.google.com/macros/library/d/1RgsMEIu95kTROXIvHUh8ksdHrhHBgPIpo6mkIhupb4BRb46iiKz5ZNqx/16"; 
+    // ============================================================
+    // ⚙️ CONFIGURAÇÃO
+    // ============================================================
+    const API_URL = "COLE_AQUI_A_SUA_URL_DO_GOOGLE_SCRIPT_QUE_TERMINA_EM_EXEC"; 
+    
+    // URL AUTOMÁTICA DO GITHUB
     const GITHUB_PAGES_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
 
+    // ============================================================
+
     let colunasAtuais = [];
-    let dadosEventoAtual = [];
+    let dadosEventoAtual = []; 
     let eventoAtual = "";
     let graficoInstance = null;
     let convidadosSelecionados = [];
 
     document.addEventListener('DOMContentLoaded', () => { carregarLista(); });
 
-    function mostrarToast(msg, tipo='success') {
-        const div = document.getElementById('toast-container');
-        const el = document.createElement('div');
-        el.className = 'toast-notification';
-        el.innerHTML = `<div class="toast-icon ${tipo}"></div> ${msg}`;
-        div.appendChild(el);
-        setTimeout(() => el.remove(), 3000);
+    function mostrarToast(mensagem, tipo = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        const icons = { success: '✓', error: '✕', warning: '⚠' };
+        toast.className = 'toast-notification';
+        toast.innerHTML = `<span class="toast-icon ${tipo}">${icons[tipo]}</span><span class="toast-message">${mensagem}</span>`;
+        container.appendChild(toast);
+        setTimeout(() => { toast.classList.add('slide-out'); setTimeout(() => toast.remove(), 300); }, 3500);
+    }
+
+    function confirmarAcao(titulo, mensagem) {
+        return new Promise((resolve) => {
+            document.getElementById('confirm-titulo').innerText = titulo;
+            document.getElementById('confirm-mensagem').innerText = mensagem;
+            const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
+            const btnOk = document.getElementById('confirm-btn-ok');
+            btnOk.onclick = () => { modal.hide(); resolve(true); };
+            document.getElementById('modalConfirmacao').addEventListener('hidden.bs.modal', () => { resolve(false); }, { once: true });
+            modal.show();
+        });
     }
 
     async function chamarAPI(acao, dados = {}) {
         document.getElementById('loading').style.display = 'flex';
         try {
-            const r = await fetch(API_URL, { method: 'POST', body: JSON.stringify({ acao, ...dados }) });
-            const j = await r.json();
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ acao: acao, ...dados })
+            });
+            const json = await response.json();
             document.getElementById('loading').style.display = 'none';
-            if (j.erro) { mostrarToast(j.erro, 'error'); return null; }
-            return j;
+            if (json.erro) { mostrarToast("Erro: " + json.erro, "error"); return null; }
+            return json;
         } catch (e) {
             document.getElementById('loading').style.display = 'none';
-            mostrarToast("Erro de conexão", 'error');
+            mostrarToast("Erro de conexão.", "error");
             return null;
         }
     }
 
-    // --- CARREGAMENTO ---
     async function carregarLista() {
         const dados = await chamarAPI('listarEventos');
         if (!dados) return;
-        const ul = document.getElementById('tab-lista-eventos');
-        ul.innerHTML = '';
-        if(dados.length === 0) { ul.innerHTML = '<li class="nav-item"><a class="nav-link disabled">Vazio</a></li>'; return; }
-        
-        dados.forEach((ev, idx) => {
+        const tabContainer = document.getElementById('tab-lista-eventos');
+        tabContainer.innerHTML = ''; 
+        if (dados.length === 0) { tabContainer.innerHTML = '<li class="nav-item"><a class="nav-link disabled">Nenhum evento</a></li>'; return; }
+        dados.forEach((ev, index) => {
             const li = document.createElement('li'); li.className = 'nav-item';
-            const a = document.createElement('button');
-            a.className = idx === 0 ? 'nav-link active' : 'nav-link';
-            a.innerText = ev.nome;
-            a.onclick = () => {
-                document.querySelectorAll('.nav-link').forEach(el => el.classList.remove('active'));
-                a.classList.add('active');
-                carregarEventoEspecifico(ev.nome);
-            };
-            li.appendChild(a);
-            ul.appendChild(li);
+            const btn = document.createElement('button'); btn.className = index === 0 ? 'nav-link active' : 'nav-link';
+            btn.innerText = ev.nome; btn.onclick = () => { document.querySelectorAll('#tab-lista-eventos .nav-link').forEach(el => el.classList.remove('active')); btn.classList.add('active'); carregarEventoEspecifico(ev.nome); };
+            li.appendChild(btn); tabContainer.appendChild(li);
         });
-        if(dados.length > 0) carregarEventoEspecifico(dados[0].nome);
+        if (dados.length > 0) carregarEventoEspecifico(dados[0].nome);
     }
 
     async function carregarEventoEspecifico(nome) {
@@ -298,7 +457,7 @@ Atenciosamente.</textarea>
         
         colunasAtuais = dados.headers;
         dadosEventoAtual = dados.rows;
-        convidadosSelecionados = [];
+        convidadosSelecionados = []; // Reset
         
         renderizarTabela(dados.headers, dados.rows);
         atualizarDashboard(dados.headers, dados.rows);
@@ -308,73 +467,161 @@ Atenciosamente.</textarea>
         document.getElementById('btn-massa-email').style.display = temEmail ? 'inline-block' : 'none';
         
         document.getElementById('toolbar-acoes').style.display = 'block';
+        document.getElementById('toolbar-busca').style.display = 'block';
         document.getElementById('toolbar-massa').style.display = 'none';
+        document.getElementById('busca-rapida').value = '';
+        document.querySelector('select.form-select').value = '';
+        mostrarToast(`Evento "${nome}" carregado!`, "success");
     }
 
-    // --- TABELA E CHECKBOXES ---
+    function atualizarDashboard(headers, rows) {
+        document.getElementById('area-stats').style.display = 'block';
+        const indexStatus = headers.indexOf('Status');
+        let confirmados = 0, pendentes = 0, recusados = 0, total = rows.length;
+        if (indexStatus > -1) {
+            rows.forEach(row => {
+                const status = row[indexStatus] || "Pendente";
+                if (status === 'Confirmado') confirmados++; else if (status === 'Não vai') recusados++; else pendentes++;
+            });
+        } else { pendentes = total; }
+        document.getElementById('stat-total').innerText = total; 
+        document.getElementById('stat-confirmados').innerText = confirmados; 
+        document.getElementById('stat-pendentes').innerText = pendentes; 
+        document.getElementById('stat-recusados').innerText = recusados;
+        const taxaResposta = total > 0 ? Math.round(((confirmados + recusados) / total) * 100) : 0;
+        const percentualConfirmados = total > 0 ? Math.round((confirmados / total) * 100) : 0;
+        document.getElementById('taxa-resposta').innerText = taxaResposta + '%';
+        document.getElementById('percentual-confirmados').innerText = percentualConfirmados + '%';
+        document.getElementById('ultima-atualizacao').innerText = new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+        const ctx = document.getElementById('meuGrafico').getContext('2d');
+        if (graficoInstance) graficoInstance.destroy();
+        graficoInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Confirmados', 'Pendentes', 'Recusados'], datasets: [{ data: [confirmados, pendentes, recusados], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0, hoverOffset: 10 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15, font: { size: 13 } } } } } });
+    }
+
+    function filtrarTabela() {
+        const termo = document.getElementById('busca-rapida').value.toLowerCase();
+        const linhas = document.querySelectorAll('#tabela-dados tbody tr');
+        let contador = 0;
+        linhas.forEach(linha => {
+            const texto = linha.textContent.toLowerCase();
+            const visivel = texto.includes(termo);
+            linha.style.display = visivel ? '' : 'none';
+            if (visivel) contador++;
+        });
+        document.getElementById('contador-filtrados').innerText = contador;
+    }
+
+    function filtrarPorStatus(status) {
+        const linhas = document.querySelectorAll('#tabela-dados tbody tr');
+        const indexStatus = colunasAtuais.indexOf('Status');
+        let contador = 0;
+        linhas.forEach(linha => {
+            const celulas = linha.querySelectorAll('td');
+            const statusCelula = celulas[indexStatus + 1]?.textContent.replace(/[^a-záéíóúàâêôãõç\s]/gi, '').trim();
+            const visivel = !status || statusCelula.includes(status);
+            linha.style.display = visivel ? '' : 'none';
+            if (visivel) contador++;
+        });
+        document.getElementById('contador-filtrados').innerText = contador;
+    }
+
     function renderizarTabela(headers, rows) {
         const thead = document.querySelector('#tabela-dados thead');
         const tbody = document.querySelector('#tabela-dados tbody');
         
-        let headHTML = `<tr><th class="ocultar-pdf"><input type="checkbox" onchange="selecionarTodos(this.checked)"></th>`;
-        headers.forEach(h => headHTML += `<th>${h}</th>`);
-        headHTML += `<th class="text-center ocultar-pdf">Ações</th></tr>`;
-        thead.innerHTML = headHTML;
+        let headerHTML = "<tr><th class='ocultar-pdf' style='width: 40px;'><input type='checkbox' onchange='selecionarTodos(this.checked)'></th>";
+        headers.forEach(h => headerHTML += `<th>${h}</th>`);
+        headerHTML += `<th class="text-center ocultar-pdf" style="width: 100px;">Ações</th></tr>`;
+        thead.innerHTML = headerHTML;
         
-        if (rows.length === 0) tbody.innerHTML = `<tr><td colspan="${headers.length + 2}" class="text-center p-4">Vazio</td></tr>`;
-        else {
+        if (rows.length === 0) { 
+            tbody.innerHTML = `<tr><td colspan="${headers.length + 2}" class="text-center p-5"><i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i><span class="text-muted">Nenhum convidado</span></td></tr>`; 
+            document.getElementById('contador-filtrados').innerText = '0';
+        } else {
+            const statusBadges = {
+                'Confirmado': '<span class="status-badge bg-success text-white"><i class="fas fa-check"></i>Confirmado</span>',
+                'Pendente': '<span class="status-badge bg-warning text-dark"><i class="fas fa-clock"></i>Pendente</span>',
+                'Não vai': '<span class="status-badge bg-danger text-white"><i class="fas fa-times"></i>Não vai</span>'
+            };
+            const indexStatus = headers.indexOf('Status');
             let bodyHTML = "";
-            rows.forEach((row, i) => {
-                bodyHTML += `<tr><td class="ocultar-pdf"><input type="checkbox" class="check-convidado" data-index="${i}" onchange="toggleSelecao(${i})"></td>`;
-                row.forEach(cell => bodyHTML += `<td>${cell}</td>`);
+            rows.forEach((row, index) => {
+                bodyHTML += "<tr>";
+                bodyHTML += `<td class="ocultar-pdf"><input type="checkbox" class="check-convidado" data-index="${index}" onchange="toggleSelecao(${index})"></td>`;
+                row.forEach((cell, colIndex) => {
+                    if (colIndex === indexStatus && statusBadges[cell]) {
+                        bodyHTML += `<td>${statusBadges[cell]}</td>`;
+                    } else {
+                        bodyHTML += `<td>${cell}</td>`;
+                    }
+                });
                 bodyHTML += `<td class="text-center ocultar-pdf">
-                    <button class="btn btn-sm btn-light text-primary" onclick="abrirModalEditar(${i})"><i class="fas fa-pen"></i></button>
-                    <button class="btn btn-sm btn-light text-danger" onclick="confirmarExclusao(${i})"><i class="fas fa-trash"></i></button>
+                    <button class="btn btn-light btn-action text-primary me-1" onclick="abrirModalEditar(${index})"><i class="fas fa-pen"></i></button>
+                    <button class="btn btn-light btn-action text-danger" onclick="confirmarExclusao(${index})"><i class="fas fa-trash"></i></button>
                 </td></tr>`;
             });
             tbody.innerHTML = bodyHTML;
+            document.getElementById('contador-filtrados').innerText = rows.length;
         }
     }
 
-    function selecionarTodos(chk) {
-        document.querySelectorAll('.check-convidado').forEach(c => {
-            c.checked = chk;
-            const idx = parseInt(c.dataset.index);
-            if(chk && !convidadosSelecionados.includes(idx)) convidadosSelecionados.push(idx);
+    // SELEÇÃO EM MASSA
+    function selecionarTodos(checked) {
+        convidadosSelecionados = [];
+        document.querySelectorAll('.check-convidado').forEach(checkbox => {
+            checkbox.checked = checked;
+            if (checked) {
+                convidadosSelecionados.push(parseInt(checkbox.dataset.index));
+            }
         });
-        if(!chk) convidadosSelecionados = [];
         atualizarToolbarMassa();
     }
 
-    function toggleSelecao(idx) {
-        const chk = document.querySelector(`.check-convidado[data-index="${idx}"]`);
-        if(chk.checked) convidadosSelecionados.push(idx);
-        else convidadosSelecionados = convidadosSelecionados.filter(i => i !== idx);
+    function toggleSelecao(index) {
+        const checkbox = document.querySelector(`.check-convidado[data-index="${index}"]`);
+        if (checkbox.checked) {
+            if (!convidadosSelecionados.includes(index)) {
+                convidadosSelecionados.push(index);
+            }
+        } else {
+            convidadosSelecionados = convidadosSelecionados.filter(i => i !== index);
+        }
         atualizarToolbarMassa();
     }
 
     function atualizarToolbarMassa() {
-        const div = document.getElementById('toolbar-massa');
-        div.style.display = convidadosSelecionados.length > 0 ? 'block' : 'none';
-        document.getElementById('count-selecionados').innerText = convidadosSelecionados.length;
+        const toolbar = document.getElementById('toolbar-massa');
+        const count = document.getElementById('count-selecionados');
+        count.innerText = convidadosSelecionados.length;
+        toolbar.style.display = convidadosSelecionados.length > 0 ? 'block' : 'none';
     }
 
-    async function atualizarEmMassa(status) {
-        if(!confirm(`Mudar ${convidadosSelecionados.length} para ${status}?`)) return;
-        const indexStatus = colunasAtuais.indexOf("Status");
-        if(indexStatus === -1) return alert("Sem coluna Status!");
+    async function atualizarEmMassa(novoStatus) {
+        if (convidadosSelecionados.length === 0) return;
         
-        for (const idx of convidadosSelecionados) {
-            const novos = [...dadosEventoAtual[idx]];
-            novos[indexStatus] = status;
-            await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: idx + 2, novosDados: novos });
+        const confirmado = await confirmarAcao(
+            `Atualizar ${convidadosSelecionados.length} convidados?`,
+            `Todos serão marcados como "${novoStatus}"`
+        );
+        
+        if (!confirmado) return;
+        
+        const indexStatus = colunasAtuais.indexOf('Status');
+        for (const index of convidadosSelecionados) {
+            const novosDados = [...dadosEventoAtual[index]];
+            novosDados[indexStatus] = novoStatus;
+            await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: index + 2, novosDados });
         }
+        
+        limparSelecao();
         carregarEventoEspecifico(eventoAtual);
+        mostrarToast(`${convidadosSelecionados.length} atualizados!`, "success");
     }
 
     function limparSelecao() {
         convidadosSelecionados = [];
-        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+        document.querySelectorAll('.check-convidado').forEach(cb => cb.checked = false);
+        document.querySelector('thead input[type="checkbox"]').checked = false;
         atualizarToolbarMassa();
     }
 
@@ -398,6 +645,7 @@ Atenciosamente.</textarea>
         if(res && res.sucesso) {
             bootstrap.Modal.getInstance(document.getElementById('modalConfig')).hide();
             carregarLista();
+            mostrarToast("Renomeado!", "success");
         }
     }
 
@@ -409,7 +657,7 @@ Atenciosamente.</textarea>
     }
 
     async function rmColuna(col) {
-        if(!confirm(`ATENÇÃO: Apagar '${col}' deletará TODOS os dados dessa coluna.\nContinuar?`)) return;
+        if(!await confirmarAcao(`Apagar coluna '${col}'?`, "Todos os dados desta coluna serão perdidos.")) return;
         const res = await chamarAPI('removerColuna', { nomeEvento: eventoAtual, nomeColuna: col });
         if(res && res.sucesso) { abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }
     }
@@ -422,9 +670,8 @@ Atenciosamente.</textarea>
     async function processarEnvioEmails() {
         const assunto = document.getElementById('email-assunto').value;
         const mensagem = document.getElementById('email-mensagem').value;
-        const linkBase = `${GITHUB_PAGES_URL}index.html`; // Base do link do convidado
+        const linkBase = `${GITHUB_PAGES_URL}index.html`; 
         
-        // Passa indices selecionados
         const res = await chamarAPI('enviarEmails', {
             nomeEvento: eventoAtual,
             indices: convidadosSelecionados,
@@ -434,50 +681,137 @@ Atenciosamente.</textarea>
         });
 
         if (res && res.sucesso) {
-            alert(`Enviados: ${res.enviados}\nErros: ${res.erros}`);
+            mostrarToast(`Enviados: ${res.enviados} | Erros: ${res.erros}`, "success");
             bootstrap.Modal.getInstance(document.getElementById('modalEmail')).hide();
             limparSelecao();
         }
     }
 
-    // --- DASHBOARD ---
-    function atualizarDashboard(h, r) {
-        const idx = h.indexOf("Status");
-        let c=0, p=0, rec=0;
-        if(idx > -1) r.forEach(row => { if(row[idx]==='Confirmado') c++; else if(row[idx]==='Não vai') rec++; else p++; });
-        else p = r.length;
+    // EXPORTAÇÃO
+    function gerarPDF() {
+        const elemento = document.getElementById('container-tabela-exportar');
+        const clone = elemento.cloneNode(true);
+        clone.querySelectorAll('.ocultar-pdf').forEach(el => el.remove());
         
-        document.getElementById('stat-total').innerText = r.length;
-        document.getElementById('stat-confirmados').innerText = c;
-        document.getElementById('stat-pendentes').innerText = p;
-        document.getElementById('stat-recusados').innerText = rec;
+        const wrapper = document.createElement('div');
+        wrapper.style.padding = '30px';
+        wrapper.style.fontSize = '11px';
+        
+        wrapper.innerHTML = `
+            <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px;">
+                <h1 style="color: #1e3a8a; font-family: sans-serif; margin: 0; font-size: 24px;">${eventoAtual}</h1>
+                <p style="color: #6b7280; font-family: sans-serif; font-size: 12px; margin: 5px 0 0 0;">
+                    Relatório gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}
+                </p>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
+                    <tr>
+                        <td style="padding: 5px; border: 1px solid #ddd;"><strong>Total:</strong> ${document.getElementById('stat-total').innerText}</td>
+                        <td style="padding: 5px; border: 1px solid #ddd;"><strong>Confirmados:</strong> ${document.getElementById('stat-confirmados').innerText}</td>
+                        <td style="padding: 5px; border: 1px solid #ddd;"><strong>Pendentes:</strong> ${document.getElementById('stat-pendentes').innerText}</td>
+                        <td style="padding: 5px; border: 1px solid #ddd;"><strong>Recusados:</strong> ${document.getElementById('stat-recusados').innerText}</td>
+                    </tr>
+                </table>
+            </div>
+        `;
+        
+        const tabelaClone = clone.querySelector('table');
+        tabelaClone.style.fontSize = '10px';
+        tabelaClone.style.width = '100%';
+        
+        clone.querySelectorAll('th, td').forEach(cell => {
+            cell.style.padding = '6px 4px';
+            cell.style.fontSize = '10px';
+            cell.style.wordBreak = 'break-word';
+        });
+        
+        wrapper.appendChild(clone);
 
-        const ctx = document.getElementById('meuGrafico').getContext('2d');
-        if(graficoInstance) graficoInstance.destroy();
-        graficoInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Confirmados','Pendentes','Recusados'], datasets:[{ data:[c,p,rec], backgroundColor:['#10b981','#f59e0b','#ef4444'], borderWidth:0 }] } });
+        const opt = {
+            margin: [15, 10, 15, 10], 
+            filename: `${eventoAtual}_${new Date().toISOString().split('T')[0]}.pdf`,
+            image: { type: 'jpeg', quality: 0.95 },
+            html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+        };
+
+        html2pdf().set(opt).from(wrapper).save().then(() => { mostrarToast("PDF gerado!", "success"); });
     }
 
-    // --- PADRÕES ---
-    function toggleAreaImportacao(b) { document.getElementById('area-importacao-criacao').style.display = b ? 'block' : 'none'; }
-    async function handleCriarEvento(e) { e.preventDefault(); const n=document.getElementById('novo-nome').value; const t=document.getElementById('novo-tipo').value; let d=""; if(t==='Importar') d=document.getElementById('texto-criacao-import').value; const r=await chamarAPI('criarNovoEvento',{nome:n,template:t,dadosImportados:d}); if(r&&r.sucesso){ mostrarTela('dashboard'); carregarLista(); } }
-    function abrirModalImport() { new bootstrap.Modal(document.getElementById('modalImport')).show(); }
-    async function processarImportacao() { const t=document.getElementById('texto-importacao').value; const h=document.getElementById('check-headers').checked; const m=t.trim().split('\n').map(l=>l.split('\t')); await chamarAPI('importarListaConvidados',{nomeEvento:eventoAtual,matrizDados:m,temCabecalho:h}); carregarEventoEspecifico(eventoAtual); bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide(); }
-    function abrirModalAdd() { const f=document.getElementById('form-dinamico'); f.innerHTML=''; colunasAtuais.forEach(c=>{ f.innerHTML+=`<div class="mb-2"><label>${c}</label><input class="form-control input-dinamico"></div>`; }); new bootstrap.Modal(document.getElementById('modalAdd')).show(); }
-    async function enviarConvidado() { const v=Array.from(document.querySelectorAll('.input-dinamico')).map(i=>i.value); await chamarAPI('adicionarConvidado',{nomeEvento:eventoAtual,arrayDados:v}); carregarEventoEspecifico(eventoAtual); bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide(); }
-    async function confirmarExclusao(i) { if(confirm("Excluir?")) { await chamarAPI('excluirConvidado',{nomeEvento:eventoAtual,linha:i+2}); carregarEventoEspecifico(eventoAtual); } }
-    function abrirModalEditar(i) { const d=dadosEventoAtual[i]; document.getElementById('edit-linha-index').value=i; const f=document.getElementById('form-editar-dinamico'); f.innerHTML=''; colunasAtuais.forEach((c,idx)=>{ f.innerHTML+=`<div class="mb-2"><label>${c}</label><input class="form-control input-editar" value="${d[idx]}"></div>`; }); new bootstrap.Modal(document.getElementById('modalEditar')).show(); }
-    async function salvarEdicao() { const i=parseInt(document.getElementById('edit-linha-index').value); const v=Array.from(document.querySelectorAll('.input-editar')).map(x=>x.value); await chamarAPI('atualizarConvidado',{nomeEvento:eventoAtual,linha:i+2,novosDados:v}); carregarEventoEspecifico(eventoAtual); bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide(); }
+    function gerarTXT() {
+        let texto = `RELATÓRIO: ${eventoAtual}\nGerado: ${new Date().toLocaleString('pt-BR')}\n\n`;
+        texto += colunasAtuais.join("\t") + "\n" + "-".repeat(80) + "\n";
+        dadosEventoAtual.forEach(linha => texto += linha.join("\t") + "\n");
+        const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `${eventoAtual}.txt`; a.click();
+        window.URL.revokeObjectURL(url);
+        mostrarToast("TXT baixado!", "success");
+    }
+
+    function gerarExcel() {
+        const ws = XLSX.utils.aoa_to_sheet([colunasAtuais, ...dadosEventoAtual]);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Lista");
+        XLSX.writeFile(wb, `${eventoAtual}.xlsx`);
+        mostrarToast("Excel gerado!", "success");
+    }
+
+    // Ações Padrão
+    function abrirModalEditar(rowIndex) { 
+        const dadosRow = dadosEventoAtual[rowIndex]; document.getElementById('edit-linha-index').value = rowIndex; 
+        const form = document.getElementById('form-editar-dinamico'); form.innerHTML = ""; 
+        colunasAtuais.forEach((col, colIndex) => { 
+            const valorAtual = dadosRow[colIndex]; 
+            let inputHTML = col === 'Status' ? `<select class="form-control input-editar"><option value="Pendente" ${valorAtual === 'Pendente' ? 'selected' : ''}>Pendente</option><option value="Confirmado" ${valorAtual === 'Confirmado' ? 'selected' : ''}>Confirmado</option><option value="Não vai" ${valorAtual === 'Não vai' ? 'selected' : ''}>Não vai</option></select>` : `<input type="text" class="form-control input-editar" value="${valorAtual}">`; 
+            form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`; 
+        }); 
+        new bootstrap.Modal(document.getElementById('modalEditar')).show(); 
+    }
+
+    async function salvarEdicao() { 
+        const rowIndex = parseInt(document.getElementById('edit-linha-index').value); 
+        const inputs = document.querySelectorAll('.input-editar'); 
+        const novosDados = Array.from(inputs).map(i => i.value); 
+        bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide(); 
+        const res = await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: rowIndex + 2, novosDados }); 
+        if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Atualizado!", "success"); }
+    }
+
+    async function confirmarExclusao(index) {
+        if (await confirmarAcao("Excluir convidado?", "Essa ação não pode ser desfeita.")) {
+            const res = await chamarAPI('excluirConvidado', { nomeEvento: eventoAtual, linha: index + 2 });
+            if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Excluído!", "success"); }
+        }
+    }
+
+    function abrirModalLink() { if(!eventoAtual) return; const link = `${GITHUB_PAGES_URL}index.html?evento=${encodeURIComponent(eventoAtual)}`; document.getElementById('input-link-gerado').value = link; document.getElementById('btn-abrir-link').href = link; document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById('qrcode'), { text: link, width: 180, height: 180, colorDark: "#1e3a8a" }); new bootstrap.Modal(document.getElementById('modalLink')).show(); }
+    function copiarTextoLink() { document.getElementById('input-link-gerado').select(); navigator.clipboard.writeText(document.getElementById('input-link-gerado').value); mostrarToast("Link copiado!", "success"); }
+    function compartilharWhatsApp() { const link = document.getElementById('input-link-gerado').value; window.open(`https://wa.me/?text=${encodeURIComponent(`Olá! Confirme sua presença em *${eventoAtual}*:\n\n${link}`)}`, '_blank'); }
+    function compartilharEmail() { const link = document.getElementById('input-link-gerado').value; window.location.href = `mailto:?subject=${encodeURIComponent(`Confirmação - ${eventoAtual}`)}&body=${encodeURIComponent(`Olá!\n\nConfirme sua presença em ${eventoAtual}:\n\n${link}\n\nObrigado!`)}`; }
     
-    // Exports
-    function gerarPDF() { const e=document.getElementById('container-tabela-exportar'); const c=e.cloneNode(true); c.querySelectorAll('.ocultar-pdf').forEach(x=>x.remove()); html2pdf().from(c).save(`Lista_${eventoAtual}.pdf`); }
-    function gerarTXT() { let t=`EVENTO: ${eventoAtual}\n\n`+colunasAtuais.join("\t")+"\n"; dadosEventoAtual.forEach(r=>t+=r.join("\t")+"\n"); const b=new Blob([t]); const a=document.createElement('a'); a.href=URL.createObjectURL(b); a.download="lista.txt"; a.click(); }
-    function gerarExcel() { const ws=XLSX.utils.aoa_to_sheet([colunasAtuais,...dadosEventoAtual]); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,"Lista"); XLSX.writeFile(wb, "lista.xlsx"); }
+    function toggleAreaImportacao(mostrar) { document.getElementById('area-importacao-criacao').style.display = mostrar ? 'block' : 'none'; }
+    async function handleCriarEvento(e) { e.preventDefault(); const nome = document.getElementById('novo-nome').value.trim(); const tipo = document.querySelector('input[name="novo-tipo"]:checked').value; let dados = tipo === 'Importar' ? document.getElementById('texto-criacao-import').value : ""; if (tipo === 'Importar' && !dados.trim()) { mostrarToast("Cole os dados.", "warning"); return; } const res = await chamarAPI('criarNovoEvento', { nome, template: tipo, dadosImportados: dados }); if (res && res.sucesso) { mostrarToast(`"${nome}" criado!`, "success"); mostrarTela('dashboard'); carregarLista(); } }
+    function abrirModalImport() { document.getElementById('texto-importacao').value = ""; new bootstrap.Modal(document.getElementById('modalImport')).show(); }
+    async function processarImportacao() { const texto = document.getElementById('texto-importacao').value; const temCabecalho = document.getElementById('check-headers').checked; if (!texto.trim()) { mostrarToast("Cole os dados.", "warning"); return; } const linhas = texto.trim().split('\n'); const matriz = linhas.map(l => l.split('\t')); bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide(); const res = await chamarAPI('importarListaConvidados', { nomeEvento: eventoAtual, matrizDados: matriz, temCabecalho }); if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast(`${res.qtd} importados!`, "success"); } }
+    function abrirModalAdd() { const form = document.getElementById('form-dinamico'); form.innerHTML = ""; colunasAtuais.forEach(col => { let inputHTML = col === 'Status' ? `<select class="form-control input-dinamico"><option>Pendente</option><option>Confirmado</option><option>Não vai</option></select>` : `<input type="text" class="form-control input-dinamico">`; form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`; }); new bootstrap.Modal(document.getElementById('modalAdd')).show(); }
+    async function enviarConvidado() { const valores = Array.from(document.querySelectorAll('.input-dinamico')).map(i => i.value); if (valores[0] && valores[0].trim() === '') { mostrarToast("Nome obrigatório.", "warning"); return; } bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide(); const res = await chamarAPI('adicionarConvidado', { nomeEvento: eventoAtual, arrayDados: valores }); if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Adicionado!", "success"); } }
     
-    // Link
-    function abrirModalLink() { const l=`${GITHUB_PAGES_URL}index.html?evento=${encodeURIComponent(eventoAtual)}`; document.getElementById('input-link-gerado').value=l; document.getElementById('btn-abrir-link').href=l; document.getElementById('qrcode').innerHTML=''; new QRCode(document.getElementById('qrcode'),{text:l,width:128,height:128}); new bootstrap.Modal(document.getElementById('modalLink')).show(); }
-    function copiarTextoLink() { document.getElementById('input-link-gerado').select(); navigator.clipboard.writeText(document.getElementById('input-link-gerado').value); }
-    function filtrarTabela() { const q=document.getElementById('busca-rapida').value.toLowerCase(); document.querySelectorAll('#tabela-dados tbody tr').forEach(r=>r.style.display=r.innerText.toLowerCase().includes(q)?'':'none'); }
-    function mostrarTela(t) { document.getElementById('tela-dashboard').style.display=t==='dashboard'?'block':'none'; document.getElementById('tela-novo').style.display=t==='novo'?'block':'none'; }
+    function mostrarTela(tela) { 
+        document.getElementById('tela-dashboard').style.display = tela === 'dashboard' ? 'block' : 'none'; 
+        document.getElementById('tela-novo').style.display = tela === 'novo' ? 'block' : 'none'; 
+        document.querySelectorAll('.sidebar .btn').forEach(btn => btn.classList.remove('active'));
+        if (tela === 'dashboard') document.querySelector('.sidebar .btn:first-of-type').classList.add('active');
+        else document.querySelector('.sidebar .btn:nth-of-type(2)').classList.add('active');
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('busca-rapida')?.focus(); }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); if (eventoAtual) abrirModalAdd(); }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); if (eventoAtual) abrirModalImport(); }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r' && eventoAtual) { e.preventDefault(); carregarEventoEspecifico(eventoAtual); }
+    });
 </script>
 </body>
 </html>
