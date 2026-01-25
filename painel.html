@@ -800,12 +800,29 @@ Atenciosamente.</textarea>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzhSLuKBPr88d-oOkjKBDqhfi7wvxrXkBzMwgQ2r-aJEf6GdpmQDxUpp3pd9XbIBqwu/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbznlB0UzqjzlkneSPFv1mi_0Jqqtv6DkZsbPctw28isyZvAwyXOBv2tHnQUl1SM1QQ/exec"; 
     const GITHUB_PAGES_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
     let colunasAtuais = [], dadosEventoAtual = [], eventoAtual = "", graficoInstance = null, convidadosSelecionados = [];
     document.addEventListener('DOMContentLoaded', () => { carregarLista(); });
+    
+    // Funções auxiliares de loading
+    function mostrarLoading(show = true) {
+        document.getElementById('loading').style.display = show ? 'flex' : 'none';
+    }
+    function esconderLoading() {
+        document.getElementById('loading').style.display = 'none';
+    }
+    
     function mostrarToast(mensagem, tipo = 'success') {const container = document.getElementById('toast-container');const toast = document.createElement('div');const icons = { success: '✓', error: '✕', warning: '⚠' };toast.className = 'toast-notification';toast.innerHTML = `<span class="toast-icon ${tipo}">${icons[tipo]}</span><span class="toast-message">${mensagem}</span>`;container.appendChild(toast);setTimeout(() => { toast.classList.add('slide-out'); setTimeout(() => toast.remove(), 300); }, 3500);}
     function confirmarAcao(titulo, mensagem) {return new Promise((resolve) => {document.getElementById('confirm-titulo').innerText = titulo;document.getElementById('confirm-mensagem').innerText = mensagem;const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));const btnOk = document.getElementById('confirm-btn-ok');btnOk.onclick = () => { modal.hide(); resolve(true); };document.getElementById('modalConfirmacao').addEventListener('hidden.bs.modal', () => { resolve(false); }, { once: true });modal.show();});}
+    function mostrarLoading(exibir = true) {
+        document.getElementById('loading').style.display = exibir ? 'flex' : 'none';
+    }
+    
+    function esconderLoading() {
+        document.getElementById('loading').style.display = 'none';
+    }
+    
     async function chamarAPI(acao, dados = {}) {document.getElementById('loading').style.display = 'flex';try {const response = await fetch(API_URL, {method: 'POST',headers: { "Content-Type": "text/plain;charset=utf-8" },body: JSON.stringify({ acao: acao, ...dados })});const json = await response.json();document.getElementById('loading').style.display = 'none';if (json.erro) { mostrarToast("Erro: " + json.erro, "error"); return null; }return json;} catch (e) {document.getElementById('loading').style.display = 'none';mostrarToast("Erro de conexão.", "error");return null;}}
     async function carregarLista() {const dados = await chamarAPI('listarEventos');if (!dados) return;const tabContainer = document.getElementById('tab-lista-eventos');tabContainer.innerHTML = ''; if (dados.length === 0) { tabContainer.innerHTML = '<li class="nav-item"><a class="nav-link disabled">Nenhum evento</a></li>'; return; }dados.forEach((ev, index) => {const li = document.createElement('li'); li.className = 'nav-item';const btn = document.createElement('button'); btn.className = index === 0 ? 'nav-link active' : 'nav-link';btn.innerText = ev.nome; btn.onclick = () => { document.querySelectorAll('#tab-lista-eventos .nav-link').forEach(el => el.classList.remove('active')); btn.classList.add('active'); carregarEventoEspecifico(ev.nome); };li.appendChild(btn); tabContainer.appendChild(li);});if (dados.length > 0) carregarEventoEspecifico(dados[0].nome);}
     async function carregarEventoEspecifico(nome) {if (!nome) return;eventoAtual = nome;const dados = await chamarAPI('obterDadosEvento', { nomeEvento: nome });if (!dados) return;colunasAtuais = dados.headers;dadosEventoAtual = dados.rows;convidadosSelecionados = [];renderizarTabela(dados.headers, dados.rows);atualizarDashboard(dados.headers, dados.rows);const temEmail = dados.headers.some(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});let emailsValidos = 0;if (temEmail) {const indexEmail = dados.headers.findIndex(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});dados.rows.forEach(row => {const email = row[indexEmail];if (email && email.toString().includes('@')) {emailsValidos++;}});}const btnEmail = document.getElementById('btn-massa-email');if (temEmail && emailsValidos > 0) {btnEmail.style.display = 'inline-block';btnEmail.title = `${emailsValidos} contato(s) com email válido`;} else if (temEmail && emailsValidos === 0) {btnEmail.style.display = 'none';if (dados.rows.length > 0) {mostrarToast("Coluna Email existe mas nenhum email válido encontrado.", "warning");}} else {btnEmail.style.display = 'none';}document.getElementById('toolbar-acoes').style.display = 'block';document.getElementById('toolbar-busca').style.display = 'block';document.getElementById('toolbar-massa').style.display = 'none';document.getElementById('busca-rapida').value = '';document.querySelector('select.form-select').value = '';mostrarToast(`Evento "${nome}" carregado!`, "success");}
