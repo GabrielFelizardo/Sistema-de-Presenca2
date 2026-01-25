@@ -1,9 +1,9 @@
 // =======================================================================
-// ARQUIVO: CODE.GS (BACKEND v14.3 - CORREÇÃO UNDEFINED)
+// ARQUIVO: CODE.GS (BACKEND v14.5 - EMAIL INTELIGENTE)
 // =======================================================================
 
 function doGet(e) {
-  return ContentService.createTextOutput("Sistema v14.3 Online! Backend operante.")
+  return ContentService.createTextOutput("Sistema v14.5 Online! Backend operante.")
       .setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -16,6 +16,13 @@ function doPost(e) {
     const dados = JSON.parse(e.postData.contents);
     const acao = dados.acao;
     let resposta = {};
+
+    // LOG para debug de email
+    if (acao === 'enviarEmails') {
+      Logger.log('=== ENVIO DE EMAILS ===');
+      Logger.log('Evento: ' + dados.nomeEvento);
+      Logger.log('Selecionados: ' + dados.indices.length);
+    }
 
     // --- ROTEADOR ---
     if (acao === 'listarEventos') resposta = listarEventos();
@@ -37,6 +44,7 @@ function doPost(e) {
     return ContentService.createTextOutput(JSON.stringify(resposta)).setMimeType(ContentService.MimeType.JSON);
 
   } catch (erro) {
+    Logger.log('ERRO GERAL: ' + erro.toString());
     return ContentService.createTextOutput(JSON.stringify({ erro: erro.toString() })).setMimeType(ContentService.MimeType.JSON);
   } finally {
     lock.releaseLock();
@@ -63,9 +71,11 @@ function getSpreadsheetId() {
 
 function getSpreadsheet() { return SpreadsheetApp.openById(getSpreadsheetId()); }
 
-// SEGURANÇA: Função para pegar aba garantindo que o nome é válido
 function getSheetByNameSafe(ss, nome) {
-  if (!nome || nome === 'undefined' || nome === 'null') return null;
+  if (!nome || nome === 'undefined' || nome === 'null' || nome === '') {
+    Logger.log('ERRO: Nome de aba inválido: "' + nome + '"');
+    return null;
+  }
   const nomeLimpo = nome.toString().trim();
   return ss.getSheetByName(nomeLimpo);
 }
@@ -94,6 +104,7 @@ function criarNovoEvento(nome, tipo, dadosRaw) {
     colunas = matriz[0];
     if (matriz.length > 1) dadosParaInserir = matriz.slice(1);
     if (!colunas.includes("Status")) colunas.push("Status");
+    if (!colunas.includes("Email") && !colunas.includes("E-mail")) colunas.push("Email");
   } else {
     if (tipo === 'Casamento') colunas = ["Nome", "Mesa", "Restrição", "Status", "Email", "Acompanhantes"];
     else if (tipo === 'Corporativo') colunas = ["Nome", "Empresa", "Cargo", "Status", "Email"];
@@ -126,7 +137,6 @@ function obterDadosEvento(nome) {
   return { headers: data[0], rows: data.slice(1) };
 }
 
-// --- ESTRUTURA ---
 function renomearEvento(nomeAntigo, nomeNovo) {
   const ss = getSpreadsheet();
   const sheet = getSheetByNameSafe(ss, nomeAntigo);
@@ -162,7 +172,6 @@ function removerColuna(nomeEvento, nomeColuna) {
   return { sucesso: true };
 }
 
-// --- EDIÇÃO ---
 function adicionarConvidado(nomeEvento, dados) {
   const ss = getSpreadsheet();
   const sheet = getSheetByNameSafe(ss, nomeEvento);
@@ -221,7 +230,7 @@ function importarListaInteligente(nomeEvento, matrizDados, temCabecalho) {
     } else {
       linhaImportada.forEach((dado, index) => { if (index < linhaNova.length) linhaNova[index] = dado; });
     }
-    if (indexStatus > -1 && linhaNova[indexStatus] === "") linhaNova[indexStatus] = "Pendente";
+    if (indiceStatus > -1 && linhaNova[indiceStatus] === "") linhaNova[indiceStatus] = "Pendente";
     return linhaNova;
   });
 
@@ -231,64 +240,150 @@ function importarListaInteligente(nomeEvento, matrizDados, temCabecalho) {
   return { sucesso: true, qtd: matrizFinal.length };
 }
 
-// --- EMAIL BLINDADO ---
-function enviarEmails(nomeEvento, indices, assunto, mensagem, linkBase) {
-  if (!nomeEvento || nomeEvento === 'undefined') throw new Error("Nome do evento inválido ou não selecionado.");
+// =======================================================================
+// 📧 EMAIL COM VALIDAÇÃO INTELIGENTE
+// =======================================================================
 
+function enviarEmails(nomeEvento, indices, assunto, mensagem, linkBase) {
+  Logger.log('=== INÍCIO ENVIO DE EMAILS ===');
+  Logger.log('Evento: "' + nomeEvento + '" (tipo: ' + typeof nomeEvento + ')');
+  Logger.log('Índices: ' + JSON.stringify(indices));
+  
+  // ✅ VALIDAÇÃO 1: Nome do evento
+  if (!nomeEvento || nomeEvento === 'undefined' || nomeEvento === 'null' || nomeEvento.trim() === '') {
+    Logger.log('❌ ERRO: Nome do evento inválido');
+    throw new Error("Nome do evento inválido. Valor recebido: '" + nomeEvento + "'");
+  }
+
+  // ✅ VALIDAÇÃO 2: Índices
+  if (!indices || !Array.isArray(indices) || indices.length === 0) {
+    throw new Error("Nenhum convidado selecionado para envio.");
+  }
+
+  // ✅ VALIDAÇÃO 3: Limite de segurança
+  if (indices.length > 50) {
+    throw new Error("Limite de segurança: máximo de 50 envios por vez. Você selecionou " + indices.length + ".");
+  }
+
+  // ✅ VALIDAÇÃO 4: Busca a planilha
   const ss = getSpreadsheet();
   const sheet = getSheetByNameSafe(ss, nomeEvento);
   
-  if (!sheet) throw new Error(`Não foi possível encontrar a aba '${nomeEvento}'. Verifique espaços ou caracteres especiais.`);
+  if (!sheet) {
+    const abasDisponiveis = ss.getSheets().map(s => s.getName()).join(', ');
+    Logger.log('❌ ERRO: Aba não encontrada');
+    Logger.log('Abas disponíveis: ' + abasDisponiveis);
+    throw new Error(`Evento "${nomeEvento}" não encontrado. Abas disponíveis: ${abasDisponiveis}`);
+  }
 
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
   const rows = data.slice(1);
   
+  Logger.log('✓ Headers encontrados: ' + headers.join(', '));
+
+  // ✅ VALIDAÇÃO 5: Verifica se existe coluna Email
   const indexEmail = headers.findIndex(h => {
     const limpo = h.toString().trim().toLowerCase();
     return limpo === 'email' || limpo === 'e-mail';
   });
   
+  if (indexEmail === -1) {
+    throw new Error("Coluna 'Email' não encontrada. Adicione uma coluna chamada 'Email' ou 'E-mail' na planilha.");
+  }
+
   const indexNome = headers.findIndex(h => h.toString().trim().toLowerCase() === 'nome');
   
-  if (indexEmail === -1) throw new Error("Coluna 'Email' não encontrada.");
-  if (indices.length > 50) throw new Error("Limite de segurança: 50 envios por vez.");
+  Logger.log(`✓ Coluna Email: índice ${indexEmail}`);
+  Logger.log(`✓ Coluna Nome: índice ${indexNome}`);
 
+  // 📊 PROCESSAMENTO
   let enviados = 0;
   let erros = 0;
+  let detalhesErros = [];
 
-  indices.forEach(index => {
+  indices.forEach((index, i) => {
     try {
+      Logger.log(`\n📧 Processando ${i+1}/${indices.length}: índice ${index}`);
+      
+      // Valida índice
+      if (index < 0 || index >= rows.length) {
+        Logger.log(`⚠️ AVISO: Índice ${index} fora do range (0-${rows.length-1})`);
+        erros++;
+        detalhesErros.push(`Índice ${index} inválido (fora do range)`);
+        return;
+      }
+      
       const row = rows[index];
-      const email = row[indexEmail];
+      const email = row[indexEmail] ? row[indexEmail].toString().trim() : '';
       const nome = indexNome > -1 ? row[indexNome] : "Convidado";
       
-      if (email && email.toString().includes("@")) {
-        const linkPersonalizado = `${linkBase}?evento=${encodeURIComponent(nomeEvento.trim())}`;
-        
-        let corpo = mensagem
-          .replace(/{Nome}/g, nome)
-          .replace(/{Link}/g, linkPersonalizado);
-          
-        MailApp.sendEmail({
-          to: email,
-          subject: assunto.replace(/{Nome}/g, nome),
-          body: corpo
-        });
-        enviados++;
-      } else {
+      Logger.log(`  Nome: ${nome}`);
+      Logger.log(`  Email: ${email}`);
+      
+      // Valida email
+      if (!email || !email.includes("@")) {
+        Logger.log(`⚠️ AVISO: Email inválido ou vazio`);
         erros++;
+        detalhesErros.push(`${nome}: email inválido ou vazio`);
+        return;
       }
+      
+      // Monta o link personalizado
+      const linkPersonalizado = `${linkBase}?evento=${encodeURIComponent(nomeEvento.trim())}`;
+      
+      // Substitui variáveis
+      let corpo = mensagem
+        .replace(/{Nome}/g, nome)
+        .replace(/{Link}/g, linkPersonalizado);
+      
+      let assuntoFinal = assunto
+        .replace(/{Nome}/g, nome)
+        .replace(/{Evento}/g, nomeEvento);
+      
+      // Envia email
+      MailApp.sendEmail({
+        to: email,
+        subject: assuntoFinal,
+        body: corpo
+      });
+      
+      Logger.log(`✅ Email enviado com sucesso para ${email}`);
+      enviados++;
+      
+      // Delay para não sobrecarregar (1 email por segundo)
+      if (i < indices.length - 1) {
+        Utilities.sleep(1000);
+      }
+      
     } catch (e) {
-      console.error(e);
+      Logger.log(`❌ ERRO ao enviar para índice ${index}: ${e.toString()}`);
       erros++;
+      const nomeErro = indexNome > -1 && rows[index] ? rows[index][indexNome] : `Índice ${index}`;
+      detalhesErros.push(`${nomeErro}: ${e.message}`);
     }
   });
   
-  return { sucesso: true, enviados: enviados, erros: erros };
+  Logger.log(`\n=== RESUMO ===`);
+  Logger.log(`✅ Enviados: ${enviados}`);
+  Logger.log(`❌ Erros: ${erros}`);
+  if (detalhesErros.length > 0) {
+    Logger.log(`Detalhes dos erros:`);
+    detalhesErros.forEach(det => Logger.log(`  - ${det}`));
+  }
+  
+  return { 
+    sucesso: true, 
+    enviados: enviados, 
+    erros: erros,
+    detalhes: detalhesErros.length > 0 ? detalhesErros : null
+  };
 }
 
-// --- CONVIDADO ---
+// =======================================================================
+// CONVIDADO
+// =======================================================================
+
 function buscarConvidado(nomeEvento, nomeBusca) {
   const ss = getSpreadsheet();
   const sheet = getSheetByNameSafe(ss, nomeEvento);
