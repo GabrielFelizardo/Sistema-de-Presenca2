@@ -815,13 +815,6 @@ Atenciosamente.</textarea>
     
     function mostrarToast(mensagem, tipo = 'success') {const container = document.getElementById('toast-container');const toast = document.createElement('div');const icons = { success: '✓', error: '✕', warning: '⚠' };toast.className = 'toast-notification';toast.innerHTML = `<span class="toast-icon ${tipo}">${icons[tipo]}</span><span class="toast-message">${mensagem}</span>`;container.appendChild(toast);setTimeout(() => { toast.classList.add('slide-out'); setTimeout(() => toast.remove(), 300); }, 3500);}
     function confirmarAcao(titulo, mensagem) {return new Promise((resolve) => {document.getElementById('confirm-titulo').innerText = titulo;document.getElementById('confirm-mensagem').innerText = mensagem;const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));const btnOk = document.getElementById('confirm-btn-ok');btnOk.onclick = () => { modal.hide(); resolve(true); };document.getElementById('modalConfirmacao').addEventListener('hidden.bs.modal', () => { resolve(false); }, { once: true });modal.show();});}
-    function mostrarLoading(exibir = true) {
-        document.getElementById('loading').style.display = exibir ? 'flex' : 'none';
-    }
-    
-    function esconderLoading() {
-        document.getElementById('loading').style.display = 'none';
-    }
     
     async function chamarAPI(acao, dados = {}) {document.getElementById('loading').style.display = 'flex';try {const response = await fetch(API_URL, {method: 'POST',headers: { "Content-Type": "text/plain;charset=utf-8" },body: JSON.stringify({ acao: acao, ...dados })});const json = await response.json();document.getElementById('loading').style.display = 'none';if (json.erro) { mostrarToast("Erro: " + json.erro, "error"); return null; }return json;} catch (e) {document.getElementById('loading').style.display = 'none';mostrarToast("Erro de conexão.", "error");return null;}}
     async function carregarLista() {const dados = await chamarAPI('listarEventos');if (!dados) return;const tabContainer = document.getElementById('tab-lista-eventos');tabContainer.innerHTML = ''; if (dados.length === 0) { tabContainer.innerHTML = '<li class="nav-item"><a class="nav-link disabled">Nenhum evento</a></li>'; return; }dados.forEach((ev, index) => {const li = document.createElement('li'); li.className = 'nav-item';const btn = document.createElement('button'); btn.className = index === 0 ? 'nav-link active' : 'nav-link';btn.innerText = ev.nome; btn.onclick = () => { document.querySelectorAll('#tab-lista-eventos .nav-link').forEach(el => el.classList.remove('active')); btn.classList.add('active'); carregarEventoEspecifico(ev.nome); };li.appendChild(btn); tabContainer.appendChild(li);});if (dados.length > 0) carregarEventoEspecifico(dados[0].nome);}
@@ -856,8 +849,35 @@ Atenciosamente.</textarea>
     function abrirModalImport() { document.getElementById('texto-importacao').value = ""; new bootstrap.Modal(document.getElementById('modalImport')).show(); }
     async function processarImportacao() { const texto = document.getElementById('texto-importacao').value; const temCabecalho = document.getElementById('check-headers').checked; if (!texto.trim()) { mostrarToast("Cole os dados.", "warning"); return; } const linhas = texto.trim().split('\n'); const matriz = linhas.map(l => l.split('\t')); bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide(); const res = await chamarAPI('importarListaConvidados', { nomeEvento: eventoAtual, matrizDados: matriz, temCabecalho }); if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast(`${res.qtd} importados!`, "success"); } }
     function abrirModalAdd() { const form = document.getElementById('form-dinamico'); form.innerHTML = ""; colunasAtuais.forEach(col => { let inputHTML = col === 'Status' ? `<select class="form-control input-dinamico"><option>Pendente</option><option>Confirmado</option><option>Não vai</option></select>` : `<input type="text" class="form-control input-dinamico">`; form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`; }); new bootstrap.Modal(document.getElementById('modalAdd')).show(); }
-    async function enviarConvidado() { const valores = Array.from(document.querySelectorAll('.input-dinamico')).map(i => i.value); if (valores[0] && valores[0].trim() === '') { mostrarToast("Nome obrigatório.", "warning"); return; } bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide(); const res = await chamarAPI('adicionarConvidado', { nomeEvento: eventoAtual, arrayDados: valores }); if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Adicionado!", "success"); } }
-    function mostrarTela(tela) { document.getElementById('tela-dashboard').style.display = tela === 'dashboard' ? 'block' : 'none'; document.getElementById('tela-novo').style.display = tela === 'novo' ? 'block' : 'none'; document.querySelectorAll('.sidebar .btn').forEach(btn => btn.classList.remove('active'));if (tela === 'dashboard') document.querySelector('.sidebar .btn:first-of-type').classList.add('active');else document.querySelector('.sidebar .btn:nth-of-type(2)').classList.add('active');}
+    async function enviarConvidado() { 
+        const valores = Array.from(document.querySelectorAll('.input-dinamico')).map(i => i.value); 
+        
+        if (valores[0] && valores[0].trim() === '') { 
+            mostrarToast("Nome obrigatório.", "warning"); 
+            return; 
+        } 
+        
+        bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide(); 
+        
+        const res = await chamarAPI('adicionarConvidado', { nomeEvento: eventoAtual, arrayDados: valores }); 
+        
+        if (res && res.sucesso) { 
+            // Salvar no Banco de Nomes
+            const nome = valores[0];
+            const email = valores[colunasAtuais.indexOf('Email')] || valores[colunasAtuais.indexOf('E-mail')] || '';
+            const telefone = valores[colunasAtuais.indexOf('Telefone')] || '';
+            
+            await chamarAPI('adicionarAoBanco', { 
+                nome: nome,
+                email: email,
+                telefone: telefone,
+                nomeEvento: eventoAtual
+            });
+            
+            carregarEventoEspecifico(eventoAtual); 
+            mostrarToast("Adicionado!", "success"); 
+        } 
+    }
 
 // =======================================================================
 // FUNÇÕES v15.0 - TEMPLATES + BANCO DE NOMES
