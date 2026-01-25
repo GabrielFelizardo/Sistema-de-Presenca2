@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Eventos v14.5</title>
+    <title>Gestor de Eventos v15.0</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -126,11 +126,17 @@
         <button class="btn btn-light fw-semibold" onclick="mostrarTela('novo')">
             <i class="fas fa-plus me-2 text-success"></i>Novo Evento
         </button>
+        <button class="btn btn-light fw-semibold" onclick="mostrarTela('banco-nomes')">
+            <i class="fas fa-address-book me-2 text-warning"></i>Gerenciar Nomes
+        </button>
+        <button class="btn btn-light fw-semibold" data-bs-toggle="modal" data-bs-target="#modalManual">
+            <i class="fas fa-book me-2 text-info"></i>Manual de Uso
+        </button>
     </div>
     <div class="mt-auto text-muted small pt-3 border-top">
         <div class="d-flex align-items-center justify-content-between">
-            <span>v14.5 - Email Inteligente</span>
-            <i class="fas fa-envelope text-primary"></i>
+            <span>v15.0 - Templates & Banco</span>
+            <i class="fas fa-layer-group text-primary"></i>
         </div>
     </div>
 </div>
@@ -281,18 +287,38 @@
                             </div>
                             <div class="mb-4">
                                 <label class="form-label fw-bold">Modelo</label>
-                                <div class="list-group mb-3">
+                                <div class="list-group mb-3" style="max-height: 420px; overflow-y: auto;">
                                     <label class="list-group-item list-group-item-action d-flex gap-3 py-3 bg-light" style="cursor: pointer; border-radius: 10px; margin-bottom: 10px;">
                                         <input class="form-check-input" type="radio" name="novo-tipo" value="Importar" onchange="toggleAreaImportacao(true)">
                                         <div><strong><i class="fas fa-file-excel text-success me-2"></i>Importar Excel</strong><br><small class="text-muted">Cole dados do Excel</small></div>
                                     </label>
                                     <label class="list-group-item list-group-item-action d-flex gap-3 py-3" style="cursor: pointer; border-radius: 10px; margin-bottom: 10px;">
-                                        <input class="form-check-input" type="radio" name="novo-tipo" value="Casamento" checked onchange="toggleAreaImportacao(false)">
-                                        <div><strong>💍 Casamento</strong><br><small class="text-muted">Mesa, restrição, acompanhantes</small></div>
+                                        <input class="form-check-input" type="radio" name="novo-tipo" value="Basico" checked onchange="toggleAreaImportacao(false)">
+                                        <div><strong>📋 Básico</strong><br><small class="text-muted">Nome, Email, Telefone, Confirmado</small></div>
+                                    </label>
+                                    <label class="list-group-item list-group-item-action d-flex gap-3 py-3" style="cursor: pointer; border-radius: 10px; margin-bottom: 10px;">
+                                        <input class="form-check-input" type="radio" name="novo-tipo" value="Casamento" onchange="toggleAreaImportacao(false)">
+                                        <div><strong>💒 Casamento/Festa</strong><br><small class="text-muted">Completo: Acompanhantes, Mesa, Restrição Alimentar</small></div>
+                                    </label>
+                                    <label class="list-group-item list-group-item-action d-flex gap-3 py-3" style="cursor: pointer; border-radius: 10px; margin-bottom: 10px;">
+                                        <input class="form-check-input" type="radio" name="novo-tipo" value="Corporativo" onchange="toggleAreaImportacao(false)">
+                                        <div><strong>💼 Corporativo/Palestra</strong><br><small class="text-muted">Empresa, Cargo, Workshop, Networking</small></div>
+                                    </label>
+                                    <label class="list-group-item list-group-item-action d-flex gap-3 py-3" style="cursor: pointer; border-radius: 10px; margin-bottom: 10px;">
+                                        <input class="form-check-input" type="radio" name="novo-tipo" value="Infantil" onchange="toggleAreaImportacao(false)">
+                                        <div><strong>🎂 Festa Infantil</strong><br><small class="text-muted">Nome Criança, Idade, Responsável, Alergias</small></div>
+                                    </label>
+                                    <label class="list-group-item list-group-item-action d-flex gap-3 py-3" style="cursor: pointer; border-radius: 10px; margin-bottom: 10px;">
+                                        <input class="form-check-input" type="radio" name="novo-tipo" value="Formatura" onchange="toggleAreaImportacao(false)">
+                                        <div><strong>🎓 Formatura</strong><br><small class="text-muted">Curso, Turma, Qtd Convites, Mesa</small></div>
+                                    </label>
+                                    <label class="list-group-item list-group-item-action d-flex gap-3 py-3" style="cursor: pointer; border-radius: 10px; margin-bottom: 10px;">
+                                        <input class="form-check-input" type="radio" name="novo-tipo" value="Workshop" onchange="toggleAreaImportacao(false)">
+                                        <div><strong>📚 Workshop/Curso</strong><br><small class="text-muted">Nível, Tópicos de Interesse, Material</small></div>
                                     </label>
                                     <label class="list-group-item list-group-item-action d-flex gap-3 py-3" style="cursor: pointer; border-radius: 10px;">
-                                        <input class="form-check-input" type="radio" name="novo-tipo" value="Basico" onchange="toggleAreaImportacao(false)">
-                                        <div><strong>📝 Básico</strong><br><small class="text-muted">Nome, telefone, status</small></div>
+                                        <input class="form-check-input" type="radio" name="novo-tipo" value="Jantar" onchange="toggleAreaImportacao(false)">
+                                        <div><strong>🍽️ Jantar/Restaurante</strong><br><small class="text-muted">Num. Pessoas, Horário Preferido, Restrições</small></div>
                                     </label>
                                 </div>
                                 <div id="area-importacao-criacao" class="p-3 bg-light border rounded-3" style="display:none;">
@@ -308,6 +334,404 @@
     </div>
 </div>
 
+    <!-- TELA: GERENCIAR BANCO DE NOMES -->
+    <div id="tela-banco-nomes" style="display:none;">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="fw-bold"><i class="fas fa-address-book text-warning me-2"></i>Banco de Nomes</h3>
+            <button class="btn btn-outline-primary" onclick="carregarBancoNomes()">
+                <i class="fas fa-sync-alt me-1"></i> Atualizar
+            </button>
+        </div>
+        
+        <div class="card shadow-sm border-0" style="border-radius: 16px;">
+            <div class="card-body p-4">
+                <div class="mb-4">
+                    <input type="text" id="busca-banco" class="form-control form-control-lg" 
+                           placeholder="🔍 Buscar por nome..." 
+                           onkeyup="filtrarTabelaBanco()">
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle" id="tabela-banco">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Eventos</th>
+                                <th>Último Evento</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td colspan="6" class="text-center text-muted">Carregando...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<!-- ========================================== -->
+<!-- NOVOS MODAIS v15.0 - TEMPLATES + BANCO -->
+<!-- ========================================== -->
+
+<!-- MODAL 1: MANUAL DE USO -->
+<div class="modal fade" id="modalManual" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title"><i class="fas fa-book me-2"></i>Manual de Uso</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <ul class="nav nav-tabs mb-3" id="manualTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-inicio">
+                            <i class="fas fa-rocket me-1"></i>Início Rápido
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-convidados">
+                            <i class="fas fa-users me-1"></i>Convidados
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-email">
+                            <i class="fas fa-envelope me-1"></i>Emails
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-links">
+                            <i class="fas fa-link me-1"></i>Links
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-relatorios">
+                            <i class="fas fa-chart-bar me-1"></i>Relatórios
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-avancado">
+                            <i class="fas fa-cog me-1"></i>Avançado
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-atalhos">
+                            <i class="fas fa-keyboard me-1"></i>Atalhos
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content">
+                    <!-- TAB: Início Rápido -->
+                    <div class="tab-pane fade show active" id="tab-inicio">
+                        <h6 class="text-primary fw-bold mb-3">🚀 Primeiros Passos</h6>
+                        <ol class="mb-4">
+                            <li class="mb-2"><strong>Criar Evento:</strong> Clique em "Novo Evento" e escolha um template ou crie do zero</li>
+                            <li class="mb-2"><strong>Adicionar Convidados:</strong> Use o botão "+ Adicionar" ou importe do Excel (Ctrl+I)</li>
+                            <li class="mb-2"><strong>Gerar Links:</strong> Selecione convidados e clique em "Gerar Links" para criar confirmações personalizadas</li>
+                            <li class="mb-2"><strong>Enviar Convites:</strong> Use "Enviar Email" para disparar convites em massa</li>
+                            <li class="mb-2"><strong>Acompanhar:</strong> Veja as estatísticas em tempo real no Dashboard</li>
+                        </ol>
+                        <div class="alert alert-info">
+                            <strong>💡 Dica:</strong> Use templates salvos para criar eventos recorrentes mais rápido!
+                        </div>
+                    </div>
+
+                    <!-- TAB: Gerenciar Convidados -->
+                    <div class="tab-pane fade" id="tab-convidados">
+                        <h6 class="text-primary fw-bold mb-3">👥 Gerenciamento de Convidados</h6>
+                        
+                        <div class="mb-4">
+                            <strong>Adicionar Individualmente:</strong>
+                            <p class="text-muted small">Clique "+ Adicionar" ou pressione <kbd>Ctrl+N</kbd>. Preencha os campos e salve.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <strong>Importar do Excel:</strong>
+                            <ol class="small text-muted">
+                                <li>Copie dados do Excel (Ctrl+C)</li>
+                                <li>Clique "Importar" ou pressione <kbd>Ctrl+I</kbd></li>
+                                <li>Cole os dados (Ctrl+V)</li>
+                                <li>Marque se tem cabeçalho</li>
+                                <li>Confirme importação</li>
+                            </ol>
+                        </div>
+
+                        <div class="mb-4">
+                            <strong>Banco de Nomes:</strong>
+                            <p class="text-muted small">Ao adicionar convidados, clique "🔍 Buscar no Banco" para ver se a pessoa já participou de outros eventos. O sistema preenche dados automaticamente!</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <strong>Editar/Excluir:</strong>
+                            <p class="text-muted small">Clique nos ícones ✏️ para editar ou 🗑️ para excluir convidados.</p>
+                        </div>
+
+                        <div class="alert alert-success">
+                            <strong>✨ Novo!</strong> O sistema agora lembra de convidados anteriores e sugere dados ao digitar nomes.
+                        </div>
+                    </div>
+
+                    <!-- TAB: Campanhas de Email -->
+                    <div class="tab-pane fade" id="tab-email">
+                        <h6 class="text-primary fw-bold mb-3">✉️ Envio de Emails</h6>
+                        
+                        <div class="mb-4">
+                            <strong>Como usar:</strong>
+                            <ol class="small text-muted">
+                                <li>Selecione convidados (checkbox)</li>
+                                <li>Clique "Enviar Email"</li>
+                                <li>Preencha assunto e mensagem</li>
+                                <li>Use variáveis dinâmicas</li>
+                                <li>Confirme envio</li>
+                            </ol>
+                        </div>
+
+                        <div class="mb-4">
+                            <strong>Variáveis Dinâmicas:</strong>
+                            <ul class="small text-muted">
+                                <li><code>{Nome}</code> - Nome do convidado</li>
+                                <li><code>{Evento}</code> - Nome do evento</li>
+                                <li><code>{Link}</code> - Link personalizado de confirmação</li>
+                            </ul>
+                        </div>
+
+                        <div class="mb-4">
+                            <strong>Exemplo de mensagem:</strong>
+                            <pre class="bg-light p-3 rounded small">Olá {Nome}!
+
+Você está convidado(a) para {Evento}.
+
+Confirme sua presença clicando no link:
+{Link}
+
+Aguardamos você!</pre>
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <strong>⚠️ Importante:</strong> Emails são enviados com intervalo de 1 segundo. Limite de 50 por vez.
+                        </div>
+                    </div>
+
+                    <!-- TAB: Links Personalizados -->
+                    <div class="tab-pane fade" id="tab-links">
+                        <h6 class="text-primary fw-bold mb-3">🔗 Links de Confirmação</h6>
+                        
+                        <div class="mb-4">
+                            <strong>Gerar Links:</strong>
+                            <ol class="small text-muted">
+                                <li>Selecione um ou mais convidados</li>
+                                <li>Clique "Gerar Links"</li>
+                                <li>Sistema cria URLs únicas para cada pessoa</li>
+                            </ol>
+                        </div>
+
+                        <div class="mb-4">
+                            <strong>Compartilhar:</strong>
+                            <p class="text-muted small">Após gerar, você pode:</p>
+                            <ul class="small text-muted">
+                                <li>📋 Copiar link</li>
+                                <li>📱 Enviar via WhatsApp</li>
+                                <li>📧 Enviar por Email</li>
+                                <li>📄 Visualizar QR Code</li>
+                            </ul>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>💡 Dica:</strong> QR Codes são perfeitos para eventos presenciais!
+                        </div>
+                    </div>
+
+                    <!-- TAB: Relatórios -->
+                    <div class="tab-pane fade" id="tab-relatorios">
+                        <h6 class="text-primary fw-bold mb-3">📊 Exportar Dados</h6>
+                        
+                        <div class="mb-4">
+                            <strong>Exportar para PDF:</strong>
+                            <p class="text-muted small">Clique "Exportar PDF" para gerar relatório completo com estatísticas e lista de convidados.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <strong>Exportar para Excel:</strong>
+                            <p class="text-muted small">Clique "Exportar Excel" para baixar planilha com todos os dados do evento.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <strong>Estatísticas incluem:</strong>
+                            <ul class="small text-muted">
+                                <li>Total de convidados</li>
+                                <li>Confirmados / Pendentes / Não vão</li>
+                                <li>Taxa de confirmação</li>
+                                <li>Gráficos visuais</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- TAB: Recursos Avançados -->
+                    <div class="tab-pane fade" id="tab-avancado">
+                        <h6 class="text-primary fw-bold mb-3">⚙️ Funcionalidades Avançadas</h6>
+                        
+                        <div class="mb-4">
+                            <strong>Templates Personalizados:</strong>
+                            <ol class="small text-muted">
+                                <li>Configure colunas do seu evento</li>
+                                <li>Clique "💾 Salvar como Template"</li>
+                                <li>Dê um nome ao template</li>
+                                <li>Use em eventos futuros!</li>
+                            </ol>
+                        </div>
+
+                        <div class="mb-4">
+                            <strong>Banco de Nomes:</strong>
+                            <p class="text-muted small">O sistema memoriza automaticamente todos os convidados adicionados. Ao criar novos eventos, basta buscar pelo nome para recuperar email, telefone e histórico de participação.</p>
+                        </div>
+
+                        <div class="mb-4">
+                            <strong>Colunas Customizadas:</strong>
+                            <p class="text-muted small">Adicione ou remova colunas conforme necessidade do evento (Ex: "Mesa", "Restrição Alimentar", "Workshop Escolhido").</p>
+                        </div>
+
+                        <div class="alert alert-success">
+                            <strong>✨ v15.0:</strong> Templates agora salvam também configurações de email padrão!
+                        </div>
+                    </div>
+
+                    <!-- TAB: Atalhos de Teclado -->
+                    <div class="tab-pane fade" id="tab-atalhos">
+                        <h6 class="text-primary fw-bold mb-3">⌨️ Atalhos de Teclado</h6>
+                        
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Atalho</th>
+                                    <th>Função</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><kbd>Ctrl</kbd> + <kbd>K</kbd></td>
+                                    <td>Busca rápida de eventos</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>Ctrl</kbd> + <kbd>N</kbd></td>
+                                    <td>Adicionar novo convidado</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>Ctrl</kbd> + <kbd>I</kbd></td>
+                                    <td>Importar do Excel</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>Ctrl</kbd> + <kbd>R</kbd></td>
+                                    <td>Atualizar dados do evento</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="alert alert-info mt-3">
+                            <strong>💡 Dica:</strong> Use atalhos para trabalhar mais rápido!
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 2: SALVAR TEMPLATE -->
+<div class="modal fade" id="modalSalvarTemplate" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="fas fa-save me-2"></i>Salvar como Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small">Salve a configuração atual deste evento para reutilizar em eventos futuros.</p>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nome do Template</label>
+                    <input type="text" id="input-nome-template" class="form-control" placeholder="Ex: Reunião Executiva">
+                    <small class="text-muted">Escolha um nome descritivo para identificar facilmente.</small>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Colunas que serão salvas:</label>
+                    <div id="preview-colunas-template" class="bg-light p-2 rounded small"></div>
+                </div>
+
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="check-salvar-email-template">
+                    <label class="form-check-label" for="check-salvar-email-template">
+                        Salvar configurações de email (assunto e mensagem padrão)
+                    </label>
+                </div>
+
+                <div id="preview-email-template" class="bg-light p-3 rounded small" style="display:none;">
+                    <strong>Email padrão:</strong>
+                    <div id="texto-email-template" class="mt-2"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-warning" onclick="confirmarSalvarTemplate()">
+                    <i class="fas fa-save me-1"></i>Salvar Template
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 3: BUSCAR NO BANCO -->
+<div class="modal fade" id="modalBuscarBanco" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-search me-2"></i>Buscar no Banco de Nomes</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Digite o nome:</label>
+                    <div class="input-group">
+                        <input type="text" id="input-busca-banco" class="form-control" placeholder="Ex: João Silva">
+                        <button class="btn btn-success" onclick="executarBuscaBanco()">
+                            <i class="fas fa-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+
+                <div id="resultado-busca-banco"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 4: SELECIONAR TEMPLATE (ao criar evento) -->
+<div class="modal fade" id="modalSelecionarTemplate" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-layer-group me-2"></i>Selecionar Template</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="lista-templates-disponiveis"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            </div>
+        </div>
+    </div>
+</div>
 <div class="modal fade" id="modalConfig" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -376,7 +800,7 @@ Atenciosamente.</textarea>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbznlB0UzqjzlkneSPFv1mi_0Jqqtv6DkZsbPctw28isyZvAwyXOBv2tHnQUl1SM1QQ/exec"; 
+    const API_URL = "https://script.google.com/macros/s/AKfycbzhSLuKBPr88d-oOkjKBDqhfi7wvxrXkBzMwgQ2r-aJEf6GdpmQDxUpp3pd9XbIBqwu/exec"; 
     const GITHUB_PAGES_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
     let colunasAtuais = [], dadosEventoAtual = [], eventoAtual = "", graficoInstance = null, convidadosSelecionados = [];
     document.addEventListener('DOMContentLoaded', () => { carregarLista(); });
@@ -417,7 +841,859 @@ Atenciosamente.</textarea>
     function abrirModalAdd() { const form = document.getElementById('form-dinamico'); form.innerHTML = ""; colunasAtuais.forEach(col => { let inputHTML = col === 'Status' ? `<select class="form-control input-dinamico"><option>Pendente</option><option>Confirmado</option><option>Não vai</option></select>` : `<input type="text" class="form-control input-dinamico">`; form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`; }); new bootstrap.Modal(document.getElementById('modalAdd')).show(); }
     async function enviarConvidado() { const valores = Array.from(document.querySelectorAll('.input-dinamico')).map(i => i.value); if (valores[0] && valores[0].trim() === '') { mostrarToast("Nome obrigatório.", "warning"); return; } bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide(); const res = await chamarAPI('adicionarConvidado', { nomeEvento: eventoAtual, arrayDados: valores }); if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Adicionado!", "success"); } }
     function mostrarTela(tela) { document.getElementById('tela-dashboard').style.display = tela === 'dashboard' ? 'block' : 'none'; document.getElementById('tela-novo').style.display = tela === 'novo' ? 'block' : 'none'; document.querySelectorAll('.sidebar .btn').forEach(btn => btn.classList.remove('active'));if (tela === 'dashboard') document.querySelector('.sidebar .btn:first-of-type').classList.add('active');else document.querySelector('.sidebar .btn:nth-of-type(2)').classList.add('active');}
+
+// =======================================================================
+// FUNÇÕES v15.0 - TEMPLATES + BANCO DE NOMES
+// =======================================================================
+
+// --- TEMPLATES ---
+
+let templatesDisponiveis = [];
+
+async function carregarTemplates() {
+    const res = await chamarAPI('listarTemplates', {});
+    if (res && res.templates) {
+        templatesDisponiveis = res.templates;
+    }
+}
+
+function abrirModalSelecionarTemplate() {
+    const container = document.getElementById('lista-templates-disponiveis');
+    
+    if (templatesDisponiveis.length === 0) {
+        container.innerHTML = `
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                Você ainda não tem templates salvos. Crie um evento e salve-o como template para reutilizar!
+            </div>
+        `;
+    } else {
+        let html = '<div class="row g-3">';
+        
+        templatesDisponiveis.forEach((template, idx) => {
+            html += `
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h6 class="card-title text-primary">${template.nome}</h6>
+                            <p class="small text-muted mb-2">
+                                <strong>Colunas:</strong> ${template.colunas.join(', ')}
+                            </p>
+                            <p class="small text-muted mb-2">
+                                <i class="fas fa-calendar me-1"></i>${template.dataCriacao}
+                                <span class="ms-2"><i class="fas fa-check-circle me-1"></i>${template.vezesUsado}x usado</span>
+                            </p>
+                            ${template.emailAssunto ? `<span class="badge bg-info">Com email padrão</span>` : ''}
+                        </div>
+                        <div class="card-footer bg-light">
+                            <button class="btn btn-sm btn-primary w-100" onclick="usarTemplate(${idx})">
+                                <i class="fas fa-plus me-1"></i>Usar Template
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        html += '</div>';
+        container.innerHTML = html;
+    }
+    
+    new bootstrap.Modal(document.getElementById('modalSelecionarTemplate')).show();
+}
+
+async function usarTemplate(index) {
+    const template = templatesDisponiveis[index];
+    
+    const nomeEvento = prompt(`Nome do novo evento usando template "${template.nome}":`);
+    if (!nomeEvento || !nomeEvento.trim()) return;
+    
+    let usarEmail = false;
+    if (template.emailAssunto) {
+        usarEmail = confirm(`Este template tem configurações de email padrão. Deseja usar?\n\nAssunto: ${template.emailAssunto}`);
+    }
+    
+    mostrarLoading();
+    const res = await chamarAPI('criarEventoDeTemplate', {
+        nomeEvento: nomeEvento.trim(),
+        nomeTemplate: template.nome,
+        usarEmail: usarEmail
+    });
+    esconderLoading();
+    
+    if (res && res.sucesso) {
+        bootstrap.Modal.getInstance(document.getElementById('modalSelecionarTemplate')).hide();
+        mostrarToast(`Evento "${res.nome}" criado do template!`, "success");
+        
+        if (usarEmail && res.emailAssunto) {
+            setTimeout(() => {
+                alert(`📧 Email padrão do template:\n\nAssunto: ${res.emailAssunto}\n\nMensagem: ${res.emailMensagem}\n\nVocê pode usar essas configurações ao enviar emails!`);
+            }, 500);
+        }
+        
+        carregarLista();
+        mostrarTela('dashboard');
+    }
+}
+
+function abrirModalSalvarTemplate() {
+    if (!eventoAtual) {
+        mostrarToast("Selecione um evento primeiro.", "warning");
+        return;
+    }
+    
+    // Mostrar colunas atuais
+    document.getElementById('preview-colunas-template').innerHTML = 
+        colunasAtuais.map(col => `<span class="badge bg-primary me-1">${col}</span>`).join('');
+    
+    document.getElementById('input-nome-template').value = "";
+    document.getElementById('check-salvar-email-template').checked = false;
+    document.getElementById('preview-email-template').style.display = 'none';
+    
+    new bootstrap.Modal(document.getElementById('modalSalvarTemplate')).show();
+}
+
+document.getElementById('check-salvar-email-template')?.addEventListener('change', function() {
+    const preview = document.getElementById('preview-email-template');
+    if (this.checked) {
+        preview.style.display = 'block';
+        document.getElementById('texto-email-template').innerHTML = `
+            <small class="text-muted">Configure o email padrão na próxima campanha de email e salve o template.</small>
+        `;
+    } else {
+        preview.style.display = 'none';
+    }
+});
+
+async function confirmarSalvarTemplate() {
+    const nome = document.getElementById('input-nome-template').value.trim();
+    
+    if (!nome) {
+        mostrarToast("Digite um nome para o template.", "warning");
+        return;
+    }
+    
+    const salvarEmail = document.getElementById('check-salvar-email-template').checked;
+    
+    mostrarLoading();
+    const res = await chamarAPI('salvarTemplate', {
+        nomeTemplate: nome,
+        colunas: colunasAtuais,
+        emailAssunto: salvarEmail ? (ultimoEmailAssunto || "") : "",
+        emailMensagem: salvarEmail ? (ultimoEmailMensagem || "") : ""
+    });
+    esconderLoading();
+    
+    if (res && res.sucesso) {
+        bootstrap.Modal.getInstance(document.getElementById('modalSalvarTemplate')).hide();
+        mostrarToast(`Template "${nome}" salvo com sucesso!`, "success");
+        carregarTemplates();
+    }
+}
+
+let ultimoEmailAssunto = "";
+let ultimoEmailMensagem = "";
+
+// --- BANCO DE NOMES ---
+
+function abrirModalBuscaBanco() {
+    document.getElementById('input-busca-banco').value = "";
+    document.getElementById('resultado-busca-banco').innerHTML = "";
+    new bootstrap.Modal(document.getElementById('modalBuscarBanco')).show();
+}
+
+async function executarBuscaBanco() {
+    const termo = document.getElementById('input-busca-banco').value.trim();
+    
+    if (!termo) {
+        mostrarToast("Digite um nome para buscar.", "warning");
+        return;
+    }
+    
+    mostrarLoading();
+    const res = await chamarAPI('buscarNoBanco', { termo: termo });
+    esconderLoading();
+    
+    const container = document.getElementById('resultado-busca-banco');
+    
+    if (!res || !res.encontrado) {
+        container.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Nenhuma pessoa encontrada com o nome "${termo}".
+            </div>
+        `;
+        return;
+    }
+    
+    let html = '<div class="list-group mt-3">';
+    
+    res.resultados.forEach((pessoa, idx) => {
+        html += `
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1 text-primary">${pessoa.nome}</h6>
+                        ${pessoa.email ? `<p class="mb-1 small"><i class="fas fa-envelope me-1"></i>${pessoa.email}</p>` : ''}
+                        ${pessoa.telefone ? `<p class="mb-1 small"><i class="fas fa-phone me-1"></i>${pessoa.telefone}</p>` : ''}
+                        <p class="mb-1 small text-muted">
+                            <i class="fas fa-history me-1"></i>
+                            <strong>Último evento:</strong> ${pessoa.ultimoEvento} 
+                            ${pessoa.dataUltimaParticipacao !== 'N/A' ? `(${pessoa.dataUltimaParticipacao})` : ''}
+                        </p>
+                        <p class="mb-0 small text-muted">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Participou de <strong>${pessoa.totalEventos}</strong> evento(s)
+                        </p>
+                    </div>
+                    <button class="btn btn-sm btn-success" onclick="preencherComPessoa(${idx})">
+                        <i class="fas fa-plus-circle me-1"></i>Usar
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+let pessoasEncontradas = [];
+
+async function executarBuscaBancoCompleta() {
+    const termo = document.getElementById('input-busca-banco').value.trim();
+    
+    if (!termo) {
+        mostrarToast("Digite um nome para buscar.", "warning");
+        return;
+    }
+    
+    mostrarLoading();
+    const res = await chamarAPI('buscarNoBanco', { termo: termo });
+    esconderLoading();
+    
+    const container = document.getElementById('resultado-busca-banco');
+    
+    if (!res || !res.encontrado) {
+        container.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Nenhuma pessoa encontrada com o nome "${termo}".
+            </div>
+        `;
+        pessoasEncontradas = [];
+        return;
+    }
+    
+    pessoasEncontradas = res.resultados;
+    
+    let html = '<div class="list-group mt-3">';
+    
+    res.resultados.forEach((pessoa, idx) => {
+        html += `
+            <div class="list-group-item">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 text-primary">${pessoa.nome}</h6>
+                        ${pessoa.email ? `<p class="mb-1 small"><i class="fas fa-envelope me-1"></i>${pessoa.email}</p>` : ''}
+                        ${pessoa.telefone ? `<p class="mb-1 small"><i class="fas fa-phone me-1"></i>${pessoa.telefone}</p>` : ''}
+                        <p class="mb-1 small text-muted">
+                            <i class="fas fa-history me-1"></i>
+                            <strong>Último evento:</strong> ${pessoa.ultimoEvento} 
+                            ${pessoa.dataUltimaParticipacao !== 'N/A' ? `(${pessoa.dataUltimaParticipacao})` : ''}
+                        </p>
+                        <p class="mb-0 small text-muted">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Participou de <strong>${pessoa.totalEventos}</strong> evento(s)
+                        </p>
+                    </div>
+                    <button class="btn btn-sm btn-success" onclick="preencherComPessoa(${idx})">
+                        <i class="fas fa-plus-circle me-1"></i>Usar
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    container.innerHTML = html;
+}
+
+function preencherComPessoa(index) {
+    const pessoa = pessoasEncontradas[index];
+    
+    // Preencher inputs do modal adicionar
+    const inputs = document.querySelectorAll('.input-dinamico');
+    
+    colunasAtuais.forEach((col, i) => {
+        if (inputs[i]) {
+            const colLower = col.toLowerCase();
+            
+            if (colLower.includes('nome')) {
+                inputs[i].value = pessoa.nome;
+            } else if (colLower.includes('email') || colLower === 'e-mail') {
+                inputs[i].value = pessoa.email || '';
+            } else if (colLower.includes('telefone') || colLower.includes('celular')) {
+                inputs[i].value = pessoa.telefone || '';
+            } else if (colLower.includes('status') || colLower.includes('confirmado')) {
+                inputs[i].value = 'Pendente';
+            } else {
+                inputs[i].value = '';
+            }
+        }
+    });
+    
+    bootstrap.Modal.getInstance(document.getElementById('modalBuscarBanco')).hide();
+    mostrarToast(`Dados de "${pessoa.nome}" preenchidos!`, "success");
+}
+
+// Modificar o modal "Adicionar Convidado" para incluir botão de busca
+function abrirModalAddComBusca() {
+    const form = document.getElementById('form-dinamico');
+    form.innerHTML = "";
+    
+    colunasAtuais.forEach(col => {
+        let inputHTML = col === 'Status' || col === 'Confirmado' 
+            ? `<select class="form-control input-dinamico"><option>Pendente</option><option>Confirmado</option><option>Não vai</option></select>` 
+            : `<input type="text" class="form-control input-dinamico">`;
+        
+        form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`;
+    });
+    
+    // Adicionar botão buscar no banco se não existir
+    const modalBody = document.querySelector('#modalAdd .modal-body');
+    let btnBusca = document.getElementById('btn-busca-banco-inline');
+    
+    if (!btnBusca) {
+        btnBusca = document.createElement('button');
+        btnBusca.id = 'btn-busca-banco-inline';
+        btnBusca.className = 'btn btn-success w-100 mb-3';
+        btnBusca.innerHTML = '<i class="fas fa-search me-2"></i>🔍 Buscar no Banco de Nomes';
+        btnBusca.type = 'button';
+        btnBusca.onclick = function() {
+            bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide();
+            setTimeout(() => abrirModalBuscaBanco(), 300);
+        };
+        modalBody.insertBefore(btnBusca, modalBody.firstChild);
+    }
+    
+    new bootstrap.Modal(document.getElementById('modalAdd')).show();
+}
+
+// Atualizar referências para usar a nova função
+function abrirModalAdd() {
+    abrirModalAddComBusca();
+}
+
+// Capturar dados de email para salvar no template
+const originalProcessarEnvioEmails = processarEnvioEmails;
+async function processarEnvioEmails() {
+    ultimoEmailAssunto = document.getElementById('email-assunto').value.trim();
+    ultimoEmailMensagem = document.getElementById('email-mensagem').value.trim();
+    return await originalProcessarEnvioEmails();
+}
+
+// Adicionar botão "Salvar como Template" no painel do evento
+function adicionarBotaoSalvarTemplate() {
+    const toolbar = document.querySelector('.toolbar-massa');
+    if (!toolbar) return;
+    
+    let btnTemplate = document.getElementById('btn-salvar-template');
+    if (btnTemplate) return; // Já existe
+    
+    btnTemplate = document.createElement('button');
+    btnTemplate.id = 'btn-salvar-template';
+    btnTemplate.className = 'btn btn-warning btn-sm ms-2';
+    btnTemplate.innerHTML = '<i class="fas fa-save me-1"></i>Salvar como Template';
+    btnTemplate.onclick = abrirModalSalvarTemplate;
+    
+    // Adicionar ao lado do botão de email
+    const btnEmail = document.getElementById('btn-massa-email');
+    if (btnEmail && btnEmail.parentNode) {
+        btnEmail.parentNode.insertBefore(btnTemplate, btnEmail.nextSibling);
+    }
+}
+
+// Modificar a função de criar evento para incluir opção de templates
+const originalHandleCriarEvento = handleCriarEvento;
+async function handleCriarEvento(e) {
+    e.preventDefault();
+    const nome = document.getElementById('novo-nome').value.trim();
+    const tipoRadio = document.querySelector('input[name="novo-tipo"]:checked');
+    
+    if (!tipoRadio) {
+        mostrarToast("Selecione um tipo de evento.", "warning");
+        return;
+    }
+    
+    const tipo = tipoRadio.value;
+    
+    // Se escolheu "Template", abrir modal de seleção
+    if (tipo === 'Template') {
+        await carregarTemplates();
+        abrirModalSelecionarTemplate();
+        return;
+    }
+    
+    // Continuar com criação normal
+    return await originalHandleCriarEvento(e);
+}
+
+// Inicializar templates ao carregar
+window.addEventListener('DOMContentLoaded', function() {
+    carregarTemplates();
+});
+
+// Executar busca ao pressionar Enter
+document.getElementById('input-busca-banco')?.addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        executarBuscaBancoCompleta();
+    }
+});
+
     document.addEventListener('keydown', (e) => {if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('busca-rapida')?.focus(); }if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); if (eventoAtual) abrirModalAdd(); }if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); if (eventoAtual) abrirModalImport(); }if ((e.ctrlKey || e.metaKey) && e.key === 'r' && eventoAtual) { e.preventDefault(); carregarEventoEspecifico(eventoAtual); }});
 </script>
+
+<!-- Rodapé com assinatura -->
+<footer class="mt-5 pt-4 pb-3 text-center" style="border-top: 1px solid rgba(255,255,255,0.1);">
+    <small class="text-muted" style="opacity: 0.7;">
+        Sistema RSVP v15.0
+        <br>
+        Desenvolvido por Gabriel Felizardo | © <span id="ano-atual"></span>
+    </small>
+</footer>
+
+<script>
+    // Atualizar ano automaticamente
+    document.getElementById('ano-atual').textContent = new Date().getFullYear();
+
+
+// =======================================================================
+// FUNÇÕES JAVASCRIPT v15.0 - ADICIONAR NO PAINEL.HTML
+// =======================================================================
+
+// --- BANCO DE NOMES ---
+
+async function carregarBancoNomes() {
+    mostrarLoading(true);
+    const res = await chamarAPI('listarBancoNomes', {});
+    mostrarLoading(false);
+    
+    if (res && res.nomes) {
+        renderizarTabelaBanco(res.nomes);
+    }
+}
+
+function renderizarTabelaBanco(nomes) {
+    const tbody = document.querySelector('#tabela-banco tbody');
+    
+    if (nomes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhum nome cadastrado ainda.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = nomes.map(p => `
+        <tr>
+            <td><strong>${p.nome}</strong></td>
+            <td>${p.email || '<span class="text-muted">-</span>'}</td>
+            <td>${p.telefone || '<span class="text-muted">-</span>'}</td>
+            <td>
+                <span class="badge bg-primary">${p.totalEventos} evento(s)</span>
+            </td>
+            <td>
+                <small class="text-muted">${p.ultimoEvento}</small>
+                ${p.dataUltimaParticipacao !== 'N/A' ? `<br><small>(${p.dataUltimaParticipacao})</small>` : ''}
+            </td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="editarNomeBanco('${p.nome}', '${p.email}', '${p.telefone}', ${p.totalEventos})" title="Editar">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="excluirNomeBanco('${p.nome}')" title="Excluir">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function filtrarTabelaBanco() {
+    const busca = document.getElementById('busca-banco').value.toLowerCase();
+    const linhas = document.querySelectorAll('#tabela-banco tbody tr');
+    
+    linhas.forEach(linha => {
+        const texto = linha.textContent.toLowerCase();
+        linha.style.display = texto.includes(busca) ? '' : 'none';
+    });
+}
+
+function editarNomeBanco(nome, email, telefone, totalEventos) {
+    document.getElementById('edit-banco-nome-antigo').value = nome;
+    document.getElementById('edit-banco-nome').value = nome;
+    document.getElementById('edit-banco-email').value = email || '';
+    document.getElementById('edit-banco-telefone').value = telefone || '';
+    
+    // Mostrar alerta de propagação apenas se houver eventos
+    const alertPropagar = document.getElementById('alert-propagar');
+    if (totalEventos > 0) {
+        alertPropagar.style.display = 'block';
+        document.getElementById('qtd-eventos-propagar').textContent = totalEventos;
+    } else {
+        alertPropagar.style.display = 'none';
+    }
+    
+    new bootstrap.Modal(document.getElementById('modalEditarBanco')).show();
+}
+
+async function salvarEdicaoBanco() {
+    const nomeAntigo = document.getElementById('edit-banco-nome-antigo').value;
+    const nomeNovo = document.getElementById('edit-banco-nome').value.trim();
+    const email = document.getElementById('edit-banco-email').value.trim();
+    const telefone = document.getElementById('edit-banco-telefone').value.trim();
+    const propagar = document.getElementById('check-propagar-eventos').checked;
+    
+    if (!nomeNovo) {
+        mostrarToast("Nome não pode estar vazio.", "warning");
+        return;
+    }
+    
+    const res = await chamarAPI('editarNoBanco', {
+        nomeAntigo: nomeAntigo,
+        nomeNovo: nomeNovo,
+        email: email,
+        telefone: telefone,
+        propagarEventos: propagar
+    });
+    
+    if (res && res.sucesso) {
+        bootstrap.Modal.getInstance(document.getElementById('modalEditarBanco')).hide();
+        
+        if (res.propagado) {
+            mostrarToast(`Atualizado! ${res.eventosAtualizados} ocorrência(s) em eventos.`, "success");
+        } else {
+            mostrarToast("Informações atualizadas!", "success");
+        }
+        
+        carregarBancoNomes();
+    }
+}
+
+async function excluirNomeBanco(nome) {
+    if (!confirm(`Tem certeza que deseja excluir "${nome}" do banco?\n\nOs eventos onde este nome aparece NÃO serão afetados.`)) {
+        return;
+    }
+    
+    const res = await chamarAPI('excluirDoBanco', { nome: nome });
+    
+    if (res && res.sucesso) {
+        mostrarToast("Nome removido do banco.", "success");
+        carregarBancoNomes();
+    }
+}
+
+// --- BUSCAR NO BANCO AO ADICIONAR CONVIDADO ---
+
+function abrirModalAdd() {
+    const form = document.getElementById('form-dinamico');
+    form.innerHTML = "";
+    
+    colunasAtuais.forEach((col, index) => {
+        let inputHTML;
+        
+        // Campo especial para Nome com busca
+        if (index === 0 || col.toLowerCase().includes('nome')) {
+            inputHTML = `
+                <div class="input-group">
+                    <input type="text" class="form-control input-dinamico" id="input-nome-busca">
+                    <button class="btn btn-outline-primary" type="button" onclick="buscarNomeNoBanco()">
+                        <i class="fas fa-search"></i> Buscar
+                    </button>
+                </div>
+                <div id="resultado-busca-banco" class="mt-2"></div>
+            `;
+        } else if (col === 'Status' || col.toLowerCase() === 'confirmado') {
+            inputHTML = `
+                <select class="form-control input-dinamico">
+                    <option>Pendente</option>
+                    <option>Confirmado</option>
+                    <option>Não vai</option>
+                </select>
+            `;
+        } else {
+            inputHTML = `<input type="text" class="form-control input-dinamico" id="input-col-${index}">`;
+        }
+        
+        form.innerHTML += `
+            <div class="mb-3">
+                <label class="fw-bold small text-muted">${col}</label>
+                ${inputHTML}
+            </div>
+        `;
+    });
+    
+    new bootstrap.Modal(document.getElementById('modalAdd')).show();
+}
+
+async function buscarNomeNoBanco() {
+    const inputNome = document.getElementById('input-nome-busca');
+    const termo = inputNome.value.trim();
+    
+    if (!termo || termo.length < 2) {
+        mostrarToast("Digite pelo menos 2 caracteres para buscar.", "warning");
+        return;
+    }
+    
+    mostrarLoading(true);
+    const res = await chamarAPI('buscarNoBanco', { termo: termo });
+    mostrarLoading(false);
+    
+    const divResultado = document.getElementById('resultado-busca-banco');
+    
+    if (res && res.encontrado && res.resultados.length > 0) {
+        const pessoa = res.resultados[0]; // Pegar primeiro resultado
+        
+        divResultado.innerHTML = `
+            <div class="alert alert-success">
+                <strong>✅ Encontrado no banco!</strong>
+                <div class="mt-2">
+                    <strong>${pessoa.nome}</strong><br>
+                    ${pessoa.email ? `Email: ${pessoa.email}<br>` : ''}
+                    ${pessoa.telefone ? `Telefone: ${pessoa.telefone}<br>` : ''}
+                    <small class="text-muted">Último evento: ${pessoa.ultimoEvento}</small>
+                </div>
+                <button class="btn btn-sm btn-success mt-2" onclick="preencherDadosDoBanco('${pessoa.nome}', '${pessoa.email || ''}', '${pessoa.telefone || ''}')">
+                    <i class="fas fa-check"></i> Preencher Dados
+                </button>
+            </div>
+        `;
+        
+        // Verificar se há dados novos para atualizar
+        verificarAtualizacaoDadosBanco(pessoa.nome);
+        
+    } else {
+        divResultado.innerHTML = `
+            <div class="alert alert-info">
+                <strong>ℹ️ Nome não encontrado no banco.</strong><br>
+                <small>Este será o primeiro evento com "${termo}".</small>
+            </div>
+        `;
+    }
+}
+
+function preencherDadosDoBanco(nome, email, telefone) {
+    const inputs = document.querySelectorAll('.input-dinamico');
+    
+    // Preencher campos baseado nas colunas
+    colunasAtuais.forEach((col, index) => {
+        const colLower = col.toLowerCase();
+        
+        if (colLower.includes('nome')) {
+            inputs[index].value = nome;
+        } else if (colLower.includes('email') || colLower === 'e-mail') {
+            inputs[index].value = email;
+        } else if (colLower.includes('telefone') || colLower.includes('tel') || colLower.includes('fone')) {
+            inputs[index].value = telefone;
+        }
+    });
+    
+    mostrarToast("Dados preenchidos automaticamente!", "success");
+    document.getElementById('resultado-busca-banco').innerHTML = '';
+}
+
+async function verificarAtualizacaoDadosBanco(nome) {
+    // Pegar valores atuais dos inputs
+    const inputs = document.querySelectorAll('.input-dinamico');
+    let emailAtual = '';
+    let telefoneAtual = '';
+    
+    colunasAtuais.forEach((col, index) => {
+        const colLower = col.toLowerCase();
+        
+        if (colLower.includes('email') || colLower === 'e-mail') {
+            emailAtual = inputs[index].value.trim();
+        } else if (colLower.includes('telefone')) {
+            telefoneAtual = inputs[index].value.trim();
+        }
+    });
+    
+    // Verificar no backend se há dados novos
+    const res = await chamarAPI('verificarAtualizacaoDados', {
+        nome: nome,
+        email: emailAtual,
+        telefone: telefoneAtual
+    });
+    
+    if (res && res.precisaAtualizar) {
+        const mensagens = [];
+        
+        if (res.emailNovo) {
+            mensagens.push(`Email: ${res.emailAtual || '(vazio)'} → ${res.emailNovo}`);
+        }
+        
+        if (res.telefoneNovo) {
+            mensagens.push(`Telefone: ${res.telefoneAtual || '(vazio)'} → ${res.telefoneNovo}`);
+        }
+        
+        const confirmado = confirm(
+            `🔄 Detectamos dados novos para "${res.nome}":\n\n` +
+            mensagens.join('\n') +
+            `\n\nDeseja atualizar esses dados no banco de nomes?`
+        );
+        
+        if (confirmado) {
+            await chamarAPI('atualizarDadosBanco', {
+                nome: nome,
+                email: res.emailNovo || null,
+                telefone: res.telefoneNovo || null
+            });
+            
+            mostrarToast("Banco de nomes atualizado!", "success");
+        }
+    }
+}
+
+// --- TEMPLATES ---
+
+async function salvarEventoComoTemplate() {
+    if (!eventoAtual) {
+        mostrarToast("Nenhum evento selecionado.", "warning");
+        return;
+    }
+    
+    const nomeTemplate = prompt("Digite um nome para este template:");
+    
+    if (!nomeTemplate || nomeTemplate.trim() === '') return;
+    
+    // Pegar colunas atuais
+    const colunas = colunasAtuais;
+    
+    // Perguntar se quer salvar email padrão
+    const incluirEmail = confirm("Deseja salvar um email padrão neste template?");
+    
+    let emailAssunto = '';
+    let emailMensagem = '';
+    
+    if (incluirEmail) {
+        emailAssunto = prompt("Assunto do email padrão:");
+        emailMensagem = prompt("Mensagem do email padrão:");
+    }
+    
+    const res = await chamarAPI('salvarTemplate', {
+        nomeTemplate: nomeTemplate.trim(),
+        colunas: colunas,
+        emailAssunto: emailAssunto || '',
+        emailMensagem: emailMensagem || ''
+    });
+    
+    if (res && res.sucesso) {
+        mostrarToast(`Template "${res.nome}" salvo com sucesso!`, "success");
+    }
+}
+
+// --- ATUALIZAÇÃO DA FUNÇÃO DE CONTROLE DE TELAS ---
+
+function mostrarTela(tela) {
+    // Ocultar todas as telas
+    document.getElementById('tela-dashboard').style.display = 'none';
+    document.getElementById('tela-novo').style.display = 'none';
+    document.getElementById('tela-banco-nomes').style.display = 'none';
+    
+    // Mostrar tela selecionada
+    if (tela === 'dashboard') {
+        document.getElementById('tela-dashboard').style.display = 'block';
+    } else if (tela === 'novo') {
+        document.getElementById('tela-novo').style.display = 'block';
+    } else if (tela === 'banco-nomes') {
+        document.getElementById('tela-banco-nomes').style.display = 'block';
+        carregarBancoNomes(); // Carregar ao abrir
+    }
+    
+    // Atualizar botões ativos
+    document.querySelectorAll('.sidebar .btn').forEach(btn => btn.classList.remove('active'));
+    
+    if (tela === 'dashboard') {
+        document.querySelector('.sidebar .btn:nth-of-type(1)').classList.add('active');
+    } else if (tela === 'novo') {
+        document.querySelector('.sidebar .btn:nth-of-type(2)').classList.add('active');
+    } else if (tela === 'banco-nomes') {
+        document.querySelector('.sidebar .btn:nth-of-type(3)').classList.add('active');
+    }
+}
+
+// --- EXCLUIR EVENTO (MANTÉM NOMES NO BANCO) ---
+
+async function excluirEventoCompleto(nomeEvento) {
+    const confirmacao = confirm(
+        `⚠️ Tem certeza que deseja excluir o evento "${nomeEvento}"?\n\n` +
+        `O evento será removido, mas os nomes dos convidados permanecerão no banco de nomes.\n\n` +
+        `Esta ação não pode ser desfeita.`
+    );
+    
+    if (!confirmacao) return;
+    
+    // Segunda confirmação
+    const confirmacao2 = confirm(`Digite OK para confirmar a exclusão do evento "${nomeEvento}"`);
+    
+    if (!confirmacao2) return;
+    
+    mostrarLoading(true);
+    const res = await chamarAPI('excluirEvento', { nomeEvento: nomeEvento });
+    mostrarLoading(false);
+    
+    if (res && res.sucesso) {
+        mostrarToast(res.mensagem || "Evento excluído com sucesso!", "success");
+        carregarLista(); // Recarregar lista de eventos
+        mostrarTela('dashboard');
+    }
+}
+
+
+</script>
+
+
+<!-- MODAL: EDITAR NOME DO BANCO -->
+<div class="modal fade" id="modalEditarBanco" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Informações - Banco de Nomes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-banco-nome-antigo">
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Nome</label>
+                    <input type="text" id="edit-banco-nome" class="form-control">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Email</label>
+                    <input type="email" id="edit-banco-email" class="form-control">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Telefone</label>
+                    <input type="text" id="edit-banco-telefone" class="form-control">
+                </div>
+                
+                <div class="alert alert-warning" id="alert-propagar" style="display:none;">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="check-propagar-eventos">
+                        <label class="form-check-label" for="check-propagar-eventos">
+                            <strong>Atualizar nome em <span id="qtd-eventos-propagar"></span> evento(s)?</strong>
+                            <br>
+                            <small class="text-muted">As mudanças serão aplicadas em todos os eventos onde este nome aparece.</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="salvarEdicaoBanco()">Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>
