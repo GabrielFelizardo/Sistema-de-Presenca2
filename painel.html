@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Eventos - Master</title>
+    <title>Gestor de Eventos v14.5</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -46,7 +46,7 @@
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
         .btn:active { transform: translateY(0); }
         
-        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.8rem; }
+        .status-badge { display: inline-flex; align-items-center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.8rem; }
         
         .toolbar-search { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .search-input { border-radius: 10px; border: 2px solid #e5e7eb; padding: 10px 16px; transition: all 0.2s; }
@@ -81,7 +81,6 @@
         .metric-value { font-size: 2rem; font-weight: 700; color: var(--primary-blue); }
         .metric-label { font-size: 0.875rem; color: #6b7280; text-transform: uppercase; }
         
-        /* Toolbar de Seleção em Massa */
         .toolbar-massa { 
             background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); 
             border-left: 4px solid var(--primary-blue);
@@ -130,8 +129,8 @@
     </div>
     <div class="mt-auto text-muted small pt-3 border-top">
         <div class="d-flex align-items-center justify-content-between">
-            <span>v14.0 - Master</span>
-            <i class="fas fa-rocket text-primary"></i>
+            <span>v14.5 - Email Inteligente</span>
+            <i class="fas fa-envelope text-primary"></i>
         </div>
     </div>
 </div>
@@ -342,26 +341,28 @@
                 <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p class="text-muted small">Serão enviados e-mails para os contatos selecionados que possuam endereço válido.</p>
+                <p class="text-muted small" id="email-info">Serão enviados e-mails para os contatos selecionados que possuam endereço válido.</p>
                 <div class="mb-3">
                     <label class="form-label fw-bold">Assunto</label>
-                    <input type="text" id="email-assunto" class="form-control" value="Convite para {Nome}">
+                    <input type="text" id="email-assunto" class="form-control" value="Convite: {Evento}">
+                    <div class="form-text">Use {Nome} e {Evento} onde quiser que apareçam.</div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label fw-bold">Mensagem</label>
-                    <textarea id="email-mensagem" class="form-control" rows="5">Olá {Nome},
+                    <textarea id="email-mensagem" class="form-control" rows="6">Olá {Nome},
 
 Gostaríamos muito da sua presença!
 Confirme no link abaixo:
+
 {Link}
 
 Atenciosamente.</textarea>
-                    <div class="form-text">Use {Nome} e {Link} onde quiser que apareçam.</div>
+                    <div class="form-text">Use {Nome}, {Evento} e {Link} para personalizar.</div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-primary" onclick="processarEnvioEmails()">Enviar Agora</button>
+                <button class="btn btn-primary" onclick="processarEnvioEmails()"><i class="fas fa-paper-plane me-1"></i>Enviar Agora</button>
             </div>
         </div>
     </div>
@@ -375,443 +376,48 @@ Atenciosamente.</textarea>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    // ============================================================
-    // ⚙️ CONFIGURAÇÃO
-    // ============================================================
     const API_URL = "https://script.google.com/macros/s/AKfycbznlB0UzqjzlkneSPFv1mi_0Jqqtv6DkZsbPctw28isyZvAwyXOBv2tHnQUl1SM1QQ/exec"; 
-    
-    // URL AUTOMÁTICA DO GITHUB
     const GITHUB_PAGES_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-
-    // ============================================================
-
-    let colunasAtuais = [];
-    let dadosEventoAtual = []; 
-    let eventoAtual = "";
-    let graficoInstance = null;
-    let convidadosSelecionados = [];
-
+    let colunasAtuais = [], dadosEventoAtual = [], eventoAtual = "", graficoInstance = null, convidadosSelecionados = [];
     document.addEventListener('DOMContentLoaded', () => { carregarLista(); });
-
-    function mostrarToast(mensagem, tipo = 'success') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        const icons = { success: '✓', error: '✕', warning: '⚠' };
-        toast.className = 'toast-notification';
-        toast.innerHTML = `<span class="toast-icon ${tipo}">${icons[tipo]}</span><span class="toast-message">${mensagem}</span>`;
-        container.appendChild(toast);
-        setTimeout(() => { toast.classList.add('slide-out'); setTimeout(() => toast.remove(), 300); }, 3500);
-    }
-
-    function confirmarAcao(titulo, mensagem) {
-        return new Promise((resolve) => {
-            document.getElementById('confirm-titulo').innerText = titulo;
-            document.getElementById('confirm-mensagem').innerText = mensagem;
-            const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));
-            const btnOk = document.getElementById('confirm-btn-ok');
-            btnOk.onclick = () => { modal.hide(); resolve(true); };
-            document.getElementById('modalConfirmacao').addEventListener('hidden.bs.modal', () => { resolve(false); }, { once: true });
-            modal.show();
-        });
-    }
-
-    async function chamarAPI(acao, dados = {}) {
-        document.getElementById('loading').style.display = 'flex';
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ acao: acao, ...dados })
-            });
-            const json = await response.json();
-            document.getElementById('loading').style.display = 'none';
-            if (json.erro) { mostrarToast("Erro: " + json.erro, "error"); return null; }
-            return json;
-        } catch (e) {
-            document.getElementById('loading').style.display = 'none';
-            mostrarToast("Erro de conexão.", "error");
-            return null;
-        }
-    }
-
-    async function carregarLista() {
-        const dados = await chamarAPI('listarEventos');
-        if (!dados) return;
-        const tabContainer = document.getElementById('tab-lista-eventos');
-        tabContainer.innerHTML = ''; 
-        if (dados.length === 0) { tabContainer.innerHTML = '<li class="nav-item"><a class="nav-link disabled">Nenhum evento</a></li>'; return; }
-        dados.forEach((ev, index) => {
-            const li = document.createElement('li'); li.className = 'nav-item';
-            const btn = document.createElement('button'); btn.className = index === 0 ? 'nav-link active' : 'nav-link';
-            btn.innerText = ev.nome; btn.onclick = () => { document.querySelectorAll('#tab-lista-eventos .nav-link').forEach(el => el.classList.remove('active')); btn.classList.add('active'); carregarEventoEspecifico(ev.nome); };
-            li.appendChild(btn); tabContainer.appendChild(li);
-        });
-        if (dados.length > 0) carregarEventoEspecifico(dados[0].nome);
-    }
-
-    async function carregarEventoEspecifico(nome) {
-        if (!nome) return;
-        eventoAtual = nome;
-        const dados = await chamarAPI('obterDadosEvento', { nomeEvento: nome });
-        if (!dados) return;
-        
-        colunasAtuais = dados.headers;
-        dadosEventoAtual = dados.rows;
-        convidadosSelecionados = []; // Reset
-        
-        renderizarTabela(dados.headers, dados.rows);
-        atualizarDashboard(dados.headers, dados.rows);
-        
-        // Verifica se existe coluna de email para mostrar botão
-        const temEmail = dados.headers.some(h => h.toLowerCase() === 'email' || h.toLowerCase() === 'e-mail');
-        document.getElementById('btn-massa-email').style.display = temEmail ? 'inline-block' : 'none';
-        
-        document.getElementById('toolbar-acoes').style.display = 'block';
-        document.getElementById('toolbar-busca').style.display = 'block';
-        document.getElementById('toolbar-massa').style.display = 'none';
-        document.getElementById('busca-rapida').value = '';
-        document.querySelector('select.form-select').value = '';
-        mostrarToast(`Evento "${nome}" carregado!`, "success");
-    }
-
-    function atualizarDashboard(headers, rows) {
-        document.getElementById('area-stats').style.display = 'block';
-        const indexStatus = headers.indexOf('Status');
-        let confirmados = 0, pendentes = 0, recusados = 0, total = rows.length;
-        if (indexStatus > -1) {
-            rows.forEach(row => {
-                const status = row[indexStatus] || "Pendente";
-                if (status === 'Confirmado') confirmados++; else if (status === 'Não vai') recusados++; else pendentes++;
-            });
-        } else { pendentes = total; }
-        document.getElementById('stat-total').innerText = total; 
-        document.getElementById('stat-confirmados').innerText = confirmados; 
-        document.getElementById('stat-pendentes').innerText = pendentes; 
-        document.getElementById('stat-recusados').innerText = recusados;
-        const taxaResposta = total > 0 ? Math.round(((confirmados + recusados) / total) * 100) : 0;
-        const percentualConfirmados = total > 0 ? Math.round((confirmados / total) * 100) : 0;
-        document.getElementById('taxa-resposta').innerText = taxaResposta + '%';
-        document.getElementById('percentual-confirmados').innerText = percentualConfirmados + '%';
-        document.getElementById('ultima-atualizacao').innerText = new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-        const ctx = document.getElementById('meuGrafico').getContext('2d');
-        if (graficoInstance) graficoInstance.destroy();
-        graficoInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Confirmados', 'Pendentes', 'Recusados'], datasets: [{ data: [confirmados, pendentes, recusados], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0, hoverOffset: 10 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15, font: { size: 13 } } } } } });
-    }
-
-    function filtrarTabela() {
-        const termo = document.getElementById('busca-rapida').value.toLowerCase();
-        const linhas = document.querySelectorAll('#tabela-dados tbody tr');
-        let contador = 0;
-        linhas.forEach(linha => {
-            const texto = linha.textContent.toLowerCase();
-            const visivel = texto.includes(termo);
-            linha.style.display = visivel ? '' : 'none';
-            if (visivel) contador++;
-        });
-        document.getElementById('contador-filtrados').innerText = contador;
-    }
-
-    function filtrarPorStatus(status) {
-        const linhas = document.querySelectorAll('#tabela-dados tbody tr');
-        const indexStatus = colunasAtuais.indexOf('Status');
-        let contador = 0;
-        linhas.forEach(linha => {
-            const celulas = linha.querySelectorAll('td');
-            const statusCelula = celulas[indexStatus + 1]?.textContent.replace(/[^a-záéíóúàâêôãõç\s]/gi, '').trim();
-            const visivel = !status || statusCelula.includes(status);
-            linha.style.display = visivel ? '' : 'none';
-            if (visivel) contador++;
-        });
-        document.getElementById('contador-filtrados').innerText = contador;
-    }
-
-    function renderizarTabela(headers, rows) {
-        const thead = document.querySelector('#tabela-dados thead');
-        const tbody = document.querySelector('#tabela-dados tbody');
-        
-        let headerHTML = "<tr><th class='ocultar-pdf' style='width: 40px;'><input type='checkbox' onchange='selecionarTodos(this.checked)'></th>";
-        headers.forEach(h => headerHTML += `<th>${h}</th>`);
-        headerHTML += `<th class="text-center ocultar-pdf" style="width: 100px;">Ações</th></tr>`;
-        thead.innerHTML = headerHTML;
-        
-        if (rows.length === 0) { 
-            tbody.innerHTML = `<tr><td colspan="${headers.length + 2}" class="text-center p-5"><i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i><span class="text-muted">Nenhum convidado</span></td></tr>`; 
-            document.getElementById('contador-filtrados').innerText = '0';
-        } else {
-            const statusBadges = {
-                'Confirmado': '<span class="status-badge bg-success text-white"><i class="fas fa-check"></i>Confirmado</span>',
-                'Pendente': '<span class="status-badge bg-warning text-dark"><i class="fas fa-clock"></i>Pendente</span>',
-                'Não vai': '<span class="status-badge bg-danger text-white"><i class="fas fa-times"></i>Não vai</span>'
-            };
-            const indexStatus = headers.indexOf('Status');
-            let bodyHTML = "";
-            rows.forEach((row, index) => {
-                bodyHTML += "<tr>";
-                bodyHTML += `<td class="ocultar-pdf"><input type="checkbox" class="check-convidado" data-index="${index}" onchange="toggleSelecao(${index})"></td>`;
-                row.forEach((cell, colIndex) => {
-                    if (colIndex === indexStatus && statusBadges[cell]) {
-                        bodyHTML += `<td>${statusBadges[cell]}</td>`;
-                    } else {
-                        bodyHTML += `<td>${cell}</td>`;
-                    }
-                });
-                bodyHTML += `<td class="text-center ocultar-pdf">
-                    <button class="btn btn-light btn-action text-primary me-1" onclick="abrirModalEditar(${index})"><i class="fas fa-pen"></i></button>
-                    <button class="btn btn-light btn-action text-danger" onclick="confirmarExclusao(${index})"><i class="fas fa-trash"></i></button>
-                </td></tr>`;
-            });
-            tbody.innerHTML = bodyHTML;
-            document.getElementById('contador-filtrados').innerText = rows.length;
-        }
-    }
-
-    // SELEÇÃO EM MASSA
-    function selecionarTodos(checked) {
-        convidadosSelecionados = [];
-        document.querySelectorAll('.check-convidado').forEach(checkbox => {
-            checkbox.checked = checked;
-            if (checked) {
-                convidadosSelecionados.push(parseInt(checkbox.dataset.index));
-            }
-        });
-        atualizarToolbarMassa();
-    }
-
-    function toggleSelecao(index) {
-        const checkbox = document.querySelector(`.check-convidado[data-index="${index}"]`);
-        if (checkbox.checked) {
-            if (!convidadosSelecionados.includes(index)) {
-                convidadosSelecionados.push(index);
-            }
-        } else {
-            convidadosSelecionados = convidadosSelecionados.filter(i => i !== index);
-        }
-        atualizarToolbarMassa();
-    }
-
-    function atualizarToolbarMassa() {
-        const toolbar = document.getElementById('toolbar-massa');
-        const count = document.getElementById('count-selecionados');
-        count.innerText = convidadosSelecionados.length;
-        toolbar.style.display = convidadosSelecionados.length > 0 ? 'block' : 'none';
-    }
-
-    async function atualizarEmMassa(novoStatus) {
-        if (convidadosSelecionados.length === 0) return;
-        
-        const confirmado = await confirmarAcao(
-            `Atualizar ${convidadosSelecionados.length} convidados?`,
-            `Todos serão marcados como "${novoStatus}"`
-        );
-        
-        if (!confirmado) return;
-        
-        const indexStatus = colunasAtuais.indexOf('Status');
-        for (const index of convidadosSelecionados) {
-            const novosDados = [...dadosEventoAtual[index]];
-            novosDados[indexStatus] = novoStatus;
-            await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: index + 2, novosDados });
-        }
-        
-        limparSelecao();
-        carregarEventoEspecifico(eventoAtual);
-        mostrarToast(`${convidadosSelecionados.length} atualizados!`, "success");
-    }
-
-    function limparSelecao() {
-        convidadosSelecionados = [];
-        document.querySelectorAll('.check-convidado').forEach(cb => cb.checked = false);
-        document.querySelector('thead input[type="checkbox"]').checked = false;
-        atualizarToolbarMassa();
-    }
-
-    // --- CONFIGURAÇÕES (NOVO) ---
-    function abrirModalConfig() {
-        document.getElementById('input-renomear').value = eventoAtual;
-        const ul = document.getElementById('lista-colunas-config');
-        ul.innerHTML = '';
-        colunasAtuais.forEach(col => {
-            ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">
-                ${col} <button class="btn btn-sm btn-outline-danger" onclick="rmColuna('${col}')"><i class="fas fa-trash"></i></button>
-            </li>`;
-        });
-        new bootstrap.Modal(document.getElementById('modalConfig')).show();
-    }
-
-    async function salvarRenomeacao() {
-        const novo = document.getElementById('input-renomear').value;
-        if(!novo || novo === eventoAtual) return;
-        const res = await chamarAPI('renomearEvento', { nomeAntigo: eventoAtual, nomeNovo: novo });
-        if(res && res.sucesso) {
-            bootstrap.Modal.getInstance(document.getElementById('modalConfig')).hide();
-            carregarLista();
-            mostrarToast("Renomeado!", "success");
-        }
-    }
-
-    async function addColuna() {
-        const col = document.getElementById('input-nova-coluna').value;
-        if(!col) return;
-        const res = await chamarAPI('adicionarColuna', { nomeEvento: eventoAtual, novaColuna: col });
-        if(res && res.sucesso) { abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }
-    }
-
-    async function rmColuna(col) {
-        if(!await confirmarAcao(`Apagar coluna '${col}'?`, "Todos os dados desta coluna serão perdidos.")) return;
-        const res = await chamarAPI('removerColuna', { nomeEvento: eventoAtual, nomeColuna: col });
-        if(res && res.sucesso) { abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }
-    }
-
-    // --- EMAIL (NOVO) ---
-    function abrirModalEmail() {
-        new bootstrap.Modal(document.getElementById('modalEmail')).show();
-    }
-
-    async function processarEnvioEmails() {
-        const assunto = document.getElementById('email-assunto').value;
-        const mensagem = document.getElementById('email-mensagem').value;
-        const linkBase = `${GITHUB_PAGES_URL}index.html`; 
-        
-        const res = await chamarAPI('enviarEmails', {
-            nomeEvento: eventoAtual,
-            indices: convidadosSelecionados,
-            assunto: assunto,
-            mensagem: mensagem,
-            linkBase: linkBase
-        });
-
-        if (res && res.sucesso) {
-            mostrarToast(`Enviados: ${res.enviados} | Erros: ${res.erros}`, "success");
-            bootstrap.Modal.getInstance(document.getElementById('modalEmail')).hide();
-            limparSelecao();
-        }
-    }
-
-    // EXPORTAÇÃO
-    function gerarPDF() {
-        const elemento = document.getElementById('container-tabela-exportar');
-        const clone = elemento.cloneNode(true);
-        clone.querySelectorAll('.ocultar-pdf').forEach(el => el.remove());
-        
-        const wrapper = document.createElement('div');
-        wrapper.style.padding = '30px';
-        wrapper.style.fontSize = '11px';
-        
-        wrapper.innerHTML = `
-            <div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px;">
-                <h1 style="color: #1e3a8a; font-family: sans-serif; margin: 0; font-size: 24px;">${eventoAtual}</h1>
-                <p style="color: #6b7280; font-family: sans-serif; font-size: 12px; margin: 5px 0 0 0;">
-                    Relatório gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}
-                </p>
-            </div>
-            <div style="margin-bottom: 20px;">
-                <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
-                    <tr>
-                        <td style="padding: 5px; border: 1px solid #ddd;"><strong>Total:</strong> ${document.getElementById('stat-total').innerText}</td>
-                        <td style="padding: 5px; border: 1px solid #ddd;"><strong>Confirmados:</strong> ${document.getElementById('stat-confirmados').innerText}</td>
-                        <td style="padding: 5px; border: 1px solid #ddd;"><strong>Pendentes:</strong> ${document.getElementById('stat-pendentes').innerText}</td>
-                        <td style="padding: 5px; border: 1px solid #ddd;"><strong>Recusados:</strong> ${document.getElementById('stat-recusados').innerText}</td>
-                    </tr>
-                </table>
-            </div>
-        `;
-        
-        const tabelaClone = clone.querySelector('table');
-        tabelaClone.style.fontSize = '10px';
-        tabelaClone.style.width = '100%';
-        
-        clone.querySelectorAll('th, td').forEach(cell => {
-            cell.style.padding = '6px 4px';
-            cell.style.fontSize = '10px';
-            cell.style.wordBreak = 'break-word';
-        });
-        
-        wrapper.appendChild(clone);
-
-        const opt = {
-            margin: [15, 10, 15, 10], 
-            filename: `${eventoAtual}_${new Date().toISOString().split('T')[0]}.pdf`,
-            image: { type: 'jpeg', quality: 0.95 },
-            html2canvas: { scale: 2, useCORS: true, letterRendering: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
-        };
-
-        html2pdf().set(opt).from(wrapper).save().then(() => { mostrarToast("PDF gerado!", "success"); });
-    }
-
-    function gerarTXT() {
-        let texto = `RELATÓRIO: ${eventoAtual}\nGerado: ${new Date().toLocaleString('pt-BR')}\n\n`;
-        texto += colunasAtuais.join("\t") + "\n" + "-".repeat(80) + "\n";
-        dadosEventoAtual.forEach(linha => texto += linha.join("\t") + "\n");
-        const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `${eventoAtual}.txt`; a.click();
-        window.URL.revokeObjectURL(url);
-        mostrarToast("TXT baixado!", "success");
-    }
-
-    function gerarExcel() {
-        const ws = XLSX.utils.aoa_to_sheet([colunasAtuais, ...dadosEventoAtual]);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Lista");
-        XLSX.writeFile(wb, `${eventoAtual}.xlsx`);
-        mostrarToast("Excel gerado!", "success");
-    }
-
-    // Ações Padrão
-    function abrirModalEditar(rowIndex) { 
-        const dadosRow = dadosEventoAtual[rowIndex]; document.getElementById('edit-linha-index').value = rowIndex; 
-        const form = document.getElementById('form-editar-dinamico'); form.innerHTML = ""; 
-        colunasAtuais.forEach((col, colIndex) => { 
-            const valorAtual = dadosRow[colIndex]; 
-            let inputHTML = col === 'Status' ? `<select class="form-control input-editar"><option value="Pendente" ${valorAtual === 'Pendente' ? 'selected' : ''}>Pendente</option><option value="Confirmado" ${valorAtual === 'Confirmado' ? 'selected' : ''}>Confirmado</option><option value="Não vai" ${valorAtual === 'Não vai' ? 'selected' : ''}>Não vai</option></select>` : `<input type="text" class="form-control input-editar" value="${valorAtual}">`; 
-            form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`; 
-        }); 
-        new bootstrap.Modal(document.getElementById('modalEditar')).show(); 
-    }
-
-    async function salvarEdicao() { 
-        const rowIndex = parseInt(document.getElementById('edit-linha-index').value); 
-        const inputs = document.querySelectorAll('.input-editar'); 
-        const novosDados = Array.from(inputs).map(i => i.value); 
-        bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide(); 
-        const res = await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: rowIndex + 2, novosDados }); 
-        if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Atualizado!", "success"); }
-    }
-
-    async function confirmarExclusao(index) {
-        if (await confirmarAcao("Excluir convidado?", "Essa ação não pode ser desfeita.")) {
-            const res = await chamarAPI('excluirConvidado', { nomeEvento: eventoAtual, linha: index + 2 });
-            if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Excluído!", "success"); }
-        }
-    }
-
+    function mostrarToast(mensagem, tipo = 'success') {const container = document.getElementById('toast-container');const toast = document.createElement('div');const icons = { success: '✓', error: '✕', warning: '⚠' };toast.className = 'toast-notification';toast.innerHTML = `<span class="toast-icon ${tipo}">${icons[tipo]}</span><span class="toast-message">${mensagem}</span>`;container.appendChild(toast);setTimeout(() => { toast.classList.add('slide-out'); setTimeout(() => toast.remove(), 300); }, 3500);}
+    function confirmarAcao(titulo, mensagem) {return new Promise((resolve) => {document.getElementById('confirm-titulo').innerText = titulo;document.getElementById('confirm-mensagem').innerText = mensagem;const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));const btnOk = document.getElementById('confirm-btn-ok');btnOk.onclick = () => { modal.hide(); resolve(true); };document.getElementById('modalConfirmacao').addEventListener('hidden.bs.modal', () => { resolve(false); }, { once: true });modal.show();});}
+    async function chamarAPI(acao, dados = {}) {document.getElementById('loading').style.display = 'flex';try {const response = await fetch(API_URL, {method: 'POST',headers: { "Content-Type": "text/plain;charset=utf-8" },body: JSON.stringify({ acao: acao, ...dados })});const json = await response.json();document.getElementById('loading').style.display = 'none';if (json.erro) { mostrarToast("Erro: " + json.erro, "error"); return null; }return json;} catch (e) {document.getElementById('loading').style.display = 'none';mostrarToast("Erro de conexão.", "error");return null;}}
+    async function carregarLista() {const dados = await chamarAPI('listarEventos');if (!dados) return;const tabContainer = document.getElementById('tab-lista-eventos');tabContainer.innerHTML = ''; if (dados.length === 0) { tabContainer.innerHTML = '<li class="nav-item"><a class="nav-link disabled">Nenhum evento</a></li>'; return; }dados.forEach((ev, index) => {const li = document.createElement('li'); li.className = 'nav-item';const btn = document.createElement('button'); btn.className = index === 0 ? 'nav-link active' : 'nav-link';btn.innerText = ev.nome; btn.onclick = () => { document.querySelectorAll('#tab-lista-eventos .nav-link').forEach(el => el.classList.remove('active')); btn.classList.add('active'); carregarEventoEspecifico(ev.nome); };li.appendChild(btn); tabContainer.appendChild(li);});if (dados.length > 0) carregarEventoEspecifico(dados[0].nome);}
+    async function carregarEventoEspecifico(nome) {if (!nome) return;eventoAtual = nome;const dados = await chamarAPI('obterDadosEvento', { nomeEvento: nome });if (!dados) return;colunasAtuais = dados.headers;dadosEventoAtual = dados.rows;convidadosSelecionados = [];renderizarTabela(dados.headers, dados.rows);atualizarDashboard(dados.headers, dados.rows);const temEmail = dados.headers.some(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});let emailsValidos = 0;if (temEmail) {const indexEmail = dados.headers.findIndex(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});dados.rows.forEach(row => {const email = row[indexEmail];if (email && email.toString().includes('@')) {emailsValidos++;}});}const btnEmail = document.getElementById('btn-massa-email');if (temEmail && emailsValidos > 0) {btnEmail.style.display = 'inline-block';btnEmail.title = `${emailsValidos} contato(s) com email válido`;} else if (temEmail && emailsValidos === 0) {btnEmail.style.display = 'none';if (dados.rows.length > 0) {mostrarToast("Coluna Email existe mas nenhum email válido encontrado.", "warning");}} else {btnEmail.style.display = 'none';}document.getElementById('toolbar-acoes').style.display = 'block';document.getElementById('toolbar-busca').style.display = 'block';document.getElementById('toolbar-massa').style.display = 'none';document.getElementById('busca-rapida').value = '';document.querySelector('select.form-select').value = '';mostrarToast(`Evento "${nome}" carregado!`, "success");}
+    function atualizarDashboard(headers, rows) {document.getElementById('area-stats').style.display = 'block';const indexStatus = headers.indexOf('Status');let confirmados = 0, pendentes = 0, recusados = 0, total = rows.length;if (indexStatus > -1) {rows.forEach(row => {const status = row[indexStatus] || "Pendente";if (status === 'Confirmado') confirmados++; else if (status === 'Não vai') recusados++; else pendentes++;});} else { pendentes = total; }document.getElementById('stat-total').innerText = total; document.getElementById('stat-confirmados').innerText = confirmados; document.getElementById('stat-pendentes').innerText = pendentes; document.getElementById('stat-recusados').innerText = recusados;const taxaResposta = total > 0 ? Math.round(((confirmados + recusados) / total) * 100) : 0;const percentualConfirmados = total > 0 ? Math.round((confirmados / total) * 100) : 0;document.getElementById('taxa-resposta').innerText = taxaResposta + '%';document.getElementById('percentual-confirmados').innerText = percentualConfirmados + '%';document.getElementById('ultima-atualizacao').innerText = new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });const ctx = document.getElementById('meuGrafico').getContext('2d');if (graficoInstance) graficoInstance.destroy();graficoInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Confirmados', 'Pendentes', 'Recusados'], datasets: [{ data: [confirmados, pendentes, recusados], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0, hoverOffset: 10 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15, font: { size: 13 } } } } } });}
+    function filtrarTabela() {const termo = document.getElementById('busca-rapida').value.toLowerCase();const linhas = document.querySelectorAll('#tabela-dados tbody tr');let contador = 0;linhas.forEach(linha => {const texto = linha.textContent.toLowerCase();const visivel = texto.includes(termo);linha.style.display = visivel ? '' : 'none';if (visivel) contador++;});document.getElementById('contador-filtrados').innerText = contador;}
+    function filtrarPorStatus(status) {const linhas = document.querySelectorAll('#tabela-dados tbody tr');const indexStatus = colunasAtuais.indexOf('Status');let contador = 0;linhas.forEach(linha => {const celulas = linha.querySelectorAll('td');const statusCelula = celulas[indexStatus + 1]?.textContent.replace(/[^a-záéíóúàâêôãõç\s]/gi, '').trim();const visivel = !status || statusCelula.includes(status);linha.style.display = visivel ? '' : 'none';if (visivel) contador++;});document.getElementById('contador-filtrados').innerText = contador;}
+    function renderizarTabela(headers, rows) {const thead = document.querySelector('#tabela-dados thead');const tbody = document.querySelector('#tabela-dados tbody');let headerHTML = "<tr><th class='ocultar-pdf' style='width: 40px;'><input type='checkbox' onchange='selecionarTodos(this.checked)'></th>";headers.forEach(h => headerHTML += `<th>${h}</th>`);headerHTML += `<th class="text-center ocultar-pdf" style="width: 100px;">Ações</th></tr>`;thead.innerHTML = headerHTML;if (rows.length === 0) { tbody.innerHTML = `<tr><td colspan="${headers.length + 2}" class="text-center p-5"><i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i><span class="text-muted">Nenhum convidado</span></td></tr>`; document.getElementById('contador-filtrados').innerText = '0';} else {const statusBadges = {'Confirmado': '<span class="status-badge bg-success text-white"><i class="fas fa-check"></i>Confirmado</span>','Pendente': '<span class="status-badge bg-warning text-dark"><i class="fas fa-clock"></i>Pendente</span>','Não vai': '<span class="status-badge bg-danger text-white"><i class="fas fa-times"></i>Não vai</span>'};const indexStatus = headers.indexOf('Status');let bodyHTML = "";rows.forEach((row, index) => {bodyHTML += "<tr>";bodyHTML += `<td class="ocultar-pdf"><input type="checkbox" class="check-convidado" data-index="${index}" onchange="toggleSelecao(${index})"></td>`;row.forEach((cell, colIndex) => {if (colIndex === indexStatus && statusBadges[cell]) {bodyHTML += `<td>${statusBadges[cell]}</td>`;} else {bodyHTML += `<td>${cell}</td>`;}});bodyHTML += `<td class="text-center ocultar-pdf"><button class="btn btn-light btn-action text-primary me-1" onclick="abrirModalEditar(${index})"><i class="fas fa-pen"></i></button><button class="btn btn-light btn-action text-danger" onclick="confirmarExclusao(${index})"><i class="fas fa-trash"></i></button></td></tr>`;});tbody.innerHTML = bodyHTML;document.getElementById('contador-filtrados').innerText = rows.length;}}
+    function selecionarTodos(checked) {convidadosSelecionados = [];document.querySelectorAll('.check-convidado').forEach(checkbox => {checkbox.checked = checked;if (checked) {convidadosSelecionados.push(parseInt(checkbox.dataset.index));}});atualizarToolbarMassa();}
+    function toggleSelecao(index) {const checkbox = document.querySelector(`.check-convidado[data-index="${index}"]`);if (checkbox.checked) {if (!convidadosSelecionados.includes(index)) {convidadosSelecionados.push(index);}} else {convidadosSelecionados = convidadosSelecionados.filter(i => i !== index);}atualizarToolbarMassa();}
+    function atualizarToolbarMassa() {const toolbar = document.getElementById('toolbar-massa');const count = document.getElementById('count-selecionados');count.innerText = convidadosSelecionados.length;toolbar.style.display = convidadosSelecionados.length > 0 ? 'block' : 'none';}
+    async function atualizarEmMassa(novoStatus) {if (convidadosSelecionados.length === 0) return;const confirmado = await confirmarAcao(`Atualizar ${convidadosSelecionados.length} convidados?`,`Todos serão marcados como "${novoStatus}"`);if (!confirmado) return;const indexStatus = colunasAtuais.indexOf('Status');for (const index of convidadosSelecionados) {const novosDados = [...dadosEventoAtual[index]];novosDados[indexStatus] = novoStatus;await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: index + 2, novosDados });}limparSelecao();carregarEventoEspecifico(eventoAtual);mostrarToast(`${convidadosSelecionados.length} atualizados!`, "success");}
+    function limparSelecao() {convidadosSelecionados = [];document.querySelectorAll('.check-convidado').forEach(cb => cb.checked = false);document.querySelector('thead input[type="checkbox"]').checked = false;atualizarToolbarMassa();}
+    function abrirModalEmail() {if (convidadosSelecionados.length === 0) {mostrarToast("Selecione pelo menos um convidado.", "warning");return;}const temEmail = colunasAtuais.some(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});if (!temEmail) {mostrarToast("Este evento não possui coluna de Email.", "error");setTimeout(() => {if (confirm("Deseja adicionar a coluna 'Email' agora nas configurações?")) {abrirModalConfig();document.getElementById('input-nova-coluna').value = 'Email';document.getElementById('input-nova-coluna').focus();}}, 500);return;}const indexEmail = colunasAtuais.findIndex(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});const indexNome = colunasAtuais.indexOf('Nome');let comEmail = 0;let semEmail = [];convidadosSelecionados.forEach(index => {const row = dadosEventoAtual[index];const email = row[indexEmail] ? row[indexEmail].toString().trim() : '';if (email && email.includes('@')) {comEmail++;} else {const nome = indexNome > -1 ? row[indexNome] : `Linha ${index+2}`;semEmail.push(nome);}});if (semEmail.length > 0) {const nomes = semEmail.slice(0, 3).join(', ');const extras = semEmail.length > 3 ? ` e mais ${semEmail.length - 3}` : '';const confirmado = confirm(`⚠️ Atenção:\n\n` +`${semEmail.length} de ${convidadosSelecionados.length} selecionados NÃO têm email válido.\n\n` +`Sem email: ${nomes}${extras}\n\n` +`Continuar e enviar apenas para os ${comEmail} com email válido?`);if (!confirmado) return;}if (comEmail === 0) {mostrarToast("Nenhum dos selecionados possui email válido.", "error");return;}document.getElementById('email-info').innerHTML = `<strong class="text-primary">${comEmail} email(s)</strong> serão enviados.` +(semEmail.length > 0 ? ` <span class="text-warning">(${semEmail.length} sem email serão ignorados)</span>` : '');new bootstrap.Modal(document.getElementById('modalEmail')).show();}
+    async function processarEnvioEmails() {const assunto = document.getElementById('email-assunto').value.trim();const mensagem = document.getElementById('email-mensagem').value.trim();if (!assunto || !mensagem) {mostrarToast("Preencha assunto e mensagem.", "warning");return;}if (!mensagem.includes('{Link}')) {const confirmado = confirm("⚠️ A mensagem não contém a variável {Link}.\n\n" +"Os convidados não saberão como confirmar presença.\n\n" +"Continuar mesmo assim?");if (!confirmado) return;}const linkBase = `${GITHUB_PAGES_URL}index.html`; console.log('📧 Enviando emails...');console.log('Evento:', eventoAtual);console.log('Selecionados:', convidadosSelecionados);const res = await chamarAPI('enviarEmails', {nomeEvento: eventoAtual,indices: convidadosSelecionados,assunto: assunto,mensagem: mensagem,linkBase: linkBase});if (res && res.sucesso) {let msg = `✅ ${res.enviados} email(s) enviado(s) com sucesso!`;if (res.erros > 0) {msg += `\n⚠️ ${res.erros} não puderam ser enviados`;}if (res.detalhes && res.detalhes.length > 0) {const detalhes = res.detalhes.slice(0, 5).join('\n• ');const extras = res.detalhes.length > 5 ? `\n... e mais ${res.detalhes.length - 5}` : '';msg += `\n\nDetalhes:\n• ${detalhes}${extras}`;}alert(msg);mostrarToast(`${res.enviados} emails enviados!`, "success");bootstrap.Modal.getInstance(document.getElementById('modalEmail')).hide();limparSelecao();} else {mostrarToast("Erro ao enviar emails. Veja console para detalhes.", "error");}}
+    function abrirModalConfig() {document.getElementById('input-renomear').value = eventoAtual;const ul = document.getElementById('lista-colunas-config');ul.innerHTML = '';colunasAtuais.forEach(col => {ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">${col} <button class="btn btn-sm btn-outline-danger" onclick="rmColuna('${col}')"><i class="fas fa-trash"></i></button></li>`;});new bootstrap.Modal(document.getElementById('modalConfig')).show();}
+    async function salvarRenomeacao() {const novo = document.getElementById('input-renomear').value.trim();if(!novo || novo === eventoAtual) return;const res = await chamarAPI('renomearEvento', { nomeAntigo: eventoAtual, nomeNovo: novo });if(res && res.sucesso) {bootstrap.Modal.getInstance(document.getElementById('modalConfig')).hide();carregarLista();mostrarToast("Evento renomeado!", "success");}}
+    async function addColuna() {const col = document.getElementById('input-nova-coluna').value.trim();if(!col) {mostrarToast("Digite o nome da coluna.", "warning");return;}const res = await chamarAPI('adicionarColuna', { nomeEvento: eventoAtual, novaColuna: col });if(res && res.sucesso) { mostrarToast(`Coluna '${col}' adicionada!`, "success");abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }}
+    async function rmColuna(col) {if(!await confirmarAcao(`Apagar coluna '${col}'?`, "Todos os dados desta coluna serão perdidos.")) return;const res = await chamarAPI('removerColuna', { nomeEvento: eventoAtual, nomeColuna: col });if(res && res.sucesso) { mostrarToast(`Coluna '${col}' removida!`, "success");abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }}
+    function gerarPDF() {const elemento = document.getElementById('container-tabela-exportar');const clone = elemento.cloneNode(true);clone.querySelectorAll('.ocultar-pdf').forEach(el => el.remove());const wrapper = document.createElement('div');wrapper.style.padding = '30px';wrapper.style.fontSize = '11px';wrapper.innerHTML = `<div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px;"><h1 style="color: #1e3a8a; font-family: sans-serif; margin: 0; font-size: 24px;">${eventoAtual}</h1><p style="color: #6b7280; font-family: sans-serif; font-size: 12px; margin: 5px 0 0 0;">Relatório gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p></div><div style="margin-bottom: 20px;"><table style="width: 100%; font-size: 11px; border-collapse: collapse;"><tr><td style="padding: 5px; border: 1px solid #ddd;"><strong>Total:</strong> ${document.getElementById('stat-total').innerText}</td><td style="padding: 5px; border: 1px solid #ddd;"><strong>Confirmados:</strong> ${document.getElementById('stat-confirmados').innerText}</td><td style="padding: 5px; border: 1px solid #ddd;"><strong>Pendentes:</strong> ${document.getElementById('stat-pendentes').innerText}</td><td style="padding: 5px; border: 1px solid #ddd;"><strong>Recusados:</strong> ${document.getElementById('stat-recusados').innerText}</td></tr></table></div>`;const tabelaClone = clone.querySelector('table');tabelaClone.style.fontSize = '10px';tabelaClone.style.width = '100%';clone.querySelectorAll('th, td').forEach(cell => {cell.style.padding = '6px 4px';cell.style.fontSize = '10px';cell.style.wordBreak = 'break-word';});wrapper.appendChild(clone);const opt = {margin: [15, 10, 15, 10], filename: `${eventoAtual}_${new Date().toISOString().split('T')[0]}.pdf`,image: { type: 'jpeg', quality: 0.95 },html2canvas: { scale: 2, useCORS: true, letterRendering: true },jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }};html2pdf().set(opt).from(wrapper).save().then(() => { mostrarToast("PDF gerado!", "success"); });}
+    function gerarTXT() {let texto = `RELATÓRIO: ${eventoAtual}\nGerado: ${new Date().toLocaleString('pt-BR')}\n\n`;texto += colunasAtuais.join("\t") + "\n" + "-".repeat(80) + "\n";dadosEventoAtual.forEach(linha => texto += linha.join("\t") + "\n");const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });const url = window.URL.createObjectURL(blob);const a = document.createElement('a'); a.href = url; a.download = `${eventoAtual}.txt`; a.click();window.URL.revokeObjectURL(url);mostrarToast("TXT baixado!", "success");}
+    function gerarExcel() {const ws = XLSX.utils.aoa_to_sheet([colunasAtuais, ...dadosEventoAtual]);const wb = XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb, ws, "Lista");XLSX.writeFile(wb, `${eventoAtual}.xlsx`);mostrarToast("Excel gerado!", "success");}
+    function abrirModalEditar(rowIndex) { const dadosRow = dadosEventoAtual[rowIndex]; document.getElementById('edit-linha-index').value = rowIndex; const form = document.getElementById('form-editar-dinamico'); form.innerHTML = ""; colunasAtuais.forEach((col, colIndex) => { const valorAtual = dadosRow[colIndex]; let inputHTML = col === 'Status' ? `<select class="form-control input-editar"><option value="Pendente" ${valorAtual === 'Pendente' ? 'selected' : ''}>Pendente</option><option value="Confirmado" ${valorAtual === 'Confirmado' ? 'selected' : ''}>Confirmado</option><option value="Não vai" ${valorAtual === 'Não vai' ? 'selected' : ''}>Não vai</option></select>` : `<input type="text" class="form-control input-editar" value="${valorAtual}">`; form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`; }); new bootstrap.Modal(document.getElementById('modalEditar')).show(); }
+    async function salvarEdicao() { const rowIndex = parseInt(document.getElementById('edit-linha-index').value); const inputs = document.querySelectorAll('.input-editar'); const novosDados = Array.from(inputs).map(i => i.value); bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide(); const res = await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: rowIndex + 2, novosDados }); if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Atualizado!", "success"); }}
+    async function confirmarExclusao(index) {if (await confirmarAcao("Excluir convidado?", "Essa ação não pode ser desfeita.")) {const res = await chamarAPI('excluirConvidado', { nomeEvento: eventoAtual, linha: index + 2 });if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Excluído!", "success"); }}}
     function abrirModalLink() { if(!eventoAtual) return; const link = `${GITHUB_PAGES_URL}index.html?evento=${encodeURIComponent(eventoAtual)}`; document.getElementById('input-link-gerado').value = link; document.getElementById('btn-abrir-link').href = link; document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById('qrcode'), { text: link, width: 180, height: 180, colorDark: "#1e3a8a" }); new bootstrap.Modal(document.getElementById('modalLink')).show(); }
     function copiarTextoLink() { document.getElementById('input-link-gerado').select(); navigator.clipboard.writeText(document.getElementById('input-link-gerado').value); mostrarToast("Link copiado!", "success"); }
     function compartilharWhatsApp() { const link = document.getElementById('input-link-gerado').value; window.open(`https://wa.me/?text=${encodeURIComponent(`Olá! Confirme sua presença em *${eventoAtual}*:\n\n${link}`)}`, '_blank'); }
     function compartilharEmail() { const link = document.getElementById('input-link-gerado').value; window.location.href = `mailto:?subject=${encodeURIComponent(`Confirmação - ${eventoAtual}`)}&body=${encodeURIComponent(`Olá!\n\nConfirme sua presença em ${eventoAtual}:\n\n${link}\n\nObrigado!`)}`; }
-    
     function toggleAreaImportacao(mostrar) { document.getElementById('area-importacao-criacao').style.display = mostrar ? 'block' : 'none'; }
-    async function handleCriarEvento(e) { e.preventDefault(); const nome = document.getElementById('novo-nome').value.trim(); const tipo = document.querySelector('input[name="novo-tipo"]:checked').value; let dados = tipo === 'Importar' ? document.getElementById('texto-criacao-import').value : ""; if (tipo === 'Importar' && !dados.trim()) { mostrarToast("Cole os dados.", "warning"); return; } const res = await chamarAPI('criarNovoEvento', { nome, template: tipo, dadosImportados: dados }); if (res && res.sucesso) { mostrarToast(`"${nome}" criado!`, "success"); mostrarTela('dashboard'); carregarLista(); } }
+    async function handleCriarEvento(e) { e.preventDefault(); const nome = document.getElementById('novo-nome').value.trim(); const tipo = document.querySelector('input[name="novo-tipo"]:checked').value; let dados = tipo === 'Importar' ? document.getElementById('texto-criacao-import').value : ""; if (tipo === 'Importar' && !dados.trim()) { mostrarToast("Cole os dados do Excel.", "warning"); return; } const res = await chamarAPI('criarNovoEvento', { nome, template: tipo, dadosImportados: dados }); if (res && res.sucesso) { mostrarToast(`"${nome}" criado!`, "success"); mostrarTela('dashboard'); carregarLista(); } }
     function abrirModalImport() { document.getElementById('texto-importacao').value = ""; new bootstrap.Modal(document.getElementById('modalImport')).show(); }
     async function processarImportacao() { const texto = document.getElementById('texto-importacao').value; const temCabecalho = document.getElementById('check-headers').checked; if (!texto.trim()) { mostrarToast("Cole os dados.", "warning"); return; } const linhas = texto.trim().split('\n'); const matriz = linhas.map(l => l.split('\t')); bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide(); const res = await chamarAPI('importarListaConvidados', { nomeEvento: eventoAtual, matrizDados: matriz, temCabecalho }); if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast(`${res.qtd} importados!`, "success"); } }
     function abrirModalAdd() { const form = document.getElementById('form-dinamico'); form.innerHTML = ""; colunasAtuais.forEach(col => { let inputHTML = col === 'Status' ? `<select class="form-control input-dinamico"><option>Pendente</option><option>Confirmado</option><option>Não vai</option></select>` : `<input type="text" class="form-control input-dinamico">`; form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`; }); new bootstrap.Modal(document.getElementById('modalAdd')).show(); }
     async function enviarConvidado() { const valores = Array.from(document.querySelectorAll('.input-dinamico')).map(i => i.value); if (valores[0] && valores[0].trim() === '') { mostrarToast("Nome obrigatório.", "warning"); return; } bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide(); const res = await chamarAPI('adicionarConvidado', { nomeEvento: eventoAtual, arrayDados: valores }); if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Adicionado!", "success"); } }
-    
-    function mostrarTela(tela) { 
-        document.getElementById('tela-dashboard').style.display = tela === 'dashboard' ? 'block' : 'none'; 
-        document.getElementById('tela-novo').style.display = tela === 'novo' ? 'block' : 'none'; 
-        document.querySelectorAll('.sidebar .btn').forEach(btn => btn.classList.remove('active'));
-        if (tela === 'dashboard') document.querySelector('.sidebar .btn:first-of-type').classList.add('active');
-        else document.querySelector('.sidebar .btn:nth-of-type(2)').classList.add('active');
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('busca-rapida')?.focus(); }
-        if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); if (eventoAtual) abrirModalAdd(); }
-        if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); if (eventoAtual) abrirModalImport(); }
-        if ((e.ctrlKey || e.metaKey) && e.key === 'r' && eventoAtual) { e.preventDefault(); carregarEventoEspecifico(eventoAtual); }
-    });
+    function mostrarTela(tela) { document.getElementById('tela-dashboard').style.display = tela === 'dashboard' ? 'block' : 'none'; document.getElementById('tela-novo').style.display = tela === 'novo' ? 'block' : 'none'; document.querySelectorAll('.sidebar .btn').forEach(btn => btn.classList.remove('active'));if (tela === 'dashboard') document.querySelector('.sidebar .btn:first-of-type').classList.add('active');else document.querySelector('.sidebar .btn:nth-of-type(2)').classList.add('active');}
+    document.addEventListener('keydown', (e) => {if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('busca-rapida')?.focus(); }if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); if (eventoAtual) abrirModalAdd(); }if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); if (eventoAtual) abrirModalImport(); }if ((e.ctrlKey || e.metaKey) && e.key === 'r' && eventoAtual) { e.preventDefault(); carregarEventoEspecifico(eventoAtual); }});
 </script>
 </body>
 </html>
