@@ -1,9 +1,9 @@
 // =======================================================================
-// ARQUIVO: CODE.GS (BACKEND v14.5 - EMAIL INTELIGENTE)
+// ARQUIVO: CODE.GS (BACKEND v15.0 - TEMPLATES + BANCO DE NOMES + MANUAL)
 // =======================================================================
 
 function doGet(e) {
-  return ContentService.createTextOutput("Sistema v14.5 Online! Backend operante.")
+  return ContentService.createTextOutput("Sistema v15.0 Online! Backend operante.")
       .setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -38,6 +38,22 @@ function doPost(e) {
     else if (acao === 'adicionarColuna') resposta = adicionarColuna(dados.nomeEvento, dados.novaColuna);
     else if (acao === 'removerColuna') resposta = removerColuna(dados.nomeEvento, dados.nomeColuna);
     else if (acao === 'enviarEmails') resposta = enviarEmails(dados.nomeEvento, dados.indices, dados.assunto, dados.mensagem, dados.linkBase);
+    
+    // --- TEMPLATES (v15.0) ---
+    else if (acao === 'salvarTemplate') resposta = salvarTemplate(dados.nomeTemplate, dados.colunas, dados.emailAssunto, dados.emailMensagem);
+    else if (acao === 'listarTemplates') resposta = listarTemplates();
+    else if (acao === 'excluirTemplate') resposta = excluirTemplate(dados.nomeTemplate);
+    else if (acao === 'criarEventoDeTemplate') resposta = criarEventoDeTemplate(dados.nomeEvento, dados.nomeTemplate, dados.usarEmail);
+    
+    // --- BANCO DE NOMES (v15.0) ---
+    else if (acao === 'buscarNoBanco') resposta = buscarNoBanco(dados.termo);
+    else if (acao === 'adicionarAoBanco') resposta = adicionarAoBancoNomes(dados.nome, dados.email, dados.telefone, dados.eventoAtual);
+    else if (acao === 'listarBancoNomes') resposta = listarBancoNomes();
+    else if (acao === 'editarNoBanco') resposta = editarNoBanco(dados.nomeAntigo, dados.nomeNovo, dados.email, dados.telefone, dados.propagarEventos);
+    else if (acao === 'excluirDoBanco') resposta = excluirDoBanco(dados.nome);
+    else if (acao === 'verificarAtualizacaoDados') resposta = verificarAtualizacaoDados(dados.nome, dados.email, dados.telefone);
+    else if (acao === 'atualizarDadosBanco') resposta = atualizarDadosBanco(dados.nome, dados.email, dados.telefone);
+    else if (acao === 'excluirEvento') resposta = excluirEvento(dados.nomeEvento);
     
     else resposta = { erro: "Ação desconhecida: " + acao };
 
@@ -106,10 +122,23 @@ function criarNovoEvento(nome, tipo, dadosRaw) {
     if (!colunas.includes("Status")) colunas.push("Status");
     if (!colunas.includes("Email") && !colunas.includes("E-mail")) colunas.push("Email");
   } else {
-    if (tipo === 'Casamento') colunas = ["Nome", "Mesa", "Restrição", "Status", "Email", "Acompanhantes"];
-    else if (tipo === 'Corporativo') colunas = ["Nome", "Empresa", "Cargo", "Status", "Email"];
-    else if (tipo === 'Churrasco') colunas = ["Nome", "O que leva", "Status", "Email"];
-    else colunas = ["Nome", "Telefone", "Email", "Status"];
+    if (tipo === 'Basico') {
+      colunas = ["Nome", "Email", "Telefone", "Confirmado"];
+    } else if (tipo === 'Casamento') {
+      colunas = ["Nome", "Email", "Telefone", "Confirmado", "Acompanhantes", "Mesa", "Restrição Alimentar", "Mensagem"];
+    } else if (tipo === 'Corporativo') {
+      colunas = ["Nome", "Email", "Telefone", "Empresa", "Cargo", "Confirmado", "Workshop Escolhido"];
+    } else if (tipo === 'Infantil') {
+      colunas = ["Nome da Criança", "Idade", "Nome do Responsável", "Email", "Telefone", "Confirmado", "Alergias", "Mensagem"];
+    } else if (tipo === 'Formatura') {
+      colunas = ["Nome", "Email", "Telefone", "Curso", "Turma", "Confirmado", "Qtd Convites", "Mesa"];
+    } else if (tipo === 'Workshop') {
+      colunas = ["Nome", "Email", "Telefone", "Confirmado", "Nível de Experiência", "Tópicos de Interesse", "Precisa Material"];
+    } else if (tipo === 'Jantar') {
+      colunas = ["Nome", "Email", "Telefone", "Confirmado", "Num. de Pessoas", "Horário Preferido", "Restrições Alimentares"];
+    } else {
+      colunas = ["Nome", "Email", "Telefone", "Confirmado"];
+    }
   }
 
   sheet.appendRow(colunas);
@@ -425,4 +454,477 @@ function salvarResposta(nomeEvento, linha, respostas) {
     if (colIndex > -1) sheet.getRange(linha, colIndex + 1).setValue(valor);
   }
   return { sucesso: true };
+}
+
+// =======================================================================
+// SISTEMA DE TEMPLATES (v15.0)
+// =======================================================================
+
+function inicializarAbaTemplates() {
+  const ss = getSpreadsheet();
+  let sheetTemplates = ss.getSheetByName("Templates");
+  
+  if (!sheetTemplates) {
+    sheetTemplates = ss.insertSheet("Templates");
+    sheetTemplates.appendRow(["Nome Template", "Colunas (JSON)", "Email Assunto", "Email Mensagem", "Data Criação", "Vezes Usado"]);
+    sheetTemplates.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#dbeafe");
+    sheetTemplates.setFrozenRows(1);
+  }
+  
+  return sheetTemplates;
+}
+
+function salvarTemplate(nomeTemplate, colunas, emailAssunto, emailMensagem) {
+  const sheetTemplates = inicializarAbaTemplates();
+  const nomeLimpo = nomeTemplate.trim();
+  
+  if (!nomeLimpo) throw new Error("Nome do template não pode estar vazio.");
+  
+  // Verificar se já existe
+  const data = sheetTemplates.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === nomeLimpo) {
+      throw new Error("Já existe um template com este nome.");
+    }
+  }
+  
+  // Salvar novo template
+  const colunasJSON = JSON.stringify(colunas);
+  const dataAtual = new Date().toLocaleDateString('pt-BR');
+  
+  sheetTemplates.appendRow([
+    nomeLimpo,
+    colunasJSON,
+    emailAssunto || "",
+    emailMensagem || "",
+    dataAtual,
+    0
+  ]);
+  
+  return { sucesso: true, nome: nomeLimpo };
+}
+
+function listarTemplates() {
+  const sheetTemplates = inicializarAbaTemplates();
+  const data = sheetTemplates.getDataRange().getValues();
+  
+  if (data.length < 2) return { templates: [] };
+  
+  const templates = [];
+  for (let i = 1; i < data.length; i++) {
+    templates.push({
+      nome: data[i][0],
+      colunas: JSON.parse(data[i][1]),
+      emailAssunto: data[i][2],
+      emailMensagem: data[i][3],
+      dataCriacao: data[i][4],
+      vezesUsado: data[i][5]
+    });
+  }
+  
+  return { templates: templates };
+}
+
+function excluirTemplate(nomeTemplate) {
+  const sheetTemplates = inicializarAbaTemplates();
+  const data = sheetTemplates.getDataRange().getValues();
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === nomeTemplate) {
+      sheetTemplates.deleteRow(i + 1);
+      return { sucesso: true };
+    }
+  }
+  
+  throw new Error("Template não encontrado.");
+}
+
+function criarEventoDeTemplate(nomeEvento, nomeTemplate, usarEmail) {
+  const sheetTemplates = inicializarAbaTemplates();
+  const data = sheetTemplates.getDataRange().getValues();
+  
+  // Buscar template
+  let templateEncontrado = null;
+  let linhaTemplate = -1;
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === nomeTemplate) {
+      templateEncontrado = {
+        colunas: JSON.parse(data[i][1]),
+        emailAssunto: data[i][2],
+        emailMensagem: data[i][3]
+      };
+      linhaTemplate = i + 1;
+      break;
+    }
+  }
+  
+  if (!templateEncontrado) throw new Error("Template não encontrado.");
+  
+  // Criar evento com as colunas do template
+  const ss = getSpreadsheet();
+  const nomeLimpo = nomeEvento.trim();
+  if (ss.getSheetByName(nomeLimpo)) throw new Error("Evento já existe!");
+  
+  const sheet = ss.insertSheet(nomeLimpo);
+  const colunas = templateEncontrado.colunas;
+  
+  sheet.appendRow(colunas);
+  sheet.getRange(1, 1, 1, colunas.length).setFontWeight("bold").setBackground("#f3f4f6");
+  
+  // Incrementar contador de uso
+  const vezesUsado = data[linhaTemplate - 1][5] || 0;
+  sheetTemplates.getRange(linhaTemplate, 6).setValue(vezesUsado + 1);
+  
+  // Retornar com informações do email se solicitado
+  const resultado = { 
+    sucesso: true, 
+    nome: nomeLimpo,
+    colunas: colunas
+  };
+  
+  if (usarEmail) {
+    resultado.emailAssunto = templateEncontrado.emailAssunto;
+    resultado.emailMensagem = templateEncontrado.emailMensagem;
+  }
+  
+  return resultado;
+}
+
+// =======================================================================
+// BANCO DE NOMES (v15.0)
+// =======================================================================
+
+function inicializarBancoNomes() {
+  const ss = getSpreadsheet();
+  let sheetBanco = ss.getSheetByName("Banco_Nomes");
+  
+  if (!sheetBanco) {
+    sheetBanco = ss.insertSheet("Banco_Nomes");
+    sheetBanco.appendRow(["Nome Completo", "Email", "Telefone", "Eventos Participou", "Último Evento", "Data Última Participação"]);
+    sheetBanco.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#dcfce7");
+    sheetBanco.setFrozenRows(1);
+    sheetBanco.setColumnWidth(4, 300); // Coluna de eventos mais larga
+  }
+  
+  return sheetBanco;
+}
+
+function buscarNoBanco(termo) {
+  const sheetBanco = inicializarBancoNomes();
+  const data = sheetBanco.getDataRange().getValues();
+  
+  if (data.length < 2) return { encontrado: false };
+  
+  const termoLimpo = termo.toLowerCase().trim();
+  const resultados = [];
+  
+  for (let i = 1; i < data.length; i++) {
+    const nome = data[i][0].toString().toLowerCase();
+    
+    if (nome.includes(termoLimpo)) {
+      const eventosArray = data[i][3] ? data[i][3].split(';').filter(e => e.trim()) : [];
+      
+      resultados.push({
+        nome: data[i][0],
+        email: data[i][1],
+        telefone: data[i][2],
+        eventosParticipou: eventosArray,
+        ultimoEvento: data[i][4] || "Nenhum",
+        dataUltimaParticipacao: data[i][5] || "N/A",
+        totalEventos: eventosArray.length
+      });
+    }
+  }
+  
+  if (resultados.length === 0) {
+    return { encontrado: false };
+  }
+  
+  // Ordenar por mais recente
+  resultados.sort((a, b) => {
+    if (!a.dataUltimaParticipacao || a.dataUltimaParticipacao === "N/A") return 1;
+    if (!b.dataUltimaParticipacao || b.dataUltimaParticipacao === "N/A") return -1;
+    return new Date(b.dataUltimaParticipacao) - new Date(a.dataUltimaParticipacao);
+  });
+  
+  return { 
+    encontrado: true, 
+    resultados: resultados 
+  };
+}
+
+function adicionarAoBancoNomes(nome, email, telefone, eventoAtual) {
+  const sheetBanco = inicializarBancoNomes();
+  const data = sheetBanco.getDataRange().getValues();
+  
+  const nomeLimpo = nome.trim();
+  const emailLimpo = email ? email.trim() : "";
+  const telefoneLimpo = telefone ? telefone.trim() : "";
+  const dataAtual = new Date().toLocaleDateString('pt-BR');
+  
+  // Verificar se pessoa já existe (busca por nome)
+  let pessoaExiste = false;
+  let linhaPessoa = -1;
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString().toLowerCase() === nomeLimpo.toLowerCase()) {
+      pessoaExiste = true;
+      linhaPessoa = i + 1;
+      break;
+    }
+  }
+  
+  if (pessoaExiste) {
+    // Atualizar pessoa existente
+    const eventosAtuais = data[linhaPessoa - 1][3] || "";
+    const eventosArray = eventosAtuais ? eventosAtuais.split(';').filter(e => e.trim()) : [];
+    
+    // Adicionar novo evento se não estiver na lista
+    if (!eventosArray.includes(eventoAtual)) {
+      eventosArray.push(eventoAtual);
+    }
+    
+    const eventosNovos = eventosArray.join(';');
+    
+    // Atualizar linha
+    sheetBanco.getRange(linhaPessoa, 2).setValue(emailLimpo || data[linhaPessoa - 1][1]); // Email (mantém se vazio)
+    sheetBanco.getRange(linhaPessoa, 3).setValue(telefoneLimpo || data[linhaPessoa - 1][2]); // Telefone (mantém se vazio)
+    sheetBanco.getRange(linhaPessoa, 4).setValue(eventosNovos);
+    sheetBanco.getRange(linhaPessoa, 5).setValue(eventoAtual);
+    sheetBanco.getRange(linhaPessoa, 6).setValue(dataAtual);
+    
+    return { sucesso: true, atualizado: true };
+    
+  } else {
+    // Adicionar nova pessoa
+    sheetBanco.appendRow([
+      nomeLimpo,
+      emailLimpo,
+      telefoneLimpo,
+      eventoAtual,
+      eventoAtual,
+      dataAtual
+    ]);
+    
+    return { sucesso: true, atualizado: false };
+  }
+}
+
+// Listar todos os nomes do banco
+function listarBancoNomes() {
+  const sheetBanco = inicializarBancoNomes();
+  const data = sheetBanco.getDataRange().getValues();
+  
+  if (data.length < 2) return { nomes: [] };
+  
+  const nomes = [];
+  for (let i = 1; i < data.length; i++) {
+    const eventosArray = data[i][3] ? data[i][3].split(';').filter(e => e.trim()) : [];
+    
+    nomes.push({
+      nome: data[i][0],
+      email: data[i][1] || "",
+      telefone: data[i][2] || "",
+      eventosParticipou: eventosArray,
+      ultimoEvento: data[i][4] || "Nenhum",
+      dataUltimaParticipacao: data[i][5] || "N/A",
+      totalEventos: eventosArray.length,
+      linha: i + 1
+    });
+  }
+  
+  return { nomes: nomes };
+}
+
+// Editar dados no banco com opção de propagar para eventos
+function editarNoBanco(nomeAntigo, nomeNovo, email, telefone, propagarEventos) {
+  const sheetBanco = inicializarBancoNomes();
+  const data = sheetBanco.getDataRange().getValues();
+  
+  let linhaPessoa = -1;
+  let eventosParticipou = [];
+  
+  // Encontrar pessoa
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString().toLowerCase() === nomeAntigo.toLowerCase()) {
+      linhaPessoa = i + 1;
+      eventosParticipou = data[i][3] ? data[i][3].split(';').filter(e => e.trim()) : [];
+      break;
+    }
+  }
+  
+  if (linhaPessoa === -1) throw new Error("Nome não encontrado no banco.");
+  
+  // Atualizar dados no banco
+  sheetBanco.getRange(linhaPessoa, 1).setValue(nomeNovo.trim());
+  sheetBanco.getRange(linhaPessoa, 2).setValue(email || "");
+  sheetBanco.getRange(linhaPessoa, 3).setValue(telefone || "");
+  
+  // Se propagarEventos = true, atualizar nome em todos os eventos
+  if (propagarEventos && nomeAntigo !== nomeNovo) {
+    const ss = getSpreadsheet();
+    let eventosAtualizados = 0;
+    
+    eventosParticipou.forEach(nomeEvento => {
+      const sheet = getSheetByNameSafe(ss, nomeEvento);
+      if (!sheet) return;
+      
+      const dataEvento = sheet.getDataRange().getValues();
+      const headers = dataEvento[0];
+      const indexNome = headers.findIndex(h => h.toString().toLowerCase().includes('nome'));
+      
+      if (indexNome === -1) return;
+      
+      // Atualizar todas as ocorrências do nome antigo
+      for (let i = 1; i < dataEvento.length; i++) {
+        if (dataEvento[i][indexNome].toString().toLowerCase() === nomeAntigo.toLowerCase()) {
+          sheet.getRange(i + 1, indexNome + 1).setValue(nomeNovo);
+          eventosAtualizados++;
+        }
+      }
+    });
+    
+    return { 
+      sucesso: true, 
+      propagado: true, 
+      eventosAtualizados: eventosAtualizados 
+    };
+  }
+  
+  return { sucesso: true, propagado: false };
+}
+
+// Excluir nome do banco
+function excluirDoBanco(nome) {
+  const sheetBanco = inicializarBancoNomes();
+  const data = sheetBanco.getDataRange().getValues();
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString().toLowerCase() === nome.toLowerCase()) {
+      sheetBanco.deleteRow(i + 1);
+      return { sucesso: true };
+    }
+  }
+  
+  throw new Error("Nome não encontrado.");
+}
+
+// Verificar se há novos dados (email/telefone) para atualizar
+function verificarAtualizacaoDados(nome, email, telefone) {
+  const sheetBanco = inicializarBancoNomes();
+  const data = sheetBanco.getDataRange().getValues();
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString().toLowerCase() === nome.toLowerCase()) {
+      const emailBanco = data[i][1] ? data[i][1].toString().trim() : "";
+      const telefoneBanco = data[i][2] ? data[i][2].toString().trim() : "";
+      const emailNovo = email ? email.toString().trim() : "";
+      const telefoneNovo = telefone ? telefone.toString().trim() : "";
+      
+      // Verificar se há dados novos
+      const temEmailNovo = emailNovo && emailNovo !== "" && emailNovo !== emailBanco;
+      const temTelefoneNovo = telefoneNovo && telefoneNovo !== "" && telefoneNovo !== telefoneBanco;
+      
+      if (temEmailNovo || temTelefoneNovo) {
+        return {
+          precisaAtualizar: true,
+          nome: data[i][0],
+          emailAtual: emailBanco,
+          emailNovo: temEmailNovo ? emailNovo : null,
+          telefoneAtual: telefoneBanco,
+          telefoneNovo: temTelefoneNovo ? telefoneNovo : null,
+          linha: i + 1
+        };
+      }
+      
+      return { precisaAtualizar: false };
+    }
+  }
+  
+  // Nome não existe no banco
+  return { precisaAtualizar: false, novoNome: true };
+}
+
+// Atualizar dados no banco (chamado após confirmação do usuário)
+function atualizarDadosBanco(nome, email, telefone) {
+  const sheetBanco = inicializarBancoNomes();
+  const data = sheetBanco.getDataRange().getValues();
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0].toString().toLowerCase() === nome.toLowerCase()) {
+      const linhaPessoa = i + 1;
+      
+      if (email && email.trim() !== "") {
+        sheetBanco.getRange(linhaPessoa, 2).setValue(email.trim());
+      }
+      
+      if (telefone && telefone.trim() !== "") {
+        sheetBanco.getRange(linhaPessoa, 3).setValue(telefone.trim());
+      }
+      
+      return { sucesso: true };
+    }
+  }
+  
+  throw new Error("Nome não encontrado no banco.");
+}
+
+// Excluir evento (remove aba mas mantém nomes no banco)
+function excluirEvento(nomeEvento) {
+  const ss = getSpreadsheet();
+  const sheet = getSheetByNameSafe(ss, nomeEvento);
+  
+  if (!sheet) throw new Error("Evento não encontrado.");
+  
+  // Remover o evento da lista de eventos de cada pessoa no banco
+  const sheetBanco = inicializarBancoNomes();
+  const data = sheetBanco.getDataRange().getValues();
+  
+  for (let i = 1; i < data.length; i++) {
+    const eventosAtuais = data[i][3] || "";
+    const eventosArray = eventosAtuais ? eventosAtuais.split(';').filter(e => e.trim()) : [];
+    
+    // Remover o evento da lista
+    const eventosAtualizados = eventosArray.filter(e => e !== nomeEvento);
+    
+    if (eventosAtualizados.length !== eventosArray.length) {
+      // Atualizar a linha
+      const novosEventos = eventosAtualizados.join(';');
+      sheetBanco.getRange(i + 1, 4).setValue(novosEventos);
+      
+      // Se era o último evento, atualizar "Último Evento"
+      if (data[i][4] === nomeEvento) {
+        const novoUltimo = eventosAtualizados.length > 0 ? eventosAtualizados[eventosAtualizados.length - 1] : "Nenhum";
+        sheetBanco.getRange(i + 1, 5).setValue(novoUltimo);
+      }
+    }
+  }
+  
+  // Excluir a aba do evento
+  ss.deleteSheet(sheet);
+  
+  return { sucesso: true, mensagem: "Evento excluído. Nomes mantidos no banco." };
+}
+
+// Atualizar a função adicionarConvidado para integrar com o banco
+function adicionarConvidadoIntegrado(nomeEvento, arrayDados) {
+  // Chamar função original
+  const resultado = adicionarConvidado(nomeEvento, arrayDados);
+  
+  if (resultado.sucesso) {
+    // Adicionar ao banco de nomes
+    const nome = arrayDados[0];
+    const email = arrayDados.length > 1 ? arrayDados[1] : "";
+    const telefone = arrayDados.length > 2 ? arrayDados[2] : "";
+    
+    try {
+      adicionarAoBancoNomes(nome, email, telefone, nomeEvento);
+    } catch (e) {
+      Logger.log("Erro ao adicionar ao banco: " + e.toString());
+      // Não interrompe o fluxo principal
+    }
+  }
+  
+  return resultado;
 }
