@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestor de Eventos v15.0</title>
+    <title>Gestor de Eventos v15.1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -46,7 +46,7 @@
         .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.07); }
         .btn:active { transform: translateY(0); }
         
-        .status-badge { display: inline-flex; align-items-center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.8rem; }
+        .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 20px; font-weight: 600; font-size: 0.8rem; }
         
         .toolbar-search { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
         .search-input { border-radius: 10px; border: 2px solid #e5e7eb; padding: 10px 16px; transition: all 0.2s; }
@@ -135,7 +135,7 @@
     </div>
     <div class="mt-auto text-muted small pt-3 border-top">
         <div class="d-flex align-items-center justify-content-between">
-            <span>v15.0 - Templates & Banco</span>
+            <span>v15.1 - Corrigido</span>
             <i class="fas fa-layer-group text-primary"></i>
         </div>
     </div>
@@ -332,7 +332,6 @@
             </div>
         </div>
     </div>
-</div>
 
     <!-- TELA: GERENCIAR BANCO DE NOMES -->
     <div id="tela-banco-nomes" style="display:none;">
@@ -345,6 +344,18 @@
         
         <div class="card shadow-sm border-0" style="border-radius: 16px;">
             <div class="card-body p-4">
+                <!-- ALERTA DE MIGRAÇÃO v15.1 -->
+                <div class="alert alert-info" id="alerta-migracao" style="display:none;">
+                    <h5><i class="fas fa-info-circle me-2"></i>Banco de Nomes Vazio</h5>
+                    <p class="mb-2">Você tem eventos antigos? Importe todos os convidados para o Banco de Nomes!</p>
+                    <button class="btn btn-primary" onclick="migrarEventosAntigos()">
+                        <i class="fas fa-download me-1"></i> Migrar Eventos Antigos
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="document.getElementById('alerta-migracao').style.display='none'">
+                        Agora não
+                    </button>
+                </div>
+
                 <div class="mb-4">
                     <input type="text" id="busca-banco" class="form-control form-control-lg" 
                            placeholder="🔍 Buscar por nome..." 
@@ -371,946 +382,138 @@
             </div>
         </div>
     </div>
-
-
-<!-- ========================================== -->
-<!-- NOVOS MODAIS v15.0 - TEMPLATES + BANCO -->
-<!-- ========================================== -->
-
-<!-- MODAL 1: MANUAL DE USO -->
-<div class="modal fade" id="modalManual" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-info text-white">
-                <h5 class="modal-title"><i class="fas fa-book me-2"></i>Manual de Uso</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <ul class="nav nav-tabs mb-3" id="manualTabs" role="tablist">
-                    <li class="nav-item">
-                        <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-inicio">
-                            <i class="fas fa-rocket me-1"></i>Início Rápido
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-convidados">
-                            <i class="fas fa-users me-1"></i>Convidados
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-email">
-                            <i class="fas fa-envelope me-1"></i>Emails
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-links">
-                            <i class="fas fa-link me-1"></i>Links
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-relatorios">
-                            <i class="fas fa-chart-bar me-1"></i>Relatórios
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-avancado">
-                            <i class="fas fa-cog me-1"></i>Avançado
-                        </button>
-                    </li>
-                    <li class="nav-item">
-                        <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-atalhos">
-                            <i class="fas fa-keyboard me-1"></i>Atalhos
-                        </button>
-                    </li>
-                </ul>
-
-                <div class="tab-content">
-                    <!-- TAB: Início Rápido -->
-                    <div class="tab-pane fade show active" id="tab-inicio">
-                        <h6 class="text-primary fw-bold mb-3">🚀 Primeiros Passos</h6>
-                        <ol class="mb-4">
-                            <li class="mb-2"><strong>Criar Evento:</strong> Clique em "Novo Evento" e escolha um template ou crie do zero</li>
-                            <li class="mb-2"><strong>Adicionar Convidados:</strong> Use o botão "+ Adicionar" ou importe do Excel (Ctrl+I)</li>
-                            <li class="mb-2"><strong>Gerar Links:</strong> Selecione convidados e clique em "Gerar Links" para criar confirmações personalizadas</li>
-                            <li class="mb-2"><strong>Enviar Convites:</strong> Use "Enviar Email" para disparar convites em massa</li>
-                            <li class="mb-2"><strong>Acompanhar:</strong> Veja as estatísticas em tempo real no Dashboard</li>
-                        </ol>
-                        <div class="alert alert-info">
-                            <strong>💡 Dica:</strong> Use templates salvos para criar eventos recorrentes mais rápido!
-                        </div>
-                    </div>
-
-                    <!-- TAB: Gerenciar Convidados -->
-                    <div class="tab-pane fade" id="tab-convidados">
-                        <h6 class="text-primary fw-bold mb-3">👥 Gerenciamento de Convidados</h6>
-                        
-                        <div class="mb-4">
-                            <strong>Adicionar Individualmente:</strong>
-                            <p class="text-muted small">Clique "+ Adicionar" ou pressione <kbd>Ctrl+N</kbd>. Preencha os campos e salve.</p>
-                        </div>
-
-                        <div class="mb-4">
-                            <strong>Importar do Excel:</strong>
-                            <ol class="small text-muted">
-                                <li>Copie dados do Excel (Ctrl+C)</li>
-                                <li>Clique "Importar" ou pressione <kbd>Ctrl+I</kbd></li>
-                                <li>Cole os dados (Ctrl+V)</li>
-                                <li>Marque se tem cabeçalho</li>
-                                <li>Confirme importação</li>
-                            </ol>
-                        </div>
-
-                        <div class="mb-4">
-                            <strong>Banco de Nomes:</strong>
-                            <p class="text-muted small">Ao adicionar convidados, clique "🔍 Buscar no Banco" para ver se a pessoa já participou de outros eventos. O sistema preenche dados automaticamente!</p>
-                        </div>
-
-                        <div class="mb-4">
-                            <strong>Editar/Excluir:</strong>
-                            <p class="text-muted small">Clique nos ícones ✏️ para editar ou 🗑️ para excluir convidados.</p>
-                        </div>
-
-                        <div class="alert alert-success">
-                            <strong>✨ Novo!</strong> O sistema agora lembra de convidados anteriores e sugere dados ao digitar nomes.
-                        </div>
-                    </div>
-
-                    <!-- TAB: Campanhas de Email -->
-                    <div class="tab-pane fade" id="tab-email">
-                        <h6 class="text-primary fw-bold mb-3">✉️ Envio de Emails</h6>
-                        
-                        <div class="mb-4">
-                            <strong>Como usar:</strong>
-                            <ol class="small text-muted">
-                                <li>Selecione convidados (checkbox)</li>
-                                <li>Clique "Enviar Email"</li>
-                                <li>Preencha assunto e mensagem</li>
-                                <li>Use variáveis dinâmicas</li>
-                                <li>Confirme envio</li>
-                            </ol>
-                        </div>
-
-                        <div class="mb-4">
-                            <strong>Variáveis Dinâmicas:</strong>
-                            <ul class="small text-muted">
-                                <li><code>{Nome}</code> - Nome do convidado</li>
-                                <li><code>{Evento}</code> - Nome do evento</li>
-                                <li><code>{Link}</code> - Link personalizado de confirmação</li>
-                            </ul>
-                        </div>
-
-                        <div class="mb-4">
-                            <strong>Exemplo de mensagem:</strong>
-                            <pre class="bg-light p-3 rounded small">Olá {Nome}!
-
-Você está convidado(a) para {Evento}.
-
-Confirme sua presença clicando no link:
-{Link}
-
-Aguardamos você!</pre>
-                        </div>
-
-                        <div class="alert alert-warning">
-                            <strong>⚠️ Importante:</strong> Emails são enviados com intervalo de 1 segundo. Limite de 50 por vez.
-                        </div>
-                    </div>
-
-                    <!-- TAB: Links Personalizados -->
-                    <div class="tab-pane fade" id="tab-links">
-                        <h6 class="text-primary fw-bold mb-3">🔗 Links de Confirmação</h6>
-                        
-                        <div class="mb-4">
-                            <strong>Gerar Links:</strong>
-                            <ol class="small text-muted">
-                                <li>Selecione um ou mais convidados</li>
-                                <li>Clique "Gerar Links"</li>
-                                <li>Sistema cria s únicas para cada pessoa</li>
-                            </ol>
-                        </div>
-
-                        <div class="mb-4">
-                            <strong>Compartilhar:</strong>
-                            <p class="text-muted small">Após gerar, você pode:</p>
-                            <ul class="small text-muted">
-                                <li>📋 Copiar link</li>
-                                <li>📱 Enviar via WhatsApp</li>
-                                <li>📧 Enviar por Email</li>
-                                <li>📄 Visualizar QR Code</li>
-                            </ul>
-                        </div>
-
-                        <div class="alert alert-info">
-                            <strong>💡 Dica:</strong> QR Codes são perfeitos para eventos presenciais!
-                        </div>
-                    </div>
-
-                    <!-- TAB: Relatórios -->
-                    <div class="tab-pane fade" id="tab-relatorios">
-                        <h6 class="text-primary fw-bold mb-3">📊 Exportar Dados</h6>
-                        
-                        <div class="mb-4">
-                            <strong>Exportar para PDF:</strong>
-                            <p class="text-muted small">Clique "Exportar PDF" para gerar relatório completo com estatísticas e lista de convidados.</p>
-                        </div>
-
-                        <div class="mb-4">
-                            <strong>Exportar para Excel:</strong>
-                            <p class="text-muted small">Clique "Exportar Excel" para baixar planilha com todos os dados do evento.</p>
-                        </div>
-
-                        <div class="mb-4">
-                            <strong>Estatísticas incluem:</strong>
-                            <ul class="small text-muted">
-                                <li>Total de convidados</li>
-                                <li>Confirmados / Pendentes / Não vão</li>
-                                <li>Taxa de confirmação</li>
-                                <li>Gráficos visuais</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- TAB: Recursos Avançados -->
-                    <div class="tab-pane fade" id="tab-avancado">
-                        <h6 class="text-primary fw-bold mb-3">⚙️ Funcionalidades Avançadas</h6>
-                        
-                        <div class="mb-4">
-                            <strong>Templates Personalizados:</strong>
-                            <ol class="small text-muted">
-                                <li>Configure colunas do seu evento</li>
-                                <li>Clique "💾 Salvar como Template"</li>
-                                <li>Dê um nome ao template</li>
-                                <li>Use em eventos futuros!</li>
-                            </ol>
-                        </div>
-
-                        <div class="mb-4">
-                            <strong>Banco de Nomes:</strong>
-                            <p class="text-muted small">O sistema memoriza automaticamente todos os convidados adicionados. Ao criar novos eventos, basta buscar pelo nome para recuperar email, telefone e histórico de participação.</p>
-                        </div>
-
-                        <div class="mb-4">
-                            <strong>Colunas Customizadas:</strong>
-                            <p class="text-muted small">Adicione ou remova colunas conforme necessidade do evento (Ex: "Mesa", "Restrição Alimentar", "Workshop Escolhido").</p>
-                        </div>
-
-                        <div class="alert alert-success">
-                            <strong>✨ v15.0:</strong> Templates agora salvam também configurações de email padrão!
-                        </div>
-                    </div>
-
-                    <!-- TAB: Atalhos de Teclado -->
-                    <div class="tab-pane fade" id="tab-atalhos">
-                        <h6 class="text-primary fw-bold mb-3">⌨️ Atalhos de Teclado</h6>
-                        
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Atalho</th>
-                                    <th>Função</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td><kbd>Ctrl</kbd> + <kbd>K</kbd></td>
-                                    <td>Busca rápida de eventos</td>
-                                </tr>
-                                <tr>
-                                    <td><kbd>Ctrl</kbd> + <kbd>N</kbd></td>
-                                    <td>Adicionar novo convidado</td>
-                                </tr>
-                                <tr>
-                                    <td><kbd>Ctrl</kbd> + <kbd>I</kbd></td>
-                                    <td>Importar do Excel</td>
-                                </tr>
-                                <tr>
-                                    <td><kbd>Ctrl</kbd> + <kbd>R</kbd></td>
-                                    <td>Atualizar dados do evento</td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <div class="alert alert-info mt-3">
-                            <strong>💡 Dica:</strong> Use atalhos para trabalhar mais rápido!
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-            </div>
-        </div>
-    </div>
 </div>
 
-<!-- MODAL 2: SALVAR TEMPLATE -->
-<div class="modal fade" id="modalSalvarTemplate" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-warning text-dark">
-                <h5 class="modal-title"><i class="fas fa-save me-2"></i>Salvar como Template</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p class="text-muted small">Salve a configuração atual deste evento para reutilizar em eventos futuros.</p>
-                
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nome do Template</label>
-                    <input type="text" id="input-nome-template" class="form-control" placeholder="Ex: Reunião Executiva">
-                    <small class="text-muted">Escolha um nome descritivo para identificar facilmente.</small>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Colunas que serão salvas:</label>
-                    <div id="preview-colunas-template" class="bg-light p-2 rounded small"></div>
-                </div>
-
-                <div class="form-check mb-3">
-                    <input class="form-check-input" type="checkbox" id="check-salvar-email-template">
-                    <label class="form-check-label" for="check-salvar-email-template">
-                        Salvar configurações de email (assunto e mensagem padrão)
-                    </label>
-                </div>
-
-                <div id="preview-email-template" class="bg-light p-3 rounded small" style="display:none;">
-                    <strong>Email padrão:</strong>
-                    <div id="texto-email-template" class="mt-2"></div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-warning" onclick="confirmarSalvarTemplate()">
-                    <i class="fas fa-save me-1"></i>Salvar Template
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL 3: BUSCAR NO BANCO -->
-<div class="modal fade" id="modalBuscarBanco" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title"><i class="fas fa-search me-2"></i>Buscar no Banco de Nomes</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Digite o nome:</label>
-                    <div class="input-group">
-                        <input type="text" id="input-busca-banco" class="form-control" placeholder="Ex: João Silva">
-                        <button class="btn btn-success" onclick="executarBuscaBanco()">
-                            <i class="fas fa-search"></i> Buscar
-                        </button>
-                    </div>
-                </div>
-
-                <div id="resultado-busca-banco"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL 4: SELECIONAR TEMPLATE (ao criar evento) -->
-<div class="modal fade" id="modalSelecionarTemplate" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="fas fa-layer-group me-2"></i>Selecionar Template</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="lista-templates-disponiveis"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-            </div>
-        </div>
-    </div>
-</div>
-<div class="modal fade" id="modalConfig" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title">Configurações</h5>
-                <button class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <h6 class="fw-bold">Renomear Evento</h6>
-                <div class="input-group mb-4">
-                    <input type="text" id="input-renomear" class="form-control">
-                    <button class="btn btn-outline-primary" onclick="salvarRenomeacao()">Salvar</button>
-                </div>
-                
-                <h6 class="fw-bold">Gerenciar Colunas</h6>
-                <div class="input-group mb-2">
-                    <input type="text" id="input-nova-coluna" class="form-control" placeholder="Nova Coluna (Ex: Empresa)">
-                    <button class="btn btn-outline-success" onclick="addColuna()">Adicionar</button>
-                </div>
-                <ul class="list-group" id="lista-colunas-config"></ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="modalEmail" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="fas fa-paper-plane me-2"></i>Enviar Convites</h5>
-                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p class="text-muted small" id="email-info">Serão enviados e-mails para os contatos selecionados que possuam endereço válido.</p>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Assunto</label>
-                    <input type="text" id="email-assunto" class="form-control" value="Convite: {Evento}">
-                    <div class="form-text">Use {Nome} e {Evento} onde quiser que apareçam.</div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Mensagem</label>
-                    <textarea id="email-mensagem" class="form-control" rows="6">Olá {Nome},
+<!-- MODALS -->
+<div class="modal fade" id="modalManual" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-info text-white"><h5 class="modal-title"><i class="fas fa-book me-2"></i>Manual de Uso</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><p class="text-center text-muted">Documentação completa em desenvolvimento...</p></div></div></div></div>
+<div class="modal fade" id="modalConfig" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-light"><h5 class="modal-title">Configurações</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><h6 class="fw-bold">Renomear Evento</h6><div class="input-group mb-4"><input type="text" id="input-renomear" class="form-control"><button class="btn btn-outline-primary" onclick="salvarRenomeacao()">Salvar</button></div><h6 class="fw-bold">Gerenciar Colunas</h6><div class="input-group mb-2"><input type="text" id="input-nova-coluna" class="form-control" placeholder="Nova Coluna (Ex: Empresa)"><button class="btn btn-outline-success" onclick="addColuna()">Adicionar</button></div><ul class="list-group" id="lista-colunas-config"></ul></div></div></div></div>
+<div class="modal fade" id="modalEmail" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="fas fa-paper-plane me-2"></i>Enviar Convites</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><p class="text-muted small" id="email-info">Serão enviados e-mails para os contatos selecionados que possuam endereço válido.</p><div class="mb-3"><label class="form-label fw-bold">Assunto</label><input type="text" id="email-assunto" class="form-control" value="Convite: {Evento}"><div class="form-text">Use {Nome} e {Evento} onde quiser que apareçam.</div></div><div class="mb-3"><label class="form-label fw-bold">Mensagem</label><textarea id="email-mensagem" class="form-control" rows="6">Olá {Nome},
 
 Gostaríamos muito da sua presença!
 Confirme no link abaixo:
 
 {Link}
 
-Atenciosamente.</textarea>
-                    <div class="form-text">Use {Nome}, {Evento} e {Link} para personalizar.</div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button class="btn btn-primary" onclick="processarEnvioEmails()"><i class="fas fa-paper-plane me-1"></i>Enviar Agora</button>
-            </div>
-        </div>
-    </div>
-</div>
-
+Atenciosamente.</textarea><div class="form-text">Use {Nome}, {Evento} e {Link} para personalizar.</div></div></div><div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-primary" onclick="processarEnvioEmails()"><i class="fas fa-paper-plane me-1"></i>Enviar Agora</button></div></div></div></div>
 <div class="modal fade" id="modalLink" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="fas fa-qrcode me-2"></i>Compartilhar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body text-center p-4"><div id="qrcode" class="mb-3"></div><p class="small text-muted mb-4"><i class="fas fa-mobile-alt me-1"></i>Escaneie ou compartilhe</p><div class="input-group mb-3"><input type="text" id="input-link-gerado" class="form-control text-center fw-semibold" readonly><button class="btn btn-outline-primary" onclick="copiarTextoLink()"><i class="fas fa-copy"></i></button></div><div class="d-grid gap-2 mt-3"><button class="btn btn-success" onclick="compartilharWhatsApp()"><i class="fab fa-whatsapp me-2"></i>Compartilhar via WhatsApp</button><button class="btn btn-primary" onclick="compartilharEmail()"><i class="fas fa-envelope me-2"></i>Enviar por Email</button><a id="btn-abrir-link" href="#" target="_blank" class="btn btn-light"><i class="fas fa-external-link-alt me-1"></i>Abrir</a></div></div></div></div></div>
 <div class="modal fade" id="modalEditar" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-warning"><h5 class="modal-title text-dark"><i class="fas fa-edit me-2"></i>Editar</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="edit-linha-index"><div id="form-editar-dinamico"></div></div><div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-warning fw-bold" onclick="salvarEdicao()"><i class="fas fa-save me-1"></i>Salvar</button></div></div></div></div>
 <div class="modal fade" id="modalAdd" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header bg-primary text-white"><h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Adicionar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body" id="form-dinamico"></div><div class="modal-footer"><button class="btn btn-primary fw-bold" onclick="enviarConvidado()"><i class="fas fa-check me-1"></i>Salvar</button></div></div></div></div>
 <div class="modal fade" id="modalImport" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-success text-white"><h5 class="modal-title"><i class="fas fa-file-excel me-2"></i>Importar</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="form-check form-switch mb-3"><input class="form-check-input" type="checkbox" id="check-headers" checked><label class="form-check-label fw-semibold"><i class="fas fa-table me-1"></i>1ª linha é cabeçalho</label></div><textarea id="texto-importacao" class="form-control" rows="10" placeholder="Cole..."></textarea></div><div class="modal-footer"><button class="btn btn-success fw-bold" onclick="processarImportacao()"><i class="fas fa-upload me-1"></i>Processar</button></div></div></div></div>
 <div class="modal fade" id="modalConfirmacao" tabindex="-1"><div class="modal-dialog modal-dialog-centered"><div class="modal-content border-0 shadow-lg"><div class="modal-body text-center p-5"><div class="mb-4"><i class="fas fa-exclamation-triangle text-warning" style="font-size: 4rem;"></i></div><h4 class="fw-bold mb-3" id="confirm-titulo">Confirmar?</h4><p class="text-muted" id="confirm-mensagem">Esta ação não pode ser desfeita.</p><div class="d-flex gap-3 mt-4"><button class="btn btn-light flex-fill" data-bs-dismiss="modal">Cancelar</button><button class="btn btn-danger flex-fill fw-bold" id="confirm-btn-ok">Confirmar</button></div></div></div></div></div>
+<div class="modal fade" id="modalEditarBanco" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Editar Informações - Banco de Nomes</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="edit-banco-nome-antigo"><div class="mb-3"><label class="form-label fw-bold">Nome</label><input type="text" id="edit-banco-nome" class="form-control"></div><div class="mb-3"><label class="form-label fw-bold">Email</label><input type="email" id="edit-banco-email" class="form-control"></div><div class="mb-3"><label class="form-label fw-bold">Telefone</label><input type="text" id="edit-banco-telefone" class="form-control"></div><div class="alert alert-warning" id="alert-propagar" style="display:none;"><div class="form-check"><input class="form-check-input" type="checkbox" id="check-propagar-eventos"><label class="form-check-label" for="check-propagar-eventos"><strong>Atualizar nome em <span id="qtd-eventos-propagar"></span> evento(s)?</strong><br><small class="text-muted">As mudanças serão aplicadas em todos os eventos onde este nome aparece.</small></label></div></div></div><div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary" onclick="salvarEdicaoBanco()">Salvar</button></div></div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxP4A0toTethYfDbizUoqgzcfMNLEM3GRcvqEfQcctREorhBLyVj6SNbBif0YgHQ5a_/exec"; 
-    const GITHUB_PAGES_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-    let colunasAtuais = [], dadosEventoAtual = [], eventoAtual = "", graficoInstance = null, convidadosSelecionados = [];
-    document.addEventListener('DOMContentLoaded', () => { carregarLista(); });
-    
-    // Funções auxiliares de loading
-    function mostrarLoading(show = true) {
-        document.getElementById('loading').style.display = show ? 'flex' : 'none';
-    }
-    function esconderLoading() {
-        document.getElementById('loading').style.display = 'none';
-    }
-    
-    function mostrarToast(mensagem, tipo = 'success') {const container = document.getElementById('toast-container');const toast = document.createElement('div');const icons = { success: '✓', error: '✕', warning: '⚠' };toast.className = 'toast-notification';toast.innerHTML = `<span class="toast-icon ${tipo}">${icons[tipo]}</span><span class="toast-message">${mensagem}</span>`;container.appendChild(toast);setTimeout(() => { toast.classList.add('slide-out'); setTimeout(() => toast.remove(), 300); }, 3500);}
-    function confirmarAcao(titulo, mensagem) {return new Promise((resolve) => {document.getElementById('confirm-titulo').innerText = titulo;document.getElementById('confirm-mensagem').innerText = mensagem;const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));const btnOk = document.getElementById('confirm-btn-ok');btnOk.onclick = () => { modal.hide(); resolve(true); };document.getElementById('modalConfirmacao').addEventListener('hidden.bs.modal', () => { resolve(false); }, { once: true });modal.show();});}
-    
-    async function chamarAPI(acao, dados = {}) {document.getElementById('loading').style.display = 'flex';try {const response = await fetch(API_URL, {method: 'POST',headers: { "Content-Type": "text/plain;charset=utf-8" },body: JSON.stringify({ acao: acao, ...dados })});const json = await response.json();document.getElementById('loading').style.display = 'none';if (json.erro) { mostrarToast("Erro: " + json.erro, "error"); return null; }return json;} catch (e) {document.getElementById('loading').style.display = 'none';mostrarToast("Erro de conexão.", "error");return null;}}
-    async function carregarLista() {const dados = await chamarAPI('listarEventos');if (!dados) return;const tabContainer = document.getElementById('tab-lista-eventos');tabContainer.innerHTML = ''; if (dados.length === 0) { tabContainer.innerHTML = '<li class="nav-item"><a class="nav-link disabled">Nenhum evento</a></li>'; return; }dados.forEach((ev, index) => {const li = document.createElement('li'); li.className = 'nav-item';const btn = document.createElement('button'); btn.className = index === 0 ? 'nav-link active' : 'nav-link';btn.innerText = ev.nome; btn.onclick = () => { document.querySelectorAll('#tab-lista-eventos .nav-link').forEach(el => el.classList.remove('active')); btn.classList.add('active'); carregarEventoEspecifico(ev.nome); };li.appendChild(btn); tabContainer.appendChild(li);});if (dados.length > 0) carregarEventoEspecifico(dados[0].nome);}
-    async function carregarEventoEspecifico(nome) {if (!nome) return;eventoAtual = nome;const dados = await chamarAPI('obterDadosEvento', { nomeEvento: nome });if (!dados) return;colunasAtuais = dados.headers;dadosEventoAtual = dados.rows;convidadosSelecionados = [];renderizarTabela(dados.headers, dados.rows);atualizarDashboard(dados.headers, dados.rows);const temEmail = dados.headers.some(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});let emailsValidos = 0;if (temEmail) {const indexEmail = dados.headers.findIndex(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});dados.rows.forEach(row => {const email = row[indexEmail];if (email && email.toString().includes('@')) {emailsValidos++;}});}const btnEmail = document.getElementById('btn-massa-email');if (temEmail && emailsValidos > 0) {btnEmail.style.display = 'inline-block';btnEmail.title = `${emailsValidos} contato(s) com email válido`;} else if (temEmail && emailsValidos === 0) {btnEmail.style.display = 'none';if (dados.rows.length > 0) {mostrarToast("Coluna Email existe mas nenhum email válido encontrado.", "warning");}} else {btnEmail.style.display = 'none';}document.getElementById('toolbar-acoes').style.display = 'block';document.getElementById('toolbar-busca').style.display = 'block';document.getElementById('toolbar-massa').style.display = 'none';document.getElementById('busca-rapida').value = '';document.querySelector('select.form-select').value = '';mostrarToast(`Evento "${nome}" carregado!`, "success");}
-    function atualizarDashboard(headers, rows) {document.getElementById('area-stats').style.display = 'block';const indexStatus = headers.indexOf('Status');let confirmados = 0, pendentes = 0, recusados = 0, total = rows.length;if (indexStatus > -1) {rows.forEach(row => {const status = row[indexStatus] || "Pendente";if (status === 'Confirmado') confirmados++; else if (status === 'Não vai') recusados++; else pendentes++;});} else { pendentes = total; }document.getElementById('stat-total').innerText = total; document.getElementById('stat-confirmados').innerText = confirmados; document.getElementById('stat-pendentes').innerText = pendentes; document.getElementById('stat-recusados').innerText = recusados;const taxaResposta = total > 0 ? Math.round(((confirmados + recusados) / total) * 100) : 0;const percentualConfirmados = total > 0 ? Math.round((confirmados / total) * 100) : 0;document.getElementById('taxa-resposta').innerText = taxaResposta + '%';document.getElementById('percentual-confirmados').innerText = percentualConfirmados + '%';document.getElementById('ultima-atualizacao').innerText = new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });const ctx = document.getElementById('meuGrafico').getContext('2d');if (graficoInstance) graficoInstance.destroy();graficoInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Confirmados', 'Pendentes', 'Recusados'], datasets: [{ data: [confirmados, pendentes, recusados], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0, hoverOffset: 10 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15, font: { size: 13 } } } } } });}
-    function filtrarTabela() {const termo = document.getElementById('busca-rapida').value.toLowerCase();const linhas = document.querySelectorAll('#tabela-dados tbody tr');let contador = 0;linhas.forEach(linha => {const texto = linha.textContent.toLowerCase();const visivel = texto.includes(termo);linha.style.display = visivel ? '' : 'none';if (visivel) contador++;});document.getElementById('contador-filtrados').innerText = contador;}
-    function filtrarPorStatus(status) {const linhas = document.querySelectorAll('#tabela-dados tbody tr');const indexStatus = colunasAtuais.indexOf('Status');let contador = 0;linhas.forEach(linha => {const celulas = linha.querySelectorAll('td');const statusCelula = celulas[indexStatus + 1]?.textContent.replace(/[^a-záéíóúàâêôãõç\s]/gi, '').trim();const visivel = !status || statusCelula.includes(status);linha.style.display = visivel ? '' : 'none';if (visivel) contador++;});document.getElementById('contador-filtrados').innerText = contador;}
-    function renderizarTabela(headers, rows) {const thead = document.querySelector('#tabela-dados thead');const tbody = document.querySelector('#tabela-dados tbody');let headerHTML = "<tr><th class='ocultar-pdf' style='width: 40px;'><input type='checkbox' onchange='selecionarTodos(this.checked)'></th>";headers.forEach(h => headerHTML += `<th>${h}</th>`);headerHTML += `<th class="text-center ocultar-pdf" style="width: 100px;">Ações</th></tr>`;thead.innerHTML = headerHTML;if (rows.length === 0) { tbody.innerHTML = `<tr><td colspan="${headers.length + 2}" class="text-center p-5"><i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i><span class="text-muted">Nenhum convidado</span></td></tr>`; document.getElementById('contador-filtrados').innerText = '0';} else {const statusBadges = {'Confirmado': '<span class="status-badge bg-success text-white"><i class="fas fa-check"></i>Confirmado</span>','Pendente': '<span class="status-badge bg-warning text-dark"><i class="fas fa-clock"></i>Pendente</span>','Não vai': '<span class="status-badge bg-danger text-white"><i class="fas fa-times"></i>Não vai</span>'};const indexStatus = headers.indexOf('Status');let bodyHTML = "";rows.forEach((row, index) => {bodyHTML += "<tr>";bodyHTML += `<td class="ocultar-pdf"><input type="checkbox" class="check-convidado" data-index="${index}" onchange="toggleSelecao(${index})"></td>`;row.forEach((cell, colIndex) => {if (colIndex === indexStatus && statusBadges[cell]) {bodyHTML += `<td>${statusBadges[cell]}</td>`;} else {bodyHTML += `<td>${cell}</td>`;}});bodyHTML += `<td class="text-center ocultar-pdf"><button class="btn btn-light btn-action text-primary me-1" onclick="abrirModalEditar(${index})"><i class="fas fa-pen"></i></button><button class="btn btn-light btn-action text-danger" onclick="confirmarExclusao(${index})"><i class="fas fa-trash"></i></button></td></tr>`;});tbody.innerHTML = bodyHTML;document.getElementById('contador-filtrados').innerText = rows.length;}}
-    function selecionarTodos(checked) {convidadosSelecionados = [];document.querySelectorAll('.check-convidado').forEach(checkbox => {checkbox.checked = checked;if (checked) {convidadosSelecionados.push(parseInt(checkbox.dataset.index));}});atualizarToolbarMassa();}
-    function toggleSelecao(index) {const checkbox = document.querySelector(`.check-convidado[data-index="${index}"]`);if (checkbox.checked) {if (!convidadosSelecionados.includes(index)) {convidadosSelecionados.push(index);}} else {convidadosSelecionados = convidadosSelecionados.filter(i => i !== index);}atualizarToolbarMassa();}
-    function atualizarToolbarMassa() {const toolbar = document.getElementById('toolbar-massa');const count = document.getElementById('count-selecionados');count.innerText = convidadosSelecionados.length;toolbar.style.display = convidadosSelecionados.length > 0 ? 'block' : 'none';}
-    async function atualizarEmMassa(novoStatus) {if (convidadosSelecionados.length === 0) return;const confirmado = await confirmarAcao(`Atualizar ${convidadosSelecionados.length} convidados?`,`Todos serão marcados como "${novoStatus}"`);if (!confirmado) return;const indexStatus = colunasAtuais.indexOf('Status');for (const index of convidadosSelecionados) {const novosDados = [...dadosEventoAtual[index]];novosDados[indexStatus] = novoStatus;await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: index + 2, novosDados });}limparSelecao();carregarEventoEspecifico(eventoAtual);mostrarToast(`${convidadosSelecionados.length} atualizados!`, "success");}
-    function limparSelecao() {convidadosSelecionados = [];document.querySelectorAll('.check-convidado').forEach(cb => cb.checked = false);document.querySelector('thead input[type="checkbox"]').checked = false;atualizarToolbarMassa();}
-    function abrirModalEmail() {if (convidadosSelecionados.length === 0) {mostrarToast("Selecione pelo menos um convidado.", "warning");return;}const temEmail = colunasAtuais.some(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});if (!temEmail) {mostrarToast("Este evento não possui coluna de Email.", "error");setTimeout(() => {if (confirm("Deseja adicionar a coluna 'Email' agora nas configurações?")) {abrirModalConfig();document.getElementById('input-nova-coluna').value = 'Email';document.getElementById('input-nova-coluna').focus();}}, 500);return;}const indexEmail = colunasAtuais.findIndex(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});const indexNome = colunasAtuais.indexOf('Nome');let comEmail = 0;let semEmail = [];convidadosSelecionados.forEach(index => {const row = dadosEventoAtual[index];const email = row[indexEmail] ? row[indexEmail].toString().trim() : '';if (email && email.includes('@')) {comEmail++;} else {const nome = indexNome > -1 ? row[indexNome] : `Linha ${index+2}`;semEmail.push(nome);}});if (semEmail.length > 0) {const nomes = semEmail.slice(0, 3).join(', ');const extras = semEmail.length > 3 ? ` e mais ${semEmail.length - 3}` : '';const confirmado = confirm(`⚠️ Atenção:\n\n` +`${semEmail.length} de ${convidadosSelecionados.length} selecionados NÃO têm email válido.\n\n` +`Sem email: ${nomes}${extras}\n\n` +`Continuar e enviar apenas para os ${comEmail} com email válido?`);if (!confirmado) return;}if (comEmail === 0) {mostrarToast("Nenhum dos selecionados possui email válido.", "error");return;}document.getElementById('email-info').innerHTML = `<strong class="text-primary">${comEmail} email(s)</strong> serão enviados.` +(semEmail.length > 0 ? ` <span class="text-warning">(${semEmail.length} sem email serão ignorados)</span>` : '');new bootstrap.Modal(document.getElementById('modalEmail')).show();}
-    async function processarEnvioEmails() {const assunto = document.getElementById('email-assunto').value.trim();const mensagem = document.getElementById('email-mensagem').value.trim();if (!assunto || !mensagem) {mostrarToast("Preencha assunto e mensagem.", "warning");return;}if (!mensagem.includes('{Link}')) {const confirmado = confirm("⚠️ A mensagem não contém a variável {Link}.\n\n" +"Os convidados não saberão como confirmar presença.\n\n" +"Continuar mesmo assim?");if (!confirmado) return;}const linkBase = `${GITHUB_PAGES_URL}index.html`; console.log('📧 Enviando emails...');console.log('Evento:', eventoAtual);console.log('Selecionados:', convidadosSelecionados);const res = await chamarAPI('enviarEmails', {nomeEvento: eventoAtual,indices: convidadosSelecionados,assunto: assunto,mensagem: mensagem,linkBase: linkBase});if (res && res.sucesso) {let msg = `✅ ${res.enviados} email(s) enviado(s) com sucesso!`;if (res.erros > 0) {msg += `\n⚠️ ${res.erros} não puderam ser enviados`;}if (res.detalhes && res.detalhes.length > 0) {const detalhes = res.detalhes.slice(0, 5).join('\n• ');const extras = res.detalhes.length > 5 ? `\n... e mais ${res.detalhes.length - 5}` : '';msg += `\n\nDetalhes:\n• ${detalhes}${extras}`;}alert(msg);mostrarToast(`${res.enviados} emails enviados!`, "success");bootstrap.Modal.getInstance(document.getElementById('modalEmail')).hide();limparSelecao();} else {mostrarToast("Erro ao enviar emails. Veja console para detalhes.", "error");}}
-    function abrirModalConfig() {document.getElementById('input-renomear').value = eventoAtual;const ul = document.getElementById('lista-colunas-config');ul.innerHTML = '';colunasAtuais.forEach(col => {ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">${col} <button class="btn btn-sm btn-outline-danger" onclick="rmColuna('${col}')"><i class="fas fa-trash"></i></button></li>`;});new bootstrap.Modal(document.getElementById('modalConfig')).show();}
-    async function salvarRenomeacao() {const novo = document.getElementById('input-renomear').value.trim();if(!novo || novo === eventoAtual) return;const res = await chamarAPI('renomearEvento', { nomeAntigo: eventoAtual, nomeNovo: novo });if(res && res.sucesso) {bootstrap.Modal.getInstance(document.getElementById('modalConfig')).hide();carregarLista();mostrarToast("Evento renomeado!", "success");}}
-    async function addColuna() {const col = document.getElementById('input-nova-coluna').value.trim();if(!col) {mostrarToast("Digite o nome da coluna.", "warning");return;}const res = await chamarAPI('adicionarColuna', { nomeEvento: eventoAtual, novaColuna: col });if(res && res.sucesso) { mostrarToast(`Coluna '${col}' adicionada!`, "success");abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }}
-    async function rmColuna(col) {if(!await confirmarAcao(`Apagar coluna '${col}'?`, "Todos os dados desta coluna serão perdidos.")) return;const res = await chamarAPI('removerColuna', { nomeEvento: eventoAtual, nomeColuna: col });if(res && res.sucesso) { mostrarToast(`Coluna '${col}' removida!`, "success");abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }}
-    function gerarPDF() {const elemento = document.getElementById('container-tabela-exportar');const clone = elemento.cloneNode(true);clone.querySelectorAll('.ocultar-pdf').forEach(el => el.remove());const wrapper = document.createElement('div');wrapper.style.padding = '30px';wrapper.style.fontSize = '11px';wrapper.innerHTML = `<div style="text-align: center; margin-bottom: 20px; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px;"><h1 style="color: #1e3a8a; font-family: sans-serif; margin: 0; font-size: 24px;">${eventoAtual}</h1><p style="color: #6b7280; font-family: sans-serif; font-size: 12px; margin: 5px 0 0 0;">Relatório gerado em ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}</p></div><div style="margin-bottom: 20px;"><table style="width: 100%; font-size: 11px; border-collapse: collapse;"><tr><td style="padding: 5px; border: 1px solid #ddd;"><strong>Total:</strong> ${document.getElementById('stat-total').innerText}</td><td style="padding: 5px; border: 1px solid #ddd;"><strong>Confirmados:</strong> ${document.getElementById('stat-confirmados').innerText}</td><td style="padding: 5px; border: 1px solid #ddd;"><strong>Pendentes:</strong> ${document.getElementById('stat-pendentes').innerText}</td><td style="padding: 5px; border: 1px solid #ddd;"><strong>Recusados:</strong> ${document.getElementById('stat-recusados').innerText}</td></tr></table></div>`;const tabelaClone = clone.querySelector('table');tabelaClone.style.fontSize = '10px';tabelaClone.style.width = '100%';clone.querySelectorAll('th, td').forEach(cell => {cell.style.padding = '6px 4px';cell.style.fontSize = '10px';cell.style.wordBreak = 'break-word';});wrapper.appendChild(clone);const opt = {margin: [15, 10, 15, 10], filename: `${eventoAtual}_${new Date().toISOString().split('T')[0]}.pdf`,image: { type: 'jpeg', quality: 0.95 },html2canvas: { scale: 2, useCORS: true, letterRendering: true },jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }};html2pdf().set(opt).from(wrapper).save().then(() => { mostrarToast("PDF gerado!", "success"); });}
-    function gerarTXT() {let texto = `RELATÓRIO: ${eventoAtual}\nGerado: ${new Date().toLocaleString('pt-BR')}\n\n`;texto += colunasAtuais.join("\t") + "\n" + "-".repeat(80) + "\n";dadosEventoAtual.forEach(linha => texto += linha.join("\t") + "\n");const blob = new Blob([texto], { type: 'text/plain;charset=utf-8' });const url = window.URL.createObjectURL(blob);const a = document.createElement('a'); a.href = url; a.download = `${eventoAtual}.txt`; a.click();window.URL.revokeObjectURL(url);mostrarToast("TXT baixado!", "success");}
-    function gerarExcel() {const ws = XLSX.utils.aoa_to_sheet([colunasAtuais, ...dadosEventoAtual]);const wb = XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb, ws, "Lista");XLSX.writeFile(wb, `${eventoAtual}.xlsx`);mostrarToast("Excel gerado!", "success");}
-    function abrirModalEditar(rowIndex) { const dadosRow = dadosEventoAtual[rowIndex]; document.getElementById('edit-linha-index').value = rowIndex; const form = document.getElementById('form-editar-dinamico'); form.innerHTML = ""; colunasAtuais.forEach((col, colIndex) => { const valorAtual = dadosRow[colIndex]; let inputHTML = col === 'Status' ? `<select class="form-control input-editar"><option value="Pendente" ${valorAtual === 'Pendente' ? 'selected' : ''}>Pendente</option><option value="Confirmado" ${valorAtual === 'Confirmado' ? 'selected' : ''}>Confirmado</option><option value="Não vai" ${valorAtual === 'Não vai' ? 'selected' : ''}>Não vai</option></select>` : `<input type="text" class="form-control input-editar" value="${valorAtual}">`; form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`; }); new bootstrap.Modal(document.getElementById('modalEditar')).show(); }
-    async function salvarEdicao() { const rowIndex = parseInt(document.getElementById('edit-linha-index').value); const inputs = document.querySelectorAll('.input-editar'); const novosDados = Array.from(inputs).map(i => i.value); bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide(); const res = await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: rowIndex + 2, novosDados }); if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Atualizado!", "success"); }}
-    async function confirmarExclusao(index) {if (await confirmarAcao("Excluir convidado?", "Essa ação não pode ser desfeita.")) {const res = await chamarAPI('excluirConvidado', { nomeEvento: eventoAtual, linha: index + 2 });if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Excluído!", "success"); }}}
-    function abrirModalLink() { if(!eventoAtual) return; const link = `${GITHUB_PAGES_URL}index.html?evento=${encodeURIComponent(eventoAtual)}`; document.getElementById('input-link-gerado').value = link; document.getElementById('btn-abrir-link').href = link; document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById('qrcode'), { text: link, width: 180, height: 180, colorDark: "#1e3a8a" }); new bootstrap.Modal(document.getElementById('modalLink')).show(); }
-    function copiarTextoLink() { document.getElementById('input-link-gerado').select(); navigator.clipboard.writeText(document.getElementById('input-link-gerado').value); mostrarToast("Link copiado!", "success"); }
-    function compartilharWhatsApp() { const link = document.getElementById('input-link-gerado').value; window.open(`https://wa.me/?text=${encodeURIComponent(`Olá! Confirme sua presença em *${eventoAtual}*:\n\n${link}`)}`, '_blank'); }
-    function compartilharEmail() { const link = document.getElementById('input-link-gerado').value; window.location.href = `mailto:?subject=${encodeURIComponent(`Confirmação - ${eventoAtual}`)}&body=${encodeURIComponent(`Olá!\n\nConfirme sua presença em ${eventoAtual}:\n\n${link}\n\nObrigado!`)}`; }
-    function toggleAreaImportacao(mostrar) { document.getElementById('area-importacao-criacao').style.display = mostrar ? 'block' : 'none'; }
-    async function handleCriarEvento(e) { e.preventDefault(); const nome = document.getElementById('novo-nome').value.trim(); const tipo = document.querySelector('input[name="novo-tipo"]:checked').value; let dados = tipo === 'Importar' ? document.getElementById('texto-criacao-import').value : ""; if (tipo === 'Importar' && !dados.trim()) { mostrarToast("Cole os dados do Excel.", "warning"); return; } const res = await chamarAPI('criarNovoEvento', { nome, template: tipo, dadosImportados: dados }); if (res && res.sucesso) { mostrarToast(`"${nome}" criado!`, "success"); mostrarTela('dashboard'); carregarLista(); } }
-    function abrirModalImport() { document.getElementById('texto-importacao').value = ""; new bootstrap.Modal(document.getElementById('modalImport')).show(); }
-    async function processarImportacao() { const texto = document.getElementById('texto-importacao').value; const temCabecalho = document.getElementById('check-headers').checked; if (!texto.trim()) { mostrarToast("Cole os dados.", "warning"); return; } const linhas = texto.trim().split('\n'); const matriz = linhas.map(l => l.split('\t')); bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide(); const res = await chamarAPI('importarListaConvidados', { nomeEvento: eventoAtual, matrizDados: matriz, temCabecalho }); if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast(`${res.qtd} importados!`, "success"); } }
-    function abrirModalAdd() { const form = document.getElementById('form-dinamico'); form.innerHTML = ""; colunasAtuais.forEach(col => { let inputHTML = col === 'Status' ? `<select class="form-control input-dinamico"><option>Pendente</option><option>Confirmado</option><option>Não vai</option></select>` : `<input type="text" class="form-control input-dinamico">`; form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`; }); new bootstrap.Modal(document.getElementById('modalAdd')).show(); }
-    async function enviarConvidado() { 
-        const valores = Array.from(document.querySelectorAll('.input-dinamico')).map(i => i.value); 
-        
-        if (valores[0] && valores[0].trim() === '') { 
-            mostrarToast("Nome obrigatório.", "warning"); 
-            return; 
-        } 
-        
-        bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide(); 
-        
-        const res = await chamarAPI('adicionarConvidado', { nomeEvento: eventoAtual, arrayDados: valores }); 
-        
-        if (res && res.sucesso) { 
-            // Salvar no Banco de Nomes
-            const nome = valores[0];
-            const email = valores[colunasAtuais.indexOf('Email')] || valores[colunasAtuais.indexOf('E-mail')] || '';
-            const telefone = valores[colunasAtuais.indexOf('Telefone')] || '';
-            
-            await chamarAPI('adicionarAoBanco', { 
-                nome: nome,
-                email: email,
-                telefone: telefone,
-                nomeEvento: eventoAtual
-            });
-            
-            carregarEventoEspecifico(eventoAtual); 
-            mostrarToast("Adicionado!", "success"); 
-        } 
-    }
+const API_URL = "https://script.google.com/macros/s/AKfycbxP4A0toTethYfDbizUoqgzcfMNLEM3GRcvqEfQcctREorhBLyVj6SNbBif0YgHQ5a_/exec"; 
+const GITHUB_PAGES_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+let colunasAtuais = [], dadosEventoAtual = [], eventoAtual = "", graficoInstance = null, convidadosSelecionados = [];
 
-// =======================================================================
-// FUNÇÕES v15.0 - TEMPLATES + BANCO DE NOMES
-// =======================================================================
+document.addEventListener('DOMContentLoaded', () => { carregarLista(); });
 
-// --- TEMPLATES ---
+function mostrarLoading(show = true) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
+function esconderLoading() { document.getElementById('loading').style.display = 'none'; }
+function mostrarToast(mensagem, tipo = 'success') {const container = document.getElementById('toast-container');const toast = document.createElement('div');const icons = { success: '✓', error: '✕', warning: '⚠' };toast.className = 'toast-notification';toast.innerHTML = `<span class="toast-icon ${tipo}">${icons[tipo]}</span><span class="toast-message">${mensagem}</span>`;container.appendChild(toast);setTimeout(() => { toast.classList.add('slide-out'); setTimeout(() => toast.remove(), 300); }, 3500);}
+function confirmarAcao(titulo, mensagem) {return new Promise((resolve) => {document.getElementById('confirm-titulo').innerText = titulo;document.getElementById('confirm-mensagem').innerText = mensagem;const modal = new bootstrap.Modal(document.getElementById('modalConfirmacao'));const btnOk = document.getElementById('confirm-btn-ok');btnOk.onclick = () => { modal.hide(); resolve(true); };document.getElementById('modalConfirmacao').addEventListener('hidden.bs.modal', () => { resolve(false); }, { once: true });modal.show();});}
 
-let templatesDisponiveis = [];
+async function chamarAPI(acao, dados = {}) {document.getElementById('loading').style.display = 'flex';try {const response = await fetch(API_URL, {method: 'POST',headers: { "Content-Type": "text/plain;charset=utf-8" },body: JSON.stringify({ acao: acao, ...dados })});const json = await response.json();document.getElementById('loading').style.display = 'none';if (json.erro) { mostrarToast("Erro: " + json.erro, "error"); return null; }return json;} catch (e) {document.getElementById('loading').style.display = 'none';mostrarToast("Erro de conexão.", "error");return null;}}
+async function carregarLista() {const dados = await chamarAPI('listarEventos');if (!dados) return;const tabContainer = document.getElementById('tab-lista-eventos');tabContainer.innerHTML = ''; if (dados.length === 0) { tabContainer.innerHTML = '<li class="nav-item"><a class="nav-link disabled">Nenhum evento</a></li>'; return; }dados.forEach((ev, index) => {const li = document.createElement('li'); li.className = 'nav-item';const btn = document.createElement('button'); btn.className = index === 0 ? 'nav-link active' : 'nav-link';btn.innerText = ev.nome; btn.onclick = () => { document.querySelectorAll('#tab-lista-eventos .nav-link').forEach(el => el.classList.remove('active')); btn.classList.add('active'); carregarEventoEspecifico(ev.nome); };li.appendChild(btn); tabContainer.appendChild(li);});if (dados.length > 0) carregarEventoEspecifico(dados[0].nome);}
+async function carregarEventoEspecifico(nome) {if (!nome) return;eventoAtual = nome;const dados = await chamarAPI('obterDadosEvento', { nomeEvento: nome });if (!dados) return;colunasAtuais = dados.headers;dadosEventoAtual = dados.rows;convidadosSelecionados = [];renderizarTabela(dados.headers, dados.rows);atualizarDashboard(dados.headers, dados.rows);const temEmail = dados.headers.some(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});let emailsValidos = 0;if (temEmail) {const indexEmail = dados.headers.findIndex(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});dados.rows.forEach(row => {const email = row[indexEmail];if (email && email.toString().includes('@')) {emailsValidos++;}});}const btnEmail = document.getElementById('btn-massa-email');if (temEmail && emailsValidos > 0) {btnEmail.style.display = 'inline-block';btnEmail.title = `${emailsValidos} contato(s) com email válido`;} else {btnEmail.style.display = 'none';}document.getElementById('toolbar-acoes').style.display = 'block';document.getElementById('toolbar-busca').style.display = 'block';document.getElementById('toolbar-massa').style.display = 'none';document.getElementById('busca-rapida').value = '';document.querySelector('select.form-select').value = '';mostrarToast(`Evento "${nome}" carregado!`, "success");}
+function atualizarDashboard(headers, rows) {document.getElementById('area-stats').style.display = 'block';const indexStatus = headers.indexOf('Status');let confirmados = 0, pendentes = 0, recusados = 0, total = rows.length;if (indexStatus > -1) {rows.forEach(row => {const status = row[indexStatus] || "Pendente";if (status === 'Confirmado') confirmados++; else if (status === 'Não vai') recusados++; else pendentes++;});} else { pendentes = total; }document.getElementById('stat-total').innerText = total; document.getElementById('stat-confirmados').innerText = confirmados; document.getElementById('stat-pendentes').innerText = pendentes; document.getElementById('stat-recusados').innerText = recusados;const taxaResposta = total > 0 ? Math.round(((confirmados + recusados) / total) * 100) : 0;const percentualConfirmados = total > 0 ? Math.round((confirmados / total) * 100) : 0;document.getElementById('taxa-resposta').innerText = taxaResposta + '%';document.getElementById('percentual-confirmados').innerText = percentualConfirmados + '%';document.getElementById('ultima-atualizacao').innerText = new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });const ctx = document.getElementById('meuGrafico').getContext('2d');if (graficoInstance) graficoInstance.destroy();graficoInstance = new Chart(ctx, { type: 'doughnut', data: { labels: ['Confirmados', 'Pendentes', 'Recusados'], datasets: [{ data: [confirmados, pendentes, recusados], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0, hoverOffset: 10 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { padding: 15, font: { size: 13 } } } } } });}
+function filtrarTabela() {const termo = document.getElementById('busca-rapida').value.toLowerCase();const linhas = document.querySelectorAll('#tabela-dados tbody tr');let contador = 0;linhas.forEach(linha => {const texto = linha.textContent.toLowerCase();const visivel = texto.includes(termo);linha.style.display = visivel ? '' : 'none';if (visivel) contador++;});document.getElementById('contador-filtrados').innerText = contador;}
+function filtrarPorStatus(status) {const linhas = document.querySelectorAll('#tabela-dados tbody tr');const indexStatus = colunasAtuais.indexOf('Status');let contador = 0;linhas.forEach(linha => {const celulas = linha.querySelectorAll('td');const statusCelula = celulas[indexStatus + 1]?.textContent.replace(/[^a-záéíóúàâêôãõç\s]/gi, '').trim();const visivel = !status || statusCelula.includes(status);linha.style.display = visivel ? '' : 'none';if (visivel) contador++;});document.getElementById('contador-filtrados').innerText = contador;}
+function renderizarTabela(headers, rows) {const thead = document.querySelector('#tabela-dados thead');const tbody = document.querySelector('#tabela-dados tbody');let headerHTML = "<tr><th class='ocultar-pdf' style='width: 40px;'><input type='checkbox' onchange='selecionarTodos(this.checked)'></th>";headers.forEach(h => headerHTML += `<th>${h}</th>`);headerHTML += `<th class="text-center ocultar-pdf" style="width: 100px;">Ações</th></tr>`;thead.innerHTML = headerHTML;if (rows.length === 0) { tbody.innerHTML = `<tr><td colspan="${headers.length + 2}" class="text-center p-5"><i class="fas fa-inbox fa-3x text-muted mb-3 d-block"></i><span class="text-muted">Nenhum convidado</span></td></tr>`; document.getElementById('contador-filtrados').innerText = '0';} else {const statusBadges = {'Confirmado': '<span class="status-badge bg-success text-white"><i class="fas fa-check"></i>Confirmado</span>','Pendente': '<span class="status-badge bg-warning text-dark"><i class="fas fa-clock"></i>Pendente</span>','Não vai': '<span class="status-badge bg-danger text-white"><i class="fas fa-times"></i>Não vai</span>'};const indexStatus = headers.indexOf('Status');let bodyHTML = "";rows.forEach((row, index) => {bodyHTML += "<tr>";bodyHTML += `<td class="ocultar-pdf"><input type="checkbox" class="check-convidado" data-index="${index}" onchange="toggleSelecao(${index})"></td>`;row.forEach((cell, colIndex) => {if (colIndex === indexStatus && statusBadges[cell]) {bodyHTML += `<td>${statusBadges[cell]}</td>`;} else {bodyHTML += `<td>${cell}</td>`;}});bodyHTML += `<td class="text-center ocultar-pdf"><button class="btn btn-light btn-action text-primary me-1" onclick="abrirModalEditar(${index})"><i class="fas fa-pen"></i></button><button class="btn btn-light btn-action text-danger" onclick="confirmarExclusao(${index})"><i class="fas fa-trash"></i></button></td></tr>`;});tbody.innerHTML = bodyHTML;document.getElementById('contador-filtrados').innerText = rows.length;}}
+function selecionarTodos(checked) {convidadosSelecionados = [];document.querySelectorAll('.check-convidado').forEach(checkbox => {checkbox.checked = checked;if (checked) {convidadosSelecionados.push(parseInt(checkbox.dataset.index));}});atualizarToolbarMassa();}
+function toggleSelecao(index) {const checkbox = document.querySelector(`.check-convidado[data-index="${index}"]`);if (checkbox.checked) {if (!convidadosSelecionados.includes(index)) {convidadosSelecionados.push(index);}} else {convidadosSelecionados = convidadosSelecionados.filter(i => i !== index);}atualizarToolbarMassa();}
+function atualizarToolbarMassa() {const toolbar = document.getElementById('toolbar-massa');const count = document.getElementById('count-selecionados');count.innerText = convidadosSelecionados.length;toolbar.style.display = convidadosSelecionados.length > 0 ? 'block' : 'none';}
+async function atualizarEmMassa(novoStatus) {if (convidadosSelecionados.length === 0) return;const confirmado = await confirmarAcao(`Atualizar ${convidadosSelecionados.length} convidados?`,`Todos serão marcados como "${novoStatus}"`);if (!confirmado) return;const indexStatus = colunasAtuais.indexOf('Status');for (const index of convidadosSelecionados) {const novosDados = [...dadosEventoAtual[index]];novosDados[indexStatus] = novoStatus;await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: index + 2, novosDados });}limparSelecao();carregarEventoEspecifico(eventoAtual);mostrarToast(`${convidadosSelecionados.length} atualizados!`, "success");}
+function limparSelecao() {convidadosSelecionados = [];document.querySelectorAll('.check-convidado').forEach(cb => cb.checked = false);document.querySelector('thead input[type="checkbox"]').checked = false;atualizarToolbarMassa();}
+function abrirModalEmail() {if (convidadosSelecionados.length === 0) {mostrarToast("Selecione pelo menos um convidado.", "warning");return;}const temEmail = colunasAtuais.some(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});if (!temEmail) {mostrarToast("Este evento não possui coluna de Email.", "error");return;}const indexEmail = colunasAtuais.findIndex(h => {const limpo = h.toString().trim().toLowerCase();return limpo === 'email' || limpo === 'e-mail';});const indexNome = colunasAtuais.indexOf('Nome');let comEmail = 0;let semEmail = [];convidadosSelecionados.forEach(index => {const row = dadosEventoAtual[index];const email = row[indexEmail] ? row[indexEmail].toString().trim() : '';if (email && email.includes('@')) {comEmail++;} else {const nome = indexNome > -1 ? row[indexNome] : `Linha ${index+2}`;semEmail.push(nome);}});if (comEmail === 0) {mostrarToast("Nenhum dos selecionados possui email válido.", "error");return;}document.getElementById('email-info').innerHTML = `<strong class="text-primary">${comEmail} email(s)</strong> serão enviados.`;new bootstrap.Modal(document.getElementById('modalEmail')).show();}
+async function processarEnvioEmails() {const assunto = document.getElementById('email-assunto').value.trim();const mensagem = document.getElementById('email-mensagem').value.trim();if (!assunto || !mensagem) {mostrarToast("Preencha assunto e mensagem.", "warning");return;}const linkBase = `${GITHUB_PAGES_URL}index.html`;const res = await chamarAPI('enviarEmails', {nomeEvento: eventoAtual,indices: convidadosSelecionados,assunto: assunto,mensagem: mensagem,linkBase: linkBase});if (res && res.sucesso) {mostrarToast(`${res.enviados} emails enviados!`, "success");bootstrap.Modal.getInstance(document.getElementById('modalEmail')).hide();limparSelecao();}}
+function abrirModalConfig() {document.getElementById('input-renomear').value = eventoAtual;const ul = document.getElementById('lista-colunas-config');ul.innerHTML = '';colunasAtuais.forEach(col => {ul.innerHTML += `<li class="list-group-item d-flex justify-content-between align-items-center">${col} <button class="btn btn-sm btn-outline-danger" onclick="rmColuna('${col}')"><i class="fas fa-trash"></i></button></li>`;});new bootstrap.Modal(document.getElementById('modalConfig')).show();}
+async function salvarRenomeacao() {const novo = document.getElementById('input-renomear').value.trim();if(!novo || novo === eventoAtual) return;const res = await chamarAPI('renomearEvento', { nomeAntigo: eventoAtual, nomeNovo: novo });if(res && res.sucesso) {bootstrap.Modal.getInstance(document.getElementById('modalConfig')).hide();carregarLista();mostrarToast("Evento renomeado!", "success");}}
+async function addColuna() {const col = document.getElementById('input-nova-coluna').value.trim();if(!col) {mostrarToast("Digite o nome da coluna.", "warning");return;}const res = await chamarAPI('adicionarColuna', { nomeEvento: eventoAtual, novaColuna: col });if(res && res.sucesso) { mostrarToast(`Coluna '${col}' adicionada!`, "success");abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }}
+async function rmColuna(col) {if(!await confirmarAcao(`Apagar coluna '${col}'?`, "Todos os dados desta coluna serão perdidos.")) return;const res = await chamarAPI('removerColuna', { nomeEvento: eventoAtual, nomeColuna: col });if(res && res.sucesso) { mostrarToast(`Coluna '${col}' removida!`, "success");abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }}
+function gerarPDF() {const elemento = document.getElementById('container-tabela-exportar');const clone = elemento.cloneNode(true);clone.querySelectorAll('.ocultar-pdf').forEach(el => el.remove());const wrapper = document.createElement('div');wrapper.style.padding = '30px';wrapper.style.fontSize = '11px';wrapper.innerHTML = `<div style="text-align: center; margin-bottom: 20px;"><h1 style="color: #1e3a8a;">${eventoAtual}</h1></div>`;wrapper.appendChild(clone);const opt = {margin: [15, 10], filename: `${eventoAtual}.pdf`,jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }};html2pdf().set(opt).from(wrapper).save();}
+function gerarTXT() {let texto = `RELATÓRIO: ${eventoAtual}\n\n`;texto += colunasAtuais.join("\t") + "\n";dadosEventoAtual.forEach(linha => texto += linha.join("\t") + "\n");const blob = new Blob([texto], { type: 'text/plain' });const url = window.URL.createObjectURL(blob);const a = document.createElement('a'); a.href = url; a.download = `${eventoAtual}.txt`; a.click();}
+function gerarExcel() {const ws = XLSX.utils.aoa_to_sheet([colunasAtuais, ...dadosEventoAtual]);const wb = XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb, ws, "Lista");XLSX.writeFile(wb, `${eventoAtual}.xlsx`);}
+function abrirModalEditar(rowIndex) { const dadosRow = dadosEventoAtual[rowIndex]; document.getElementById('edit-linha-index').value = rowIndex; const form = document.getElementById('form-editar-dinamico'); form.innerHTML = ""; colunasAtuais.forEach((col, colIndex) => { const valorAtual = dadosRow[colIndex]; let inputHTML = col === 'Status' ? `<select class="form-control input-editar"><option value="Pendente" ${valorAtual === 'Pendente' ? 'selected' : ''}>Pendente</option><option value="Confirmado" ${valorAtual === 'Confirmado' ? 'selected' : ''}>Confirmado</option><option value="Não vai" ${valorAtual === 'Não vai' ? 'selected' : ''}>Não vai</option></select>` : `<input type="text" class="form-control input-editar" value="${valorAtual}">`; form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`; }); new bootstrap.Modal(document.getElementById('modalEditar')).show(); }
+async function salvarEdicao() { const rowIndex = parseInt(document.getElementById('edit-linha-index').value); const inputs = document.querySelectorAll('.input-editar'); const novosDados = Array.from(inputs).map(i => i.value); bootstrap.Modal.getInstance(document.getElementById('modalEditar')).hide(); const res = await chamarAPI('atualizarConvidado', { nomeEvento: eventoAtual, linha: rowIndex + 2, novosDados }); if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Atualizado!", "success"); }}
+async function confirmarExclusao(index) {if (await confirmarAcao("Excluir convidado?", "Essa ação não pode ser desfeita.")) {const res = await chamarAPI('excluirConvidado', { nomeEvento: eventoAtual, linha: index + 2 });if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast("Excluído!", "success"); }}}
+function abrirModalLink() { if(!eventoAtual) return; const link = `${GITHUB_PAGES_URL}index.html?evento=${encodeURIComponent(eventoAtual)}`; document.getElementById('input-link-gerado').value = link; document.getElementById('btn-abrir-link').href = link; document.getElementById('qrcode').innerHTML = ""; new QRCode(document.getElementById('qrcode'), { text: link, width: 180, height: 180 }); new bootstrap.Modal(document.getElementById('modalLink')).show(); }
+function copiarTextoLink() { document.getElementById('input-link-gerado').select(); navigator.clipboard.writeText(document.getElementById('input-link-gerado').value); mostrarToast("Link copiado!", "success"); }
+function compartilharWhatsApp() { const link = document.getElementById('input-link-gerado').value; window.open(`https://wa.me/?text=${encodeURIComponent(`Confirme sua presença:\n${link}`)}`, '_blank'); }
+function compartilharEmail() { const link = document.getElementById('input-link-gerado').value; window.location.href = `mailto:?subject=Confirmação&body=${encodeURIComponent(link)}`; }
+function toggleAreaImportacao(mostrar) { document.getElementById('area-importacao-criacao').style.display = mostrar ? 'block' : 'none'; }
 
-async function carregarTemplates() {
-    const res = await chamarAPI('listarTemplates', {});
-    if (res && res.templates) {
-        templatesDisponiveis = res.templates;
-    }
-}
-
-function abrirModalSelecionarTemplate() {
-    const container = document.getElementById('lista-templates-disponiveis');
-    
-    if (templatesDisponiveis.length === 0) {
-        container.innerHTML = `
-            <div class="alert alert-info">
-                <i class="fas fa-info-circle me-2"></i>
-                Você ainda não tem templates salvos. Crie um evento e salve-o como template para reutilizar!
-            </div>
-        `;
-    } else {
-        let html = '<div class="row g-3">';
-        
-        templatesDisponiveis.forEach((template, idx) => {
-            html += `
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <h6 class="card-title text-primary">${template.nome}</h6>
-                            <p class="small text-muted mb-2">
-                                <strong>Colunas:</strong> ${template.colunas.join(', ')}
-                            </p>
-                            <p class="small text-muted mb-2">
-                                <i class="fas fa-calendar me-1"></i>${template.dataCriacao}
-                                <span class="ms-2"><i class="fas fa-check-circle me-1"></i>${template.vezesUsado}x usado</span>
-                            </p>
-                            ${template.emailAssunto ? `<span class="badge bg-info">Com email padrão</span>` : ''}
-                        </div>
-                        <div class="card-footer bg-light">
-                            <button class="btn btn-sm btn-primary w-100" onclick="usarTemplate(${idx})">
-                                <i class="fas fa-plus me-1"></i>Usar Template
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-        
-        html += '</div>';
-        container.innerHTML = html;
-    }
-    
-    new bootstrap.Modal(document.getElementById('modalSelecionarTemplate')).show();
-}
-
-async function usarTemplate(index) {
-    const template = templatesDisponiveis[index];
-    
-    const nomeEvento = prompt(`Nome do novo evento usando template "${template.nome}":`);
-    if (!nomeEvento || !nomeEvento.trim()) return;
-    
-    let usarEmail = false;
-    if (template.emailAssunto) {
-        usarEmail = confirm(`Este template tem configurações de email padrão. Deseja usar?\n\nAssunto: ${template.emailAssunto}`);
-    }
-    
-    mostrarLoading();
-    const res = await chamarAPI('criarEventoDeTemplate', {
-        nomeEvento: nomeEvento.trim(),
-        nomeTemplate: template.nome,
-        usarEmail: usarEmail
-    });
-    esconderLoading();
-    
-    if (res && res.sucesso) {
-        bootstrap.Modal.getInstance(document.getElementById('modalSelecionarTemplate')).hide();
-        mostrarToast(`Evento "${res.nome}" criado do template!`, "success");
-        
-        if (usarEmail && res.emailAssunto) {
-            setTimeout(() => {
-                alert(`📧 Email padrão do template:\n\nAssunto: ${res.emailAssunto}\n\nMensagem: ${res.emailMensagem}\n\nVocê pode usar essas configurações ao enviar emails!`);
-            }, 500);
-        }
-        
-        carregarLista();
-        mostrarTela('dashboard');
-    }
-}
-
-function abrirModalSalvarTemplate() {
-    if (!eventoAtual) {
-        mostrarToast("Selecione um evento primeiro.", "warning");
-        return;
-    }
-    
-    // Mostrar colunas atuais
-    document.getElementById('preview-colunas-template').innerHTML = 
-        colunasAtuais.map(col => `<span class="badge bg-primary me-1">${col}</span>`).join('');
-    
-    document.getElementById('input-nome-template').value = "";
-    document.getElementById('check-salvar-email-template').checked = false;
-    document.getElementById('preview-email-template').style.display = 'none';
-    
-    new bootstrap.Modal(document.getElementById('modalSalvarTemplate')).show();
-}
-
-document.getElementById('check-salvar-email-template')?.addEventListener('change', function() {
-    const preview = document.getElementById('preview-email-template');
-    if (this.checked) {
-        preview.style.display = 'block';
-        document.getElementById('texto-email-template').innerHTML = `
-            <small class="text-muted">Configure o email padrão na próxima campanha de email e salve o template.</small>
-        `;
-    } else {
-        preview.style.display = 'none';
-    }
-});
-
-async function confirmarSalvarTemplate() {
-    const nome = document.getElementById('input-nome-template').value.trim();
-    
-    if (!nome) {
-        mostrarToast("Digite um nome para o template.", "warning");
-        return;
-    }
-    
-    const salvarEmail = document.getElementById('check-salvar-email-template').checked;
-    
-    mostrarLoading();
-    const res = await chamarAPI('salvarTemplate', {
-        nomeTemplate: nome,
-        colunas: colunasAtuais,
-        emailAssunto: salvarEmail ? (ultimoEmailAssunto || "") : "",
-        emailMensagem: salvarEmail ? (ultimoEmailMensagem || "") : ""
-    });
-    esconderLoading();
-    
-    if (res && res.sucesso) {
-        bootstrap.Modal.getInstance(document.getElementById('modalSalvarTemplate')).hide();
-        mostrarToast(`Template "${nome}" salvo com sucesso!`, "success");
-        carregarTemplates();
-    }
-}
-
-let ultimoEmailAssunto = "";
-let ultimoEmailMensagem = "";
-
-// --- BANCO DE NOMES ---
-
-function abrirModalBuscaBanco() {
-    document.getElementById('input-busca-banco').value = "";
-    document.getElementById('resultado-busca-banco').innerHTML = "";
-    new bootstrap.Modal(document.getElementById('modalBuscarBanco')).show();
-}
-
-async function executarBuscaBanco() {
-    const termo = document.getElementById('input-busca-banco').value.trim();
-    
-    if (!termo) {
-        mostrarToast("Digite um nome para buscar.", "warning");
-        return;
-    }
-    
-    mostrarLoading();
-    const res = await chamarAPI('buscarNoBanco', { termo: termo });
-    esconderLoading();
-    
-    const container = document.getElementById('resultado-busca-banco');
-    
-    if (!res || !res.encontrado) {
-        container.innerHTML = `
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Nenhuma pessoa encontrada com o nome "${termo}".
-            </div>
-        `;
-        return;
-    }
-    
-    let html = '<div class="list-group mt-3">';
-    
-    res.resultados.forEach((pessoa, idx) => {
-        html += `
-            <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h6 class="mb-1 text-primary">${pessoa.nome}</h6>
-                        ${pessoa.email ? `<p class="mb-1 small"><i class="fas fa-envelope me-1"></i>${pessoa.email}</p>` : ''}
-                        ${pessoa.telefone ? `<p class="mb-1 small"><i class="fas fa-phone me-1"></i>${pessoa.telefone}</p>` : ''}
-                        <p class="mb-1 small text-muted">
-                            <i class="fas fa-history me-1"></i>
-                            <strong>Último evento:</strong> ${pessoa.ultimoEvento} 
-                            ${pessoa.dataUltimaParticipacao !== 'N/A' ? `(${pessoa.dataUltimaParticipacao})` : ''}
-                        </p>
-                        <p class="mb-0 small text-muted">
-                            <i class="fas fa-check-circle me-1"></i>
-                            Participou de <strong>${pessoa.totalEventos}</strong> evento(s)
-                        </p>
-                    </div>
-                    <button class="btn btn-sm btn-success" onclick="preencherComPessoa(${idx})">
-                        <i class="fas fa-plus-circle me-1"></i>Usar
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-    
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-let pessoasEncontradas = [];
-
-async function executarBuscaBancoCompleta() {
-    const termo = document.getElementById('input-busca-banco').value.trim();
-    
-    if (!termo) {
-        mostrarToast("Digite um nome para buscar.", "warning");
-        return;
-    }
-    
-    mostrarLoading();
-    const res = await chamarAPI('buscarNoBanco', { termo: termo });
-    esconderLoading();
-    
-    const container = document.getElementById('resultado-busca-banco');
-    
-    if (!res || !res.encontrado) {
-        container.innerHTML = `
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Nenhuma pessoa encontrada com o nome "${termo}".
-            </div>
-        `;
-        pessoasEncontradas = [];
-        return;
-    }
-    
-    pessoasEncontradas = res.resultados;
-    
-    let html = '<div class="list-group mt-3">';
-    
-    res.resultados.forEach((pessoa, idx) => {
-        html += `
-            <div class="list-group-item">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div class="flex-grow-1">
-                        <h6 class="mb-1 text-primary">${pessoa.nome}</h6>
-                        ${pessoa.email ? `<p class="mb-1 small"><i class="fas fa-envelope me-1"></i>${pessoa.email}</p>` : ''}
-                        ${pessoa.telefone ? `<p class="mb-1 small"><i class="fas fa-phone me-1"></i>${pessoa.telefone}</p>` : ''}
-                        <p class="mb-1 small text-muted">
-                            <i class="fas fa-history me-1"></i>
-                            <strong>Último evento:</strong> ${pessoa.ultimoEvento} 
-                            ${pessoa.dataUltimaParticipacao !== 'N/A' ? `(${pessoa.dataUltimaParticipacao})` : ''}
-                        </p>
-                        <p class="mb-0 small text-muted">
-                            <i class="fas fa-check-circle me-1"></i>
-                            Participou de <strong>${pessoa.totalEventos}</strong> evento(s)
-                        </p>
-                    </div>
-                    <button class="btn btn-sm btn-success" onclick="preencherComPessoa(${idx})">
-                        <i class="fas fa-plus-circle me-1"></i>Usar
-                    </button>
-                </div>
-            </div>
-        `;
-    });
-    
-    html += '</div>';
-    container.innerHTML = html;
-}
-
-function preencherComPessoa(index) {
-    const pessoa = pessoasEncontradas[index];
-    
-    // Preencher inputs do modal adicionar
-    const inputs = document.querySelectorAll('.input-dinamico');
-    
-    colunasAtuais.forEach((col, i) => {
-        if (inputs[i]) {
-            const colLower = col.toLowerCase();
-            
-            if (colLower.includes('nome')) {
-                inputs[i].value = pessoa.nome;
-            } else if (colLower.includes('email') || colLower === 'e-mail') {
-                inputs[i].value = pessoa.email || '';
-            } else if (colLower.includes('telefone') || colLower.includes('celular')) {
-                inputs[i].value = pessoa.telefone || '';
-            } else if (colLower.includes('status') || colLower.includes('confirmado')) {
-                inputs[i].value = 'Pendente';
-            } else {
-                inputs[i].value = '';
-            }
-        }
-    });
-    
-    bootstrap.Modal.getInstance(document.getElementById('modalBuscarBanco')).hide();
-    mostrarToast(`Dados de "${pessoa.nome}" preenchidos!`, "success");
-}
-
-// Modificar o modal "Adicionar Convidado" para incluir botão de busca
-function abrirModalAddComBusca() {
-    const form = document.getElementById('form-dinamico');
-    form.innerHTML = "";
-    
-    colunasAtuais.forEach(col => {
-        let inputHTML = col === 'Status' || col === 'Confirmado' 
-            ? `<select class="form-control input-dinamico"><option>Pendente</option><option>Confirmado</option><option>Não vai</option></select>` 
-            : `<input type="text" class="form-control input-dinamico">`;
-        
-        form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`;
-    });
-    
-    // Adicionar botão buscar no banco se não existir
-    const modalBody = document.querySelector('#modalAdd .modal-body');
-    let btnBusca = document.getElementById('btn-busca-banco-inline');
-    
-    if (!btnBusca) {
-        btnBusca = document.createElement('button');
-        btnBusca.id = 'btn-busca-banco-inline';
-        btnBusca.className = 'btn btn-success w-100 mb-3';
-        btnBusca.innerHTML = '<i class="fas fa-search me-2"></i>🔍 Buscar no Banco de Nomes';
-        btnBusca.type = 'button';
-        btnBusca.onclick = function() {
-            bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide();
-            setTimeout(() => abrirModalBuscaBanco(), 300);
-        };
-        modalBody.insertBefore(btnBusca, modalBody.firstChild);
-    }
-    
-    new bootstrap.Modal(document.getElementById('modalAdd')).show();
-}
-
-// Atualizar referências para usar a nova função
-function abrirModalAdd() {
-    abrirModalAddComBusca();
-}
-
-// Capturar dados de email para salvar no template
-const originalProcessarEnvioEmails = processarEnvioEmails;
-async function processarEnvioEmails() {
-    ultimoEmailAssunto = document.getElementById('email-assunto').value.trim();
-    ultimoEmailMensagem = document.getElementById('email-mensagem').value.trim();
-    return await originalProcessarEnvioEmails();
-}
-
-// Adicionar botão "Salvar como Template" no painel do evento
-function adicionarBotaoSalvarTemplate() {
-    const toolbar = document.querySelector('.toolbar-massa');
-    if (!toolbar) return;
-    
-    let btnTemplate = document.getElementById('btn-salvar-template');
-    if (btnTemplate) return; // Já existe
-    
-    btnTemplate = document.createElement('button');
-    btnTemplate.id = 'btn-salvar-template';
-    btnTemplate.className = 'btn btn-warning btn-sm ms-2';
-    btnTemplate.innerHTML = '<i class="fas fa-save me-1"></i>Salvar como Template';
-    btnTemplate.onclick = abrirModalSalvarTemplate;
-    
-    // Adicionar ao lado do botão de email
-    const btnEmail = document.getElementById('btn-massa-email');
-    if (btnEmail && btnEmail.parentNode) {
-        btnEmail.parentNode.insertBefore(btnTemplate, btnEmail.nextSibling);
-    }
-}
-
-// Modificar a função de criar evento para incluir opção de templates
-const originalHandleCriarEvento = handleCriarEvento;
+// ✅ FUNÇÃO CORRIGIDA - Criar Evento
 async function handleCriarEvento(e) {
     e.preventDefault();
     const nome = document.getElementById('novo-nome').value.trim();
-    const tipoRadio = document.querySelector('input[name="novo-tipo"]:checked');
+    const tipo = document.querySelector('input[name="novo-tipo"]:checked')?.value;
     
-    if (!tipoRadio) {
+    if (!tipo) {
         mostrarToast("Selecione um tipo de evento.", "warning");
         return;
     }
     
-    const tipo = tipoRadio.value;
+    let dados = tipo === 'Importar' ? document.getElementById('texto-criacao-import').value : "";
     
-    // Se escolheu "Template", abrir modal de seleção
-    if (tipo === 'Template') {
-        await carregarTemplates();
-        abrirModalSelecionarTemplate();
+    if (tipo === 'Importar' && !dados.trim()) {
+        mostrarToast("Cole os dados do Excel.", "warning");
         return;
     }
     
-    // Continuar com criação normal
-    return await originalHandleCriarEvento(e);
+    const res = await chamarAPI('criarNovoEvento', { 
+        nome: nome, 
+        template: tipo, 
+        dadosImportados: dados 
+    });
+    
+    if (res && res.sucesso) {
+        mostrarToast(`"${nome}" criado!`, "success");
+        mostrarTela('dashboard');
+        carregarLista();
+    }
 }
 
-// Inicializar templates ao carregar
-window.addEventListener('DOMContentLoaded', function() {
-    carregarTemplates();
-});
+function abrirModalImport() { document.getElementById('texto-importacao').value = ""; new bootstrap.Modal(document.getElementById('modalImport')).show(); }
+async function processarImportacao() { const texto = document.getElementById('texto-importacao').value; const temCabecalho = document.getElementById('check-headers').checked; if (!texto.trim()) { mostrarToast("Cole os dados.", "warning"); return; } const linhas = texto.trim().split('\n'); const matriz = linhas.map(l => l.split('\t')); bootstrap.Modal.getInstance(document.getElementById('modalImport')).hide(); const res = await chamarAPI('importarListaConvidados', { nomeEvento: eventoAtual, matrizDados: matriz, temCabecalho }); if (res && res.sucesso) { carregarEventoEspecifico(eventoAtual); mostrarToast(`${res.qtd} importados!`, "success"); } }
+function abrirModalAdd() { const form = document.getElementById('form-dinamico'); form.innerHTML = ""; colunasAtuais.forEach(col => { let inputHTML = col === 'Status' ? `<select class="form-control input-dinamico"><option>Pendente</option><option>Confirmado</option><option>Não vai</option></select>` : `<input type="text" class="form-control input-dinamico">`; form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`; }); new bootstrap.Modal(document.getElementById('modalAdd')).show(); }
 
-// Executar busca ao pressionar Enter
-document.getElementById('input-busca-banco')?.addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-        executarBuscaBancoCompleta();
-    }
-});
+// ✅ FUNÇÃO CORRIGIDA - Adicionar Convidado com Banco
+async function enviarConvidado() { 
+    const valores = Array.from(document.querySelectorAll('.input-dinamico')).map(i => i.value); 
+    
+    if (valores[0] && valores[0].trim() === '') { 
+        mostrarToast("Nome obrigatório.", "warning"); 
+        return; 
+    } 
+    
+    bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide(); 
+    
+    const res = await chamarAPI('adicionarConvidado', { nomeEvento: eventoAtual, arrayDados: valores }); 
+    
+    if (res && res.sucesso) { 
+        // ✅ SALVAR NO BANCO DE NOMES
+        const nome = valores[0];
+        const emailIndex = colunasAtuais.findIndex(c => c.toLowerCase().includes('email') || c.toLowerCase() === 'e-mail');
+        const telefoneIndex = colunasAtuais.indexOf('Telefone');
+        const email = emailIndex >= 0 ? valores[emailIndex] : '';
+        const telefone = telefoneIndex >= 0 ? valores[telefoneIndex] : '';
+        
+        await chamarAPI('adicionarAoBanco', { 
+            nome: nome,
+            email: email,
+            telefone: telefone,
+            eventoAtual: eventoAtual
+        });
+        
+        carregarEventoEspecifico(eventoAtual); 
+        mostrarToast("Adicionado e salvo no banco!", "success"); 
+    } 
+}
 
-    document.addEventListener('keydown', (e) => {if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('busca-rapida')?.focus(); }if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); if (eventoAtual) abrirModalAdd(); }if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); if (eventoAtual) abrirModalImport(); }if ((e.ctrlKey || e.metaKey) && e.key === 'r' && eventoAtual) { e.preventDefault(); carregarEventoEspecifico(eventoAtual); }});
-</script>
-
-<!-- Rodapé com assinatura -->
-<footer class="mt-5 pt-4 pb-3 text-center" style="border-top: 1px solid rgba(255,255,255,0.1);">
-    <small class="text-muted" style="opacity: 0.7;">
-        Sistema RSVP v15.0
-        <br>
-        Desenvolvido por Gabriel Felizardo | © <span id="ano-atual"></span>
-    </small>
-</footer>
-
-<script>
-    // Atualizar ano automaticamente
-    document.getElementById('ano-atual').textContent = new Date().getFullYear();
-
-
-// =======================================================================
-// FUNÇÕES JAVASCRIPT v15.0 - ADICIONAR NO PAINEL.HTML
-// =======================================================================
-
-// --- BANCO DE NOMES ---
-
+// ✅ BANCO DE NOMES
 async function carregarBancoNomes() {
     mostrarLoading(true);
     const res = await chamarAPI('listarBancoNomes', {});
@@ -1323,29 +526,28 @@ async function carregarBancoNomes() {
 
 function renderizarTabelaBanco(nomes) {
     const tbody = document.querySelector('#tabela-banco tbody');
+    const alerta = document.getElementById('alerta-migracao');
     
     if (nomes.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">Nenhum nome cadastrado ainda.</td></tr>';
+        if (alerta) alerta.style.display = 'block'; // ✅ Mostrar alerta
         return;
     }
+    
+    if (alerta) alerta.style.display = 'none'; // ✅ Esconder alerta
     
     tbody.innerHTML = nomes.map(p => `
         <tr>
             <td><strong>${p.nome}</strong></td>
             <td>${p.email || '<span class="text-muted">-</span>'}</td>
             <td>${p.telefone || '<span class="text-muted">-</span>'}</td>
+            <td><span class="badge bg-primary">${p.totalEventos} evento(s)</span></td>
+            <td><small class="text-muted">${p.ultimoEvento}</small></td>
             <td>
-                <span class="badge bg-primary">${p.totalEventos} evento(s)</span>
-            </td>
-            <td>
-                <small class="text-muted">${p.ultimoEvento}</small>
-                ${p.dataUltimaParticipacao !== 'N/A' ? `<br><small>(${p.dataUltimaParticipacao})</small>` : ''}
-            </td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary me-1" onclick="editarNomeBanco('${p.nome}', '${p.email}', '${p.telefone}', ${p.totalEventos})" title="Editar">
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="editarNomeBanco('${p.nome}', '${p.email}', '${p.telefone}', ${p.totalEventos})">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="excluirNomeBanco('${p.nome}')" title="Excluir">
+                <button class="btn btn-sm btn-outline-danger" onclick="excluirNomeBanco('${p.nome}')">
                     <i class="fas fa-trash"></i>
                 </button>
             </td>
@@ -1356,7 +558,6 @@ function renderizarTabelaBanco(nomes) {
 function filtrarTabelaBanco() {
     const busca = document.getElementById('busca-banco').value.toLowerCase();
     const linhas = document.querySelectorAll('#tabela-banco tbody tr');
-    
     linhas.forEach(linha => {
         const texto = linha.textContent.toLowerCase();
         linha.style.display = texto.includes(busca) ? '' : 'none';
@@ -1368,8 +569,6 @@ function editarNomeBanco(nome, email, telefone, totalEventos) {
     document.getElementById('edit-banco-nome').value = nome;
     document.getElementById('edit-banco-email').value = email || '';
     document.getElementById('edit-banco-telefone').value = telefone || '';
-    
-    // Mostrar alerta de propagação apenas se houver eventos
     const alertPropagar = document.getElementById('alert-propagar');
     if (totalEventos > 0) {
         alertPropagar.style.display = 'block';
@@ -1377,7 +576,6 @@ function editarNomeBanco(nome, email, telefone, totalEventos) {
     } else {
         alertPropagar.style.display = 'none';
     }
-    
     new bootstrap.Modal(document.getElementById('modalEditarBanco')).show();
 }
 
@@ -1403,334 +601,78 @@ async function salvarEdicaoBanco() {
     
     if (res && res.sucesso) {
         bootstrap.Modal.getInstance(document.getElementById('modalEditarBanco')).hide();
-        
-        if (res.propagado) {
-            mostrarToast(`Atualizado! ${res.eventosAtualizados} ocorrência(s) em eventos.`, "success");
-        } else {
-            mostrarToast("Informações atualizadas!", "success");
-        }
-        
+        mostrarToast(res.propagado ? `Atualizado! ${res.eventosAtualizados} eventos` : "Atualizado!", "success");
         carregarBancoNomes();
     }
 }
 
 async function excluirNomeBanco(nome) {
-    if (!confirm(`Tem certeza que deseja excluir "${nome}" do banco?\n\nOs eventos onde este nome aparece NÃO serão afetados.`)) {
-        return;
-    }
-    
+    if (!confirm(`Excluir "${nome}" do banco?`)) return;
     const res = await chamarAPI('excluirDoBanco', { nome: nome });
-    
     if (res && res.sucesso) {
-        mostrarToast("Nome removido do banco.", "success");
+        mostrarToast("Removido do banco.", "success");
         carregarBancoNomes();
     }
 }
 
-// --- BUSCAR NO BANCO AO ADICIONAR CONVIDADO ---
-
-function abrirModalAdd() {
-    const form = document.getElementById('form-dinamico');
-    form.innerHTML = "";
+// ✅ MIGRAÇÃO DE EVENTOS ANTIGOS
+async function migrarEventosAntigos() {
+    const confirmacao = confirm(
+        "Isso vai importar TODOS os convidados dos seus eventos existentes para o Banco de Nomes.\n\n" +
+        "Pode levar alguns segundos dependendo da quantidade.\n\n" +
+        "Deseja continuar?"
+    );
     
-    colunasAtuais.forEach((col, index) => {
-        let inputHTML;
-        
-        // Campo especial para Nome com busca
-        if (index === 0 || col.toLowerCase().includes('nome')) {
-            inputHTML = `
-                <div class="input-group">
-                    <input type="text" class="form-control input-dinamico" id="input-nome-busca">
-                    <button class="btn btn-outline-primary" type="button" onclick="buscarNomeNoBanco()">
-                        <i class="fas fa-search"></i> Buscar
-                    </button>
-                </div>
-                <div id="resultado-busca-banco" class="mt-2"></div>
-            `;
-        } else if (col === 'Status' || col.toLowerCase() === 'confirmado') {
-            inputHTML = `
-                <select class="form-control input-dinamico">
-                    <option>Pendente</option>
-                    <option>Confirmado</option>
-                    <option>Não vai</option>
-                </select>
-            `;
-        } else {
-            inputHTML = `<input type="text" class="form-control input-dinamico" id="input-col-${index}">`;
-        }
-        
-        form.innerHTML += `
-            <div class="mb-3">
-                <label class="fw-bold small text-muted">${col}</label>
-                ${inputHTML}
-            </div>
-        `;
-    });
-    
-    new bootstrap.Modal(document.getElementById('modalAdd')).show();
-}
-
-async function buscarNomeNoBanco() {
-    const inputNome = document.getElementById('input-nome-busca');
-    const termo = inputNome.value.trim();
-    
-    if (!termo || termo.length < 2) {
-        mostrarToast("Digite pelo menos 2 caracteres para buscar.", "warning");
-        return;
-    }
+    if (!confirmacao) return;
     
     mostrarLoading(true);
-    const res = await chamarAPI('buscarNoBanco', { termo: termo });
+    mostrarToast("Migrando dados... Aguarde!", "warning");
+    
+    const res = await chamarAPI('migrarEventosParaBanco', {});
+    
     mostrarLoading(false);
     
-    const divResultado = document.getElementById('resultado-busca-banco');
-    
-    if (res && res.encontrado && res.resultados.length > 0) {
-        const pessoa = res.resultados[0]; // Pegar primeiro resultado
-        
-        divResultado.innerHTML = `
-            <div class="alert alert-success">
-                <strong>✅ Encontrado no banco!</strong>
-                <div class="mt-2">
-                    <strong>${pessoa.nome}</strong><br>
-                    ${pessoa.email ? `Email: ${pessoa.email}<br>` : ''}
-                    ${pessoa.telefone ? `Telefone: ${pessoa.telefone}<br>` : ''}
-                    <small class="text-muted">Último evento: ${pessoa.ultimoEvento}</small>
-                </div>
-                <button class="btn btn-sm btn-success mt-2" onclick="preencherDadosDoBanco('${pessoa.nome}', '${pessoa.email || ''}', '${pessoa.telefone || ''}')">
-                    <i class="fas fa-check"></i> Preencher Dados
-                </button>
-            </div>
-        `;
-        
-        // Verificar se há dados novos para atualizar
-        verificarAtualizacaoDadosBanco(pessoa.nome);
-        
-    } else {
-        divResultado.innerHTML = `
-            <div class="alert alert-info">
-                <strong>ℹ️ Nome não encontrado no banco.</strong><br>
-                <small>Este será o primeiro evento com "${termo}".</small>
-            </div>
-        `;
-    }
-}
-
-function preencherDadosDoBanco(nome, email, telefone) {
-    const inputs = document.querySelectorAll('.input-dinamico');
-    
-    // Preencher campos baseado nas colunas
-    colunasAtuais.forEach((col, index) => {
-        const colLower = col.toLowerCase();
-        
-        if (colLower.includes('nome')) {
-            inputs[index].value = nome;
-        } else if (colLower.includes('email') || colLower === 'e-mail') {
-            inputs[index].value = email;
-        } else if (colLower.includes('telefone') || colLower.includes('tel') || colLower.includes('fone')) {
-            inputs[index].value = telefone;
-        }
-    });
-    
-    mostrarToast("Dados preenchidos automaticamente!", "success");
-    document.getElementById('resultado-busca-banco').innerHTML = '';
-}
-
-async function verificarAtualizacaoDadosBanco(nome) {
-    // Pegar valores atuais dos inputs
-    const inputs = document.querySelectorAll('.input-dinamico');
-    let emailAtual = '';
-    let telefoneAtual = '';
-    
-    colunasAtuais.forEach((col, index) => {
-        const colLower = col.toLowerCase();
-        
-        if (colLower.includes('email') || colLower === 'e-mail') {
-            emailAtual = inputs[index].value.trim();
-        } else if (colLower.includes('telefone')) {
-            telefoneAtual = inputs[index].value.trim();
-        }
-    });
-    
-    // Verificar no backend se há dados novos
-    const res = await chamarAPI('verificarAtualizacaoDados', {
-        nome: nome,
-        email: emailAtual,
-        telefone: telefoneAtual
-    });
-    
-    if (res && res.precisaAtualizar) {
-        const mensagens = [];
-        
-        if (res.emailNovo) {
-            mensagens.push(`Email: ${res.emailAtual || '(vazio)'} → ${res.emailNovo}`);
-        }
-        
-        if (res.telefoneNovo) {
-            mensagens.push(`Telefone: ${res.telefoneAtual || '(vazio)'} → ${res.telefoneNovo}`);
-        }
-        
-        const confirmado = confirm(
-            `🔄 Detectamos dados novos para "${res.nome}":\n\n` +
-            mensagens.join('\n') +
-            `\n\nDeseja atualizar esses dados no banco de nomes?`
-        );
-        
-        if (confirmado) {
-            await chamarAPI('atualizarDadosBanco', {
-                nome: nome,
-                email: res.emailNovo || null,
-                telefone: res.telefoneNovo || null
-            });
-            
-            mostrarToast("Banco de nomes atualizado!", "success");
-        }
-    }
-}
-
-// --- TEMPLATES ---
-
-async function salvarEventoComoTemplate() {
-    if (!eventoAtual) {
-        mostrarToast("Nenhum evento selecionado.", "warning");
-        return;
-    }
-    
-    const nomeTemplate = prompt("Digite um nome para este template:");
-    
-    if (!nomeTemplate || nomeTemplate.trim() === '') return;
-    
-    // Pegar colunas atuais
-    const colunas = colunasAtuais;
-    
-    // Perguntar se quer salvar email padrão
-    const incluirEmail = confirm("Deseja salvar um email padrão neste template?");
-    
-    let emailAssunto = '';
-    let emailMensagem = '';
-    
-    if (incluirEmail) {
-        emailAssunto = prompt("Assunto do email padrão:");
-        emailMensagem = prompt("Mensagem do email padrão:");
-    }
-    
-    const res = await chamarAPI('salvarTemplate', {
-        nomeTemplate: nomeTemplate.trim(),
-        colunas: colunas,
-        emailAssunto: emailAssunto || '',
-        emailMensagem: emailMensagem || ''
-    });
-    
     if (res && res.sucesso) {
-        mostrarToast(`Template "${res.nome}" salvo com sucesso!`, "success");
+        const msg = `✅ Migração concluída!\n\n` +
+                    `📊 ${res.adicionados} novos nomes\n` +
+                    `🔄 ${res.atualizados} nomes atualizados\n` +
+                    `📁 ${res.eventos} eventos processados\n` +
+                    `✨ Total: ${res.total} registros`;
+        
+        alert(msg);
+        mostrarToast(`${res.total} nomes migrados com sucesso!`, "success");
+        carregarBancoNomes();
+    } else {
+        mostrarToast("Erro na migração.", "error");
     }
 }
-
-// --- ATUALIZAÇÃO DA FUNÇÃO DE CONTROLE DE TELAS ---
 
 function mostrarTela(tela) {
-    // Ocultar todas as telas
     document.getElementById('tela-dashboard').style.display = 'none';
     document.getElementById('tela-novo').style.display = 'none';
     document.getElementById('tela-banco-nomes').style.display = 'none';
     
-    // Mostrar tela selecionada
     if (tela === 'dashboard') {
         document.getElementById('tela-dashboard').style.display = 'block';
     } else if (tela === 'novo') {
         document.getElementById('tela-novo').style.display = 'block';
     } else if (tela === 'banco-nomes') {
         document.getElementById('tela-banco-nomes').style.display = 'block';
-        carregarBancoNomes(); // Carregar ao abrir
+        carregarBancoNomes();
     }
     
-    // Atualizar botões ativos
     document.querySelectorAll('.sidebar .btn').forEach(btn => btn.classList.remove('active'));
-    
-    if (tela === 'dashboard') {
-        document.querySelector('.sidebar .btn:nth-of-type(1)').classList.add('active');
-    } else if (tela === 'novo') {
-        document.querySelector('.sidebar .btn:nth-of-type(2)').classList.add('active');
-    } else if (tela === 'banco-nomes') {
-        document.querySelector('.sidebar .btn:nth-of-type(3)').classList.add('active');
-    }
+    if (tela === 'dashboard') document.querySelector('.sidebar .btn:nth-of-type(1)').classList.add('active');
+    else if (tela === 'novo') document.querySelector('.sidebar .btn:nth-of-type(2)').classList.add('active');
+    else if (tela === 'banco-nomes') document.querySelector('.sidebar .btn:nth-of-type(3)').classList.add('active');
 }
 
-// --- EXCLUIR EVENTO (MANTÉM NOMES NO BANCO) ---
-
-async function excluirEventoCompleto(nomeEvento) {
-    const confirmacao = confirm(
-        `⚠️ Tem certeza que deseja excluir o evento "${nomeEvento}"?\n\n` +
-        `O evento será removido, mas os nomes dos convidados permanecerão no banco de nomes.\n\n` +
-        `Esta ação não pode ser desfeita.`
-    );
-    
-    if (!confirmacao) return;
-    
-    // Segunda confirmação
-    const confirmacao2 = confirm(`Digite OK para confirmar a exclusão do evento "${nomeEvento}"`);
-    
-    if (!confirmacao2) return;
-    
-    mostrarLoading(true);
-    const res = await chamarAPI('excluirEvento', { nomeEvento: nomeEvento });
-    mostrarLoading(false);
-    
-    if (res && res.sucesso) {
-        mostrarToast(res.mensagem || "Evento excluído com sucesso!", "success");
-        carregarLista(); // Recarregar lista de eventos
-        mostrarTela('dashboard');
-    }
-}
-
-
+document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); document.getElementById('busca-rapida')?.focus(); }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'n') { e.preventDefault(); if (eventoAtual) abrirModalAdd(); }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'i') { e.preventDefault(); if (eventoAtual) abrirModalImport(); }
+    if ((e.ctrlKey || e.metaKey) && e.key === 'r' && eventoAtual) { e.preventDefault(); carregarEventoEspecifico(eventoAtual); }
+});
 </script>
-
-
-<!-- MODAL: EDITAR NOME DO BANCO -->
-<div class="modal fade" id="modalEditarBanco" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Editar Informações - Banco de Nomes</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="edit-banco-nome-antigo">
-                
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Nome</label>
-                    <input type="text" id="edit-banco-nome" class="form-control">
-                </div>
-                
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Email</label>
-                    <input type="email" id="edit-banco-email" class="form-control">
-                </div>
-                
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Telefone</label>
-                    <input type="text" id="edit-banco-telefone" class="form-control">
-                </div>
-                
-                <div class="alert alert-warning" id="alert-propagar" style="display:none;">
-                    <div class="form-check">
-                        <input class="form-check-input" type="checkbox" id="check-propagar-eventos">
-                        <label class="form-check-label" for="check-propagar-eventos">
-                            <strong>Atualizar nome em <span id="qtd-eventos-propagar"></span> evento(s)?</strong>
-                            <br>
-                            <small class="text-muted">As mudanças serão aplicadas em todos os eventos onde este nome aparece.</small>
-                        </label>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" onclick="salvarEdicaoBanco()">Salvar</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 </body>
 </html>
