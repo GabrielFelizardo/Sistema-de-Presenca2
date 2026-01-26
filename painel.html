@@ -433,7 +433,99 @@
 </div>
 
 <!-- MODALS -->
-<div class="modal fade" id="modalManual" tabindex="-1"><div class="modal-dialog modal-lg"><div class="modal-content"><div class="modal-header bg-info text-white"><h5 class="modal-title"><i class="fas fa-book me-2"></i>Manual de Uso</h5><button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div><div class="modal-body"><p class="text-center text-muted">Sistema completo v15.2 com Templates, Banco de Nomes e Personalização!</p></div></div></div></div>
+<!-- MODAL: MANUAL DE USO v15.2 -->
+<div class="modal fade" id="modalManual" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                <h5 class="modal-title"><i class="fas fa-book-open me-2"></i>Manual de Uso - Sistema RSVP v15.2</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" style="max-height: 70vh; overflow-y: auto;">
+                
+                <div class="alert alert-info border-0 mb-4">
+                    <h6 class="fw-bold mb-2"><i class="fas fa-rocket me-2"></i>Bem-vindo ao Sistema RSVP v15.2!</h6>
+                    <p class="mb-0">Sistema completo para gerenciar confirmações de presença com templates personalizados, banco de nomes e exclusão de eventos!</p>
+                </div>
+
+                <ul class="nav nav-pills mb-4" id="manual-tabs" role="tablist">
+                    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-inicio"><i class="fas fa-home me-1"></i>Início</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-custom"><i class="fas fa-magic me-1"></i>Personalizado</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-templates"><i class="fas fa-layer-group me-1"></i>Templates</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-banco"><i class="fas fa-address-book me-1"></i>Banco</button></li>
+                    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-dicas"><i class="fas fa-lightbulb me-1"></i>Dicas</button></li>
+                </ul>
+
+                <div class="tab-content">
+                    
+                    <div class="tab-pane fade show active" id="tab-inicio">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-play-circle me-2 text-primary"></i>Primeiros Passos</h5>
+                        <div class="card mb-3"><div class="card-body"><h6 class="fw-bold">1. Criar Evento</h6><ol class="mb-0"><li>Clicar "Novo Evento"</li><li>Digitar nome (ex: "Festa 2024")</li><li>Escolher modelo ou personalizar</li><li>Criar!</li></ol></div></div>
+                        <div class="card mb-3"><div class="card-body"><h6 class="fw-bold">2. Adicionar Convidados</h6><ul class="mb-0"><li><strong>Manual:</strong> Botão "+ Novo"</li><li><strong>Excel:</strong> Copiar e colar</li><li><strong>Banco:</strong> Buscar nomes salvos</li></ul></div></div>
+                        <div class="card mb-3"><div class="card-body"><h6 class="fw-bold">3. Compartilhar</h6><ol class="mb-0"><li>Clicar botão "Link"</li><li>Copiar link ou QR Code</li><li>Enviar via WhatsApp</li></ol></div></div>
+                        <div class="alert alert-success border-0"><strong><i class="fas fa-check me-2"></i>Pronto!</strong> Convidados podem confirmar pelo link.</div>
+                    </div>
+
+                    <div class="tab-pane fade" id="tab-custom">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-magic me-2" style="color: #667eea;"></i>Eventos Personalizados</h5>
+                        <div class="alert alert-primary border-0"><strong>Novidade v15.2!</strong> Crie eventos com as colunas que você escolher (2-15 colunas).</div>
+                        <h6 class="fw-bold">Como Criar:</h6>
+                        <ol><li>Novo Evento → <strong>"⚙️ Personalizado"</strong></li><li>Definir quantidade (2-15)</li><li>Nomear cada coluna</li><li>[Opcional] ✅ Salvar como template</li><li>Criar!</li></ol>
+                        <h6 class="fw-bold mt-3">Exemplos:</h6>
+                        <div class="card mb-2"><div class="card-body p-2"><small><strong>Corporativo VIP:</strong> Nome, Email, Tel, Empresa, Cargo, Área, Workshop, Status</small></div></div>
+                        <div class="card mb-2"><div class="card-body p-2"><small><strong>Formatura:</strong> Nome, Email, Tel, Curso, Turma, Convites, Mesa, Status</small></div></div>
+                        <div class="alert alert-warning border-0 mt-3"><small><strong>⚠️ Nota:</strong> "Status" é adicionado automaticamente</small></div>
+                    </div>
+
+                    <div class="tab-pane fade" id="tab-templates">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-layer-group me-2 text-warning"></i>Templates</h5>
+                        <div class="alert alert-success border-0"><strong>Novidade v15.2!</strong> Salve configurações e reutilize!</div>
+                        <h6 class="fw-bold">Salvar Template:</h6>
+                        <ol><li>Criar evento personalizado</li><li>✅ Marcar "Salvar como template"</li><li>Digite nome do template</li><li>Criar (salva evento + template)</li></ol>
+                        <h6 class="fw-bold mt-3">Usar Template:</h6>
+                        <ol><li>Novo Evento → <strong>"📋 Usar Template"</strong></li><li>Escolher da lista</li><li>Clicar "Usar"</li><li>Digite nome do evento</li><li>Pronto! Em 3 cliques</li></ol>
+                        <div class="card bg-light mt-3"><div class="card-body"><h6 class="fw-bold">💡 Exemplo</h6><p class="small mb-0">Jantares mensais: Crie 1x com template → Próximos meses: 3 cliques → Economia de 20 min para 30 seg! ⚡</p></div></div>
+                    </div>
+
+                    <div class="tab-pane fade" id="tab-banco">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-address-book me-2 text-warning"></i>Banco de Nomes</h5>
+                        <p>Todos os nomes são salvos automaticamente para reutilização.</p>
+                        <h6 class="fw-bold">Como Funciona:</h6>
+                        <ul><li>Adicionar convidado → Nome salvo automaticamente</li><li>Próxima vez → Buscar e auto-completar</li><li>Sistema rastreia quantos eventos cada pessoa participou</li></ul>
+                        <h6 class="fw-bold mt-3">Buscar no Banco:</h6>
+                        <ol><li>Abrir evento</li><li>"+ Novo"</li><li>Digitar nome</li><li>Clicar "🔍 Buscar"</li><li>Se encontrar, clicar "Preencher"</li><li>Email e telefone preenchidos!</li></ol>
+                        <h6 class="fw-bold mt-3">Migrar Eventos Antigos:</h6>
+                        <ol><li>Ir em "Gerenciar Nomes"</li><li>"Migrar Eventos Antigos"</li><li>Importa TODOS os convidados</li></ol>
+                    </div>
+
+                    <div class="tab-pane fade" id="tab-dicas">
+                        <h5 class="fw-bold mb-3"><i class="fas fa-lightbulb me-2 text-warning"></i>Dicas e Atalhos</h5>
+                        <h6 class="fw-bold">⌨️ Atalhos:</h6>
+                        <table class="table table-sm"><tbody>
+                        <tr><td><kbd>Ctrl+K</kbd></td><td>Buscar</td></tr>
+                        <tr><td><kbd>Ctrl+N</kbd></td><td>Novo convidado</td></tr>
+                        <tr><td><kbd>Ctrl+I</kbd></td><td>Importar</td></tr>
+                        <tr><td><kbd>Ctrl+R</kbd></td><td>Recarregar</td></tr>
+                        </tbody></table>
+                        <h6 class="fw-bold mt-3">💡 Dicas Profissionais:</h6>
+                        <ul><li>Use <strong>Filtros</strong> para exportar só confirmados</li><li><strong>Seleção em Massa</strong> para alterar vários status</li><li><strong>Templates</strong> para eventos recorrentes</li><li><strong>QR Code</strong> para confirmação presencial</li></ul>
+                        <h6 class="fw-bold mt-3">⚠️ Problemas Comuns:</h6>
+                        <div class="accordion" id="faq">
+                        <div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#f1">Nome não encontrado</button></h2><div id="f1" class="accordion-collapse collapse"><div class="accordion-body">Tente só o primeiro nome ou sobrenome. Busca é parcial.</div></div></div>
+                        <div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#f2">Emails não enviando</button></h2><div id="f2" class="accordion-collapse collapse"><div class="accordion-body">Verifique: (1) Coluna "Email" existe, (2) Emails válidos, (3) Máx 50/vez</div></div></div>
+                        <div class="accordion-item"><h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#f3">Como excluir evento?</button></h2><div id="f3" class="accordion-collapse collapse"><div class="accordion-body">Abrir evento → ⚙️ Configurações → "Zona de Perigo" → Excluir</div></div></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal-footer bg-light">
+                <span class="text-muted small me-auto">Sistema RSVP v15.2</span>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal"><i class="fas fa-check me-1"></i>Entendi!</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- MODAL: CONFIGURAÇÕES (v15.2 - COM BOTÃO EXCLUIR) -->
 <div class="modal fade" id="modalConfig" tabindex="-1">
@@ -549,7 +641,374 @@ function abrirModalConfig() {document.getElementById('input-renomear').value = e
 async function salvarRenomeacao() {const novo = document.getElementById('input-renomear').value.trim();if(!novo || novo === eventoAtual) return;const res = await chamarAPI('renomearEvento', { nomeAntigo: eventoAtual, nomeNovo: novo });if(res && res.sucesso) {bootstrap.Modal.getInstance(document.getElementById('modalConfig')).hide();carregarLista();mostrarToast("Evento renomeado!", "success");}}
 async function addColuna() {const col = document.getElementById('input-nova-coluna').value.trim();if(!col) {mostrarToast("Digite o nome da coluna.", "warning");return;}const res = await chamarAPI('adicionarColuna', { nomeEvento: eventoAtual, novaColuna: col });if(res && res.sucesso) { mostrarToast(`Coluna '${col}' adicionada!`, "success");abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }}
 async function rmColuna(col) {if(!await confirmarAcao(`Apagar coluna '${col}'?`, "Todos os dados desta coluna serão perdidos.")) return;const res = await chamarAPI('removerColuna', { nomeEvento: eventoAtual, nomeColuna: col });if(res && res.sucesso) { mostrarToast(`Coluna '${col}' removida!`, "success");abrirModalConfig(); carregarEventoEspecifico(eventoAtual); }}
-function gerarPDF() {const elemento = document.getElementById('container-tabela-exportar');const clone = elemento.cloneNode(true);clone.querySelectorAll('.ocultar-pdf').forEach(el => el.remove());const wrapper = document.createElement('div');wrapper.style.padding = '30px';wrapper.innerHTML = `<h1>${eventoAtual}</h1>`;wrapper.appendChild(clone);html2pdf().from(wrapper).save(`${eventoAtual}.pdf`);}
+function gerarPDF() {
+    const elemento = document.getElementById('container-tabela-exportar');
+    const clone = elemento.cloneNode(true);
+    clone.querySelectorAll('.ocultar-pdf, .check-convidado, .btn-action').forEach(el => el.remove());
+    
+    // Wrapper principal
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = 'font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: white; position: relative;';
+    
+    // ====================================
+    // CABEÇALHO PROFISSIONAL (Estilo Almoxarifado)
+    // ====================================
+    const header = document.createElement('div');
+    header.style.cssText = `
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 40px 40px 35px 40px;
+        margin: 0;
+        text-align: center;
+        color: white;
+        position: relative;
+    `;
+    
+    // Ícone decorativo no cabeçalho
+    const headerIcon = document.createElement('div');
+    headerIcon.style.cssText = `
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px auto;
+        font-size: 30px;
+    `;
+    headerIcon.innerHTML = '📋';
+    
+    // Título principal
+    const headerTitle = document.createElement('h1');
+    headerTitle.style.cssText = `
+        margin: 0 0 8px 0;
+        font-size: 32px;
+        font-weight: 700;
+        color: white;
+        letter-spacing: 0.5px;
+    `;
+    headerTitle.textContent = 'LISTA DE CONVIDADOS';
+    
+    // Subtítulo com nome do evento
+    const headerSubtitle = document.createElement('div');
+    headerSubtitle.style.cssText = `
+        font-size: 18px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.95);
+        margin-bottom: 15px;
+    `;
+    headerSubtitle.textContent = eventoAtual;
+    
+    // Data de geração
+    const headerDate = document.createElement('div');
+    headerDate.style.cssText = `
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.8);
+        font-weight: 400;
+    `;
+    const now = new Date();
+    headerDate.textContent = `Gerado em: ${now.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    })}`;
+    
+    header.appendChild(headerIcon);
+    header.appendChild(headerTitle);
+    header.appendChild(headerSubtitle);
+    header.appendChild(headerDate);
+    
+    // ====================================
+    // CONTAINER DE CONTEÚDO
+    // ====================================
+    const content = document.createElement('div');
+    content.style.cssText = 'padding: 35px 40px 40px 40px;';
+    
+    // ====================================
+    // CARD DE ESTATÍSTICAS (Mais Destacado)
+    // ====================================
+    const total = dadosEventoAtual.length;
+    const indexStatus = colunasAtuais.indexOf('Status');
+    let confirmados = 0, pendentes = 0, recusados = 0;
+    
+    if (indexStatus > -1) {
+        dadosEventoAtual.forEach(row => {
+            const status = row[indexStatus] || "Pendente";
+            if (status === 'Confirmado') confirmados++;
+            else if (status === 'Não vai') recusados++;
+            else pendentes++;
+        });
+    } else {
+        pendentes = total;
+    }
+    
+    const statsCard = document.createElement('div');
+    statsCard.style.cssText = `
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 2px solid #dee2e6;
+        border-radius: 12px;
+        padding: 25px 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    `;
+    
+    const statsTitle = document.createElement('div');
+    statsTitle.style.cssText = `
+        text-align: center;
+        font-size: 14px;
+        font-weight: 700;
+        color: #495057;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 20px;
+    `;
+    statsTitle.textContent = '📊 RESUMO DE CONFIRMAÇÕES';
+    
+    const statsGrid = document.createElement('div');
+    statsGrid.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    `;
+    
+    const stats = [
+        { label: 'Total', value: total, color: '#667eea', icon: '👥' },
+        { label: 'Confirmados', value: confirmados, color: '#10b981', icon: '✅' },
+        { label: 'Pendentes', value: pendentes, color: '#f59e0b', icon: '⏳' },
+        { label: 'Recusados', value: recusados, color: '#ef4444', icon: '❌' }
+    ];
+    
+    stats.forEach(stat => {
+        const statBox = document.createElement('div');
+        statBox.style.cssText = `
+            text-align: center;
+            background: white;
+            padding: 15px 10px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        `;
+        statBox.innerHTML = `
+            <div style="font-size: 20px; margin-bottom: 8px;">${stat.icon}</div>
+            <div style="font-size: 28px; font-weight: 800; color: ${stat.color}; margin-bottom: 5px;">${stat.value}</div>
+            <div style="font-size: 11px; color: #6b7280; text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px;">${stat.label}</div>
+        `;
+        statsGrid.appendChild(statBox);
+    });
+    
+    statsCard.appendChild(statsTitle);
+    statsCard.appendChild(statsGrid);
+    
+    // ====================================
+    // SEÇÃO DE INFORMAÇÕES DO EVENTO
+    // ====================================
+    const infoSection = document.createElement('div');
+    infoSection.style.cssText = `
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 15px 20px;
+        margin-bottom: 25px;
+        border-radius: 0 8px 8px 0;
+    `;
+    
+    const infoTitle = document.createElement('div');
+    infoTitle.style.cssText = `
+        font-size: 13px;
+        font-weight: 700;
+        color: #495057;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    `;
+    infoTitle.textContent = '📌 INFORMAÇÕES DO EVENTO';
+    
+    const infoContent = document.createElement('div');
+    infoContent.style.cssText = `
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        font-size: 11px;
+        color: #6b7280;
+    `;
+    
+    const taxaConfirmacao = total > 0 ? ((confirmados / total) * 100).toFixed(1) : 0;
+    
+    infoContent.innerHTML = `
+        <div><strong style="color: #495057;">Evento:</strong> ${eventoAtual}</div>
+        <div><strong style="color: #495057;">Taxa de Confirmação:</strong> ${taxaConfirmacao}%</div>
+        <div><strong style="color: #495057;">Total de Colunas:</strong> ${colunasAtuais.length}</div>
+        <div><strong style="color: #495057;">Data de Geração:</strong> ${now.toLocaleDateString('pt-BR')}</div>
+    `;
+    
+    infoSection.appendChild(infoTitle);
+    infoSection.appendChild(infoContent);
+    
+    // ====================================
+    // TÍTULO DA TABELA
+    // ====================================
+    const tableTitle = document.createElement('div');
+    tableTitle.style.cssText = `
+        font-size: 14px;
+        font-weight: 700;
+        color: #495057;
+        margin-bottom: 15px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    `;
+    tableTitle.innerHTML = '📋 LISTA COMPLETA DE CONVIDADOS';
+    
+    // ====================================
+    // TABELA (Melhor Formatação)
+    // ====================================
+    const table = clone.querySelector('table');
+    if (table) {
+        table.style.cssText = `
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        `;
+        
+        const thead = table.querySelector('thead');
+        if (thead) {
+            thead.querySelectorAll('th').forEach((th, index) => {
+                th.style.cssText = `
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    padding: 12px 10px;
+                    text-align: left;
+                    font-weight: 700;
+                    font-size: 9px;
+                    text-transform: uppercase;
+                    letter-spacing: 0.8px;
+                    border-right: ${index < colunasAtuais.length - 1 ? '1px solid rgba(255, 255, 255, 0.2)' : 'none'};
+                `;
+            });
+        }
+        
+        const tbody = table.querySelector('tbody');
+        if (tbody) {
+            tbody.querySelectorAll('tr').forEach((tr, index) => {
+                tr.style.cssText = `
+                    background: ${index % 2 === 0 ? '#ffffff' : '#f8f9fa'};
+                    transition: background 0.2s;
+                `;
+                
+                tr.querySelectorAll('td').forEach((td, colIndex) => {
+                    td.style.cssText = `
+                        padding: 10px 10px;
+                        border-bottom: 1px solid #e5e7eb;
+                        border-right: ${colIndex < colunasAtuais.length - 1 ? '1px solid #f1f3f5' : 'none'};
+                        color: #495057;
+                        font-weight: 500;
+                    `;
+                    
+                    const badge = td.querySelector('.status-badge');
+                    if (badge) {
+                        badge.style.cssText = `
+                            display: inline-block;
+                            padding: 5px 12px;
+                            border-radius: 20px;
+                            font-size: 9px;
+                            font-weight: 700;
+                            letter-spacing: 0.3px;
+                        `;
+                    }
+                });
+            });
+        }
+    }
+    
+    // ====================================
+    // RODAPÉ PROFISSIONAL
+    // ====================================
+    const footer = document.createElement('div');
+    footer.style.cssText = `
+        margin-top: 35px;
+        padding-top: 20px;
+        border-top: 3px solid #e5e7eb;
+        text-align: center;
+    `;
+    
+    const footerLogo = document.createElement('div');
+    footerLogo.style.cssText = `
+        font-size: 13px;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+    `;
+    footerLogo.textContent = '🎉 Sistema RSVP v15.2';
+    
+    const footerInfo = document.createElement('div');
+    footerInfo.style.cssText = `
+        font-size: 10px;
+        color: #9ca3af;
+        line-height: 1.6;
+    `;
+    footerInfo.innerHTML = `
+        <div style="margin-bottom: 3px;">Documento gerado automaticamente pelo Sistema de Gerenciamento de Confirmações</div>
+        <div style="font-weight: 600; color: #6b7280;">Total: ${total} convidado(s) • Confirmados: ${confirmados} • Pendentes: ${pendentes} • Recusados: ${recusados}</div>
+    `;
+    
+    const footerDisclaimer = document.createElement('div');
+    footerDisclaimer.style.cssText = `
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #e5e7eb;
+        font-size: 9px;
+        color: #adb5bd;
+        font-style: italic;
+    `;
+    footerDisclaimer.textContent = 'Este documento contém informações privadas. Mantenha a confidencialidade.';
+    
+    footer.appendChild(footerLogo);
+    footer.appendChild(footerInfo);
+    footer.appendChild(footerDisclaimer);
+    
+    // ====================================
+    // MONTAR DOCUMENTO
+    // ====================================
+    content.appendChild(statsCard);
+    content.appendChild(infoSection);
+    content.appendChild(tableTitle);
+    content.appendChild(clone);
+    content.appendChild(footer);
+    
+    wrapper.appendChild(header);
+    wrapper.appendChild(content);
+    
+    // ====================================
+    // GERAR PDF
+    // ====================================
+    const opt = {
+        margin: 0,
+        filename: `${eventoAtual}_${now.toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`,
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { 
+            scale: 2, 
+            useCORS: true, 
+            letterRendering: true,
+            logging: false
+        },
+        jsPDF: { 
+            unit: 'mm', 
+            format: 'a4', 
+            orientation: 'portrait', 
+            compress: true 
+        },
+        pagebreak: { 
+            mode: ['avoid-all', 'css', 'legacy'],
+            before: '.page-break'
+        }
+    };
+    
+    html2pdf().set(opt).from(wrapper).save();
+    mostrarToast("PDF profissional gerado com sucesso!", "success");
+}
 function gerarTXT() {let texto = `${eventoAtual}\n\n`;texto += colunasAtuais.join("\t") + "\n";dadosEventoAtual.forEach(linha => texto += linha.join("\t") + "\n");const blob = new Blob([texto], { type: 'text/plain' });const url = window.URL.createObjectURL(blob);const a = document.createElement('a'); a.href = url; a.download = `${eventoAtual}.txt`; a.click();}
 function gerarExcel() {const ws = XLSX.utils.aoa_to_sheet([colunasAtuais, ...dadosEventoAtual]);const wb = XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb, ws, "Lista");XLSX.writeFile(wb, `${eventoAtual}.xlsx`);}
 function abrirModalEditar(rowIndex) { const dadosRow = dadosEventoAtual[rowIndex]; document.getElementById('edit-linha-index').value = rowIndex; const form = document.getElementById('form-editar-dinamico'); form.innerHTML = ""; colunasAtuais.forEach((col, colIndex) => { const valorAtual = dadosRow[colIndex]; let inputHTML = col === 'Status' ? `<select class="form-control input-editar"><option value="Pendente" ${valorAtual === 'Pendente' ? 'selected' : ''}>Pendente</option><option value="Confirmado" ${valorAtual === 'Confirmado' ? 'selected' : ''}>Confirmado</option><option value="Não vai" ${valorAtual === 'Não vai' ? 'selected' : ''}>Não vai</option></select>` : `<input type="text" class="form-control input-editar" value="${valorAtual}">`; form.innerHTML += `<div class="mb-3"><label class="fw-bold small text-muted">${col}</label>${inputHTML}</div>`; }); new bootstrap.Modal(document.getElementById('modalEditar')).show(); }
