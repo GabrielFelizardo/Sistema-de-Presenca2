@@ -1,9 +1,10 @@
 // =======================================================================
-// ARQUIVO: CODE.GS (BACKEND v15.0 - TEMPLATES + BANCO DE NOMES + MANUAL)
+// ARQUIVO: CODE.GS v15.1 FINAL - SEM BUGS
+// Sistema RSVP - Templates + Banco de Nomes + Migração
 // =======================================================================
 
 function doGet(e) {
-  return ContentService.createTextOutput("Sistema v15.0 Online! Backend operante.")
+  return ContentService.createTextOutput("Sistema v15.1 Online! Backend operante.")
       .setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -54,6 +55,7 @@ function doPost(e) {
     else if (acao === 'verificarAtualizacaoDados') resposta = verificarAtualizacaoDados(dados.nome, dados.email, dados.telefone);
     else if (acao === 'atualizarDadosBanco') resposta = atualizarDadosBanco(dados.nome, dados.email, dados.telefone);
     else if (acao === 'excluirEvento') resposta = excluirEvento(dados.nomeEvento);
+    else if (acao === 'migrarEventosParaBanco') resposta = migrarEventosParaBanco();
     
     else resposta = { erro: "Ação desconhecida: " + acao };
 
@@ -102,7 +104,11 @@ function getSheetByNameSafe(ss, nome) {
 
 function listarEventos() {
   const ss = getSpreadsheet();
-  return ss.getSheets().map(s => ({ nome: s.getName(), id: s.getSheetId() }));
+  const abasSistema = ['Dashboard', 'Templates', 'Banco_Nomes', 'Exemplo'];
+  
+  return ss.getSheets()
+    .filter(s => !abasSistema.includes(s.getName()))
+    .map(s => ({ nome: s.getName(), id: s.getSheetId() }));
 }
 
 function criarNovoEvento(nome, tipo, dadosRaw) {
@@ -278,23 +284,19 @@ function enviarEmails(nomeEvento, indices, assunto, mensagem, linkBase) {
   Logger.log('Evento: "' + nomeEvento + '" (tipo: ' + typeof nomeEvento + ')');
   Logger.log('Índices: ' + JSON.stringify(indices));
   
-  // ✅ VALIDAÇÃO 1: Nome do evento
   if (!nomeEvento || nomeEvento === 'undefined' || nomeEvento === 'null' || nomeEvento.trim() === '') {
     Logger.log('❌ ERRO: Nome do evento inválido');
     throw new Error("Nome do evento inválido. Valor recebido: '" + nomeEvento + "'");
   }
 
-  // ✅ VALIDAÇÃO 2: Índices
   if (!indices || !Array.isArray(indices) || indices.length === 0) {
     throw new Error("Nenhum convidado selecionado para envio.");
   }
 
-  // ✅ VALIDAÇÃO 3: Limite de segurança
   if (indices.length > 50) {
     throw new Error("Limite de segurança: máximo de 50 envios por vez. Você selecionou " + indices.length + ".");
   }
 
-  // ✅ VALIDAÇÃO 4: Busca a planilha
   const ss = getSpreadsheet();
   const sheet = getSheetByNameSafe(ss, nomeEvento);
   
@@ -311,7 +313,6 @@ function enviarEmails(nomeEvento, indices, assunto, mensagem, linkBase) {
   
   Logger.log('✓ Headers encontrados: ' + headers.join(', '));
 
-  // ✅ VALIDAÇÃO 5: Verifica se existe coluna Email
   const indexEmail = headers.findIndex(h => {
     const limpo = h.toString().trim().toLowerCase();
     return limpo === 'email' || limpo === 'e-mail';
@@ -326,7 +327,6 @@ function enviarEmails(nomeEvento, indices, assunto, mensagem, linkBase) {
   Logger.log(`✓ Coluna Email: índice ${indexEmail}`);
   Logger.log(`✓ Coluna Nome: índice ${indexNome}`);
 
-  // 📊 PROCESSAMENTO
   let enviados = 0;
   let erros = 0;
   let detalhesErros = [];
@@ -335,7 +335,6 @@ function enviarEmails(nomeEvento, indices, assunto, mensagem, linkBase) {
     try {
       Logger.log(`\n📧 Processando ${i+1}/${indices.length}: índice ${index}`);
       
-      // Valida índice
       if (index < 0 || index >= rows.length) {
         Logger.log(`⚠️ AVISO: Índice ${index} fora do range (0-${rows.length-1})`);
         erros++;
@@ -350,7 +349,6 @@ function enviarEmails(nomeEvento, indices, assunto, mensagem, linkBase) {
       Logger.log(`  Nome: ${nome}`);
       Logger.log(`  Email: ${email}`);
       
-      // Valida email
       if (!email || !email.includes("@")) {
         Logger.log(`⚠️ AVISO: Email inválido ou vazio`);
         erros++;
@@ -358,10 +356,8 @@ function enviarEmails(nomeEvento, indices, assunto, mensagem, linkBase) {
         return;
       }
       
-      // Monta o link personalizado
       const linkPersonalizado = `${linkBase}?evento=${encodeURIComponent(nomeEvento.trim())}`;
       
-      // Substitui variáveis
       let corpo = mensagem
         .replace(/{Nome}/g, nome)
         .replace(/{Link}/g, linkPersonalizado);
@@ -370,7 +366,6 @@ function enviarEmails(nomeEvento, indices, assunto, mensagem, linkBase) {
         .replace(/{Nome}/g, nome)
         .replace(/{Evento}/g, nomeEvento);
       
-      // Envia email
       MailApp.sendEmail({
         to: email,
         subject: assuntoFinal,
@@ -380,7 +375,6 @@ function enviarEmails(nomeEvento, indices, assunto, mensagem, linkBase) {
       Logger.log(`✅ Email enviado com sucesso para ${email}`);
       enviados++;
       
-      // Delay para não sobrecarregar (1 email por segundo)
       if (i < indices.length - 1) {
         Utilities.sleep(1000);
       }
@@ -480,7 +474,6 @@ function salvarTemplate(nomeTemplate, colunas, emailAssunto, emailMensagem) {
   
   if (!nomeLimpo) throw new Error("Nome do template não pode estar vazio.");
   
-  // Verificar se já existe
   const data = sheetTemplates.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
     if (data[i][0] === nomeLimpo) {
@@ -488,7 +481,6 @@ function salvarTemplate(nomeTemplate, colunas, emailAssunto, emailMensagem) {
     }
   }
   
-  // Salvar novo template
   const colunasJSON = JSON.stringify(colunas);
   const dataAtual = new Date().toLocaleDateString('pt-BR');
   
@@ -543,7 +535,6 @@ function criarEventoDeTemplate(nomeEvento, nomeTemplate, usarEmail) {
   const sheetTemplates = inicializarAbaTemplates();
   const data = sheetTemplates.getDataRange().getValues();
   
-  // Buscar template
   let templateEncontrado = null;
   let linhaTemplate = -1;
   
@@ -561,7 +552,6 @@ function criarEventoDeTemplate(nomeEvento, nomeTemplate, usarEmail) {
   
   if (!templateEncontrado) throw new Error("Template não encontrado.");
   
-  // Criar evento com as colunas do template
   const ss = getSpreadsheet();
   const nomeLimpo = nomeEvento.trim();
   if (ss.getSheetByName(nomeLimpo)) throw new Error("Evento já existe!");
@@ -572,11 +562,9 @@ function criarEventoDeTemplate(nomeEvento, nomeTemplate, usarEmail) {
   sheet.appendRow(colunas);
   sheet.getRange(1, 1, 1, colunas.length).setFontWeight("bold").setBackground("#f3f4f6");
   
-  // Incrementar contador de uso
   const vezesUsado = data[linhaTemplate - 1][5] || 0;
   sheetTemplates.getRange(linhaTemplate, 6).setValue(vezesUsado + 1);
   
-  // Retornar com informações do email se solicitado
   const resultado = { 
     sucesso: true, 
     nome: nomeLimpo,
@@ -604,7 +592,7 @@ function inicializarBancoNomes() {
     sheetBanco.appendRow(["Nome Completo", "Email", "Telefone", "Eventos Participou", "Último Evento", "Data Última Participação"]);
     sheetBanco.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#dcfce7");
     sheetBanco.setFrozenRows(1);
-    sheetBanco.setColumnWidth(4, 300); // Coluna de eventos mais larga
+    sheetBanco.setColumnWidth(4, 300);
   }
   
   return sheetBanco;
@@ -641,7 +629,6 @@ function buscarNoBanco(termo) {
     return { encontrado: false };
   }
   
-  // Ordenar por mais recente
   resultados.sort((a, b) => {
     if (!a.dataUltimaParticipacao || a.dataUltimaParticipacao === "N/A") return 1;
     if (!b.dataUltimaParticipacao || b.dataUltimaParticipacao === "N/A") return -1;
@@ -663,7 +650,6 @@ function adicionarAoBancoNomes(nome, email, telefone, eventoAtual) {
   const telefoneLimpo = telefone ? telefone.trim() : "";
   const dataAtual = new Date().toLocaleDateString('pt-BR');
   
-  // Verificar se pessoa já existe (busca por nome)
   let pessoaExiste = false;
   let linhaPessoa = -1;
   
@@ -676,20 +662,17 @@ function adicionarAoBancoNomes(nome, email, telefone, eventoAtual) {
   }
   
   if (pessoaExiste) {
-    // Atualizar pessoa existente
     const eventosAtuais = data[linhaPessoa - 1][3] || "";
     const eventosArray = eventosAtuais ? eventosAtuais.split(';').filter(e => e.trim()) : [];
     
-    // Adicionar novo evento se não estiver na lista
     if (!eventosArray.includes(eventoAtual)) {
       eventosArray.push(eventoAtual);
     }
     
     const eventosNovos = eventosArray.join(';');
     
-    // Atualizar linha
-    sheetBanco.getRange(linhaPessoa, 2).setValue(emailLimpo || data[linhaPessoa - 1][1]); // Email (mantém se vazio)
-    sheetBanco.getRange(linhaPessoa, 3).setValue(telefoneLimpo || data[linhaPessoa - 1][2]); // Telefone (mantém se vazio)
+    sheetBanco.getRange(linhaPessoa, 2).setValue(emailLimpo || data[linhaPessoa - 1][1]);
+    sheetBanco.getRange(linhaPessoa, 3).setValue(telefoneLimpo || data[linhaPessoa - 1][2]);
     sheetBanco.getRange(linhaPessoa, 4).setValue(eventosNovos);
     sheetBanco.getRange(linhaPessoa, 5).setValue(eventoAtual);
     sheetBanco.getRange(linhaPessoa, 6).setValue(dataAtual);
@@ -697,7 +680,6 @@ function adicionarAoBancoNomes(nome, email, telefone, eventoAtual) {
     return { sucesso: true, atualizado: true };
     
   } else {
-    // Adicionar nova pessoa
     sheetBanco.appendRow([
       nomeLimpo,
       emailLimpo,
@@ -711,7 +693,6 @@ function adicionarAoBancoNomes(nome, email, telefone, eventoAtual) {
   }
 }
 
-// Listar todos os nomes do banco
 function listarBancoNomes() {
   const sheetBanco = inicializarBancoNomes();
   const data = sheetBanco.getDataRange().getValues();
@@ -737,7 +718,6 @@ function listarBancoNomes() {
   return { nomes: nomes };
 }
 
-// Editar dados no banco com opção de propagar para eventos
 function editarNoBanco(nomeAntigo, nomeNovo, email, telefone, propagarEventos) {
   const sheetBanco = inicializarBancoNomes();
   const data = sheetBanco.getDataRange().getValues();
@@ -745,7 +725,6 @@ function editarNoBanco(nomeAntigo, nomeNovo, email, telefone, propagarEventos) {
   let linhaPessoa = -1;
   let eventosParticipou = [];
   
-  // Encontrar pessoa
   for (let i = 1; i < data.length; i++) {
     if (data[i][0].toString().toLowerCase() === nomeAntigo.toLowerCase()) {
       linhaPessoa = i + 1;
@@ -756,12 +735,10 @@ function editarNoBanco(nomeAntigo, nomeNovo, email, telefone, propagarEventos) {
   
   if (linhaPessoa === -1) throw new Error("Nome não encontrado no banco.");
   
-  // Atualizar dados no banco
   sheetBanco.getRange(linhaPessoa, 1).setValue(nomeNovo.trim());
   sheetBanco.getRange(linhaPessoa, 2).setValue(email || "");
   sheetBanco.getRange(linhaPessoa, 3).setValue(telefone || "");
   
-  // Se propagarEventos = true, atualizar nome em todos os eventos
   if (propagarEventos && nomeAntigo !== nomeNovo) {
     const ss = getSpreadsheet();
     let eventosAtualizados = 0;
@@ -776,7 +753,6 @@ function editarNoBanco(nomeAntigo, nomeNovo, email, telefone, propagarEventos) {
       
       if (indexNome === -1) return;
       
-      // Atualizar todas as ocorrências do nome antigo
       for (let i = 1; i < dataEvento.length; i++) {
         if (dataEvento[i][indexNome].toString().toLowerCase() === nomeAntigo.toLowerCase()) {
           sheet.getRange(i + 1, indexNome + 1).setValue(nomeNovo);
@@ -795,7 +771,6 @@ function editarNoBanco(nomeAntigo, nomeNovo, email, telefone, propagarEventos) {
   return { sucesso: true, propagado: false };
 }
 
-// Excluir nome do banco
 function excluirDoBanco(nome) {
   const sheetBanco = inicializarBancoNomes();
   const data = sheetBanco.getDataRange().getValues();
@@ -810,7 +785,6 @@ function excluirDoBanco(nome) {
   throw new Error("Nome não encontrado.");
 }
 
-// Verificar se há novos dados (email/telefone) para atualizar
 function verificarAtualizacaoDados(nome, email, telefone) {
   const sheetBanco = inicializarBancoNomes();
   const data = sheetBanco.getDataRange().getValues();
@@ -822,7 +796,6 @@ function verificarAtualizacaoDados(nome, email, telefone) {
       const emailNovo = email ? email.toString().trim() : "";
       const telefoneNovo = telefone ? telefone.toString().trim() : "";
       
-      // Verificar se há dados novos
       const temEmailNovo = emailNovo && emailNovo !== "" && emailNovo !== emailBanco;
       const temTelefoneNovo = telefoneNovo && telefoneNovo !== "" && telefoneNovo !== telefoneBanco;
       
@@ -842,11 +815,9 @@ function verificarAtualizacaoDados(nome, email, telefone) {
     }
   }
   
-  // Nome não existe no banco
   return { precisaAtualizar: false, novoNome: true };
 }
 
-// Atualizar dados no banco (chamado após confirmação do usuário)
 function atualizarDadosBanco(nome, email, telefone) {
   const sheetBanco = inicializarBancoNomes();
   const data = sheetBanco.getDataRange().getValues();
@@ -870,14 +841,12 @@ function atualizarDadosBanco(nome, email, telefone) {
   throw new Error("Nome não encontrado no banco.");
 }
 
-// Excluir evento (remove aba mas mantém nomes no banco)
 function excluirEvento(nomeEvento) {
   const ss = getSpreadsheet();
   const sheet = getSheetByNameSafe(ss, nomeEvento);
   
   if (!sheet) throw new Error("Evento não encontrado.");
   
-  // Remover o evento da lista de eventos de cada pessoa no banco
   const sheetBanco = inicializarBancoNomes();
   const data = sheetBanco.getDataRange().getValues();
   
@@ -885,15 +854,12 @@ function excluirEvento(nomeEvento) {
     const eventosAtuais = data[i][3] || "";
     const eventosArray = eventosAtuais ? eventosAtuais.split(';').filter(e => e.trim()) : [];
     
-    // Remover o evento da lista
     const eventosAtualizados = eventosArray.filter(e => e !== nomeEvento);
     
     if (eventosAtualizados.length !== eventosArray.length) {
-      // Atualizar a linha
       const novosEventos = eventosAtualizados.join(';');
       sheetBanco.getRange(i + 1, 4).setValue(novosEventos);
       
-      // Se era o último evento, atualizar "Último Evento"
       if (data[i][4] === nomeEvento) {
         const novoUltimo = eventosAtualizados.length > 0 ? eventosAtualizados[eventosAtualizados.length - 1] : "Nenhum";
         sheetBanco.getRange(i + 1, 5).setValue(novoUltimo);
@@ -901,30 +867,73 @@ function excluirEvento(nomeEvento) {
     }
   }
   
-  // Excluir a aba do evento
   ss.deleteSheet(sheet);
   
   return { sucesso: true, mensagem: "Evento excluído. Nomes mantidos no banco." };
 }
 
-// Atualizar a função adicionarConvidado para integrar com o banco
-function adicionarConvidadoIntegrado(nomeEvento, arrayDados) {
-  // Chamar função original
-  const resultado = adicionarConvidado(nomeEvento, arrayDados);
+// =======================================================================
+// MIGRAÇÃO: POPULAR BANCO COM EVENTOS ANTIGOS (v15.1)
+// =======================================================================
+
+function migrarEventosParaBanco() {
+  const ss = getSpreadsheet();
+  const sheetBanco = inicializarBancoNomes();
+  const abasSistema = ['Dashboard', 'Templates', 'Banco_Nomes', 'Exemplo'];
   
-  if (resultado.sucesso) {
-    // Adicionar ao banco de nomes
-    const nome = arrayDados[0];
-    const email = arrayDados.length > 1 ? arrayDados[1] : "";
-    const telefone = arrayDados.length > 2 ? arrayDados[2] : "";
+  let totalAdicionados = 0;
+  let totalAtualizados = 0;
+  
+  const eventos = ss.getSheets()
+    .filter(s => !abasSistema.includes(s.getName()))
+    .map(s => s.getName());
+  
+  eventos.forEach(nomeEvento => {
+    const sheet = ss.getSheetByName(nomeEvento);
+    const data = sheet.getDataRange().getValues();
     
-    try {
-      adicionarAoBancoNomes(nome, email, telefone, nomeEvento);
-    } catch (e) {
-      Logger.log("Erro ao adicionar ao banco: " + e.toString());
-      // Não interrompe o fluxo principal
+    if (data.length < 2) return;
+    
+    const headers = data[0];
+    const indexNome = headers.indexOf('Nome') >= 0 ? headers.indexOf('Nome') : 
+                      headers.indexOf('Nome Completo') >= 0 ? headers.indexOf('Nome Completo') : 0;
+    const indexEmail = headers.findIndex(h => {
+      const limpo = h.toString().trim().toLowerCase();
+      return limpo === 'email' || limpo === 'e-mail';
+    });
+    const indexTelefone = headers.indexOf('Telefone');
+    
+    for (let i = 1; i < data.length; i++) {
+      const nome = data[i][indexNome];
+      if (!nome || nome.toString().trim() === '') continue;
+      
+      const email = indexEmail >= 0 ? data[i][indexEmail] : '';
+      const telefone = indexTelefone >= 0 ? data[i][indexTelefone] : '';
+      
+      try {
+        const resultado = adicionarAoBancoNomes(
+          nome.toString().trim(),
+          email ? email.toString().trim() : '',
+          telefone ? telefone.toString().trim() : '',
+          nomeEvento
+        );
+        
+        if (resultado.atualizado) {
+          totalAtualizados++;
+        } else {
+          totalAdicionados++;
+        }
+      } catch (e) {
+        Logger.log(`Erro ao migrar ${nome} do evento ${nomeEvento}: ${e}`);
+      }
     }
-  }
+  });
   
-  return resultado;
+  return {
+    sucesso: true,
+    adicionados: totalAdicionados,
+    atualizados: totalAtualizados,
+    total: totalAdicionados + totalAtualizados,
+    eventos: eventos.length
+  };
 }
