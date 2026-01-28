@@ -3,501 +3,348 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirmar Presença</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Login - Sistema RSVP v16.5</title>
     <style>
-        :root {
-            --primary-blue: #1e3a8a;
-            --primary-light: #3b82f6;
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --shadow-xl: 0 20px 25px rgba(0,0,0,0.15);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-
-        body { 
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            font-family: 'Segoe UI', sans-serif; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
             min-height: 100vh;
-            padding: 20px;
-        }
-
-        .card-rsvp { 
-            max-width: 500px; 
-            width: 100%; 
-            border: none; 
-            box-shadow: var(--shadow-xl);
-            border-radius: 20px; 
-            overflow: hidden;
-            animation: fadeInUp 0.6s ease-out;
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .header-bg { 
-            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-light) 100%); 
-            color: white; 
-            padding: 40px 20px; 
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .header-bg::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: pulse 4s ease-in-out infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
-        }
-
-        .header-bg h2, .header-bg p { position: relative; z-index: 1; }
-        .loading { display: none; text-align: center; padding: 40px; }
-
-        .form-control {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 2px solid #e5e7eb;
-            border-radius: 12px;
-        }
-
-        .form-control:focus {
-            border-color: var(--primary-light);
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .btn {
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 50px;
-            font-weight: 600;
-        }
-
-        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 15px rgba(0,0,0,0.1); }
-        .btn:active { transform: translateY(0); }
-
-        .btn-check:checked + .btn-outline-success {
-            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
-            border-color: var(--success);
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-        }
-
-        .btn-check:checked + .btn-outline-danger {
-            background: linear-gradient(135deg, var(--danger) 0%, #dc2626 100%);
-            border-color: var(--danger);
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-        }
-
-        .btn-group .btn {
-            padding: 12px 20px;
-            border-radius: 12px !important;
-            margin-right: 8px;
-        }
-
-        .success-icon {
-            animation: scaleIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        }
-
-        @keyframes scaleIn {
-            0% { transform: scale(0) rotate(-180deg); }
-            100% { transform: scale(1) rotate(0); }
-        }
-
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-        }
-
-        .toast-notification {
-            background: white;
-            padding: 16px 20px;
-            border-radius: 12px;
-            box-shadow: var(--shadow-xl);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 10px;
-            animation: slideIn 0.3s ease-out;
-            min-width: 300px;
-        }
-
-        .toast-notification.slide-out { animation: slideOut 0.3s ease-out; }
-
-        @keyframes slideIn {
-            from { transform: translateX(400px); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes slideOut {
-            to { transform: translateX(400px); opacity: 0; }
-        }
-
-        .toast-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 1rem;
         }
-
-        .toast-icon.success { background: var(--success); color: white; }
-        .toast-icon.error { background: var(--danger); color: white; }
-        .toast-icon.warning { background: var(--warning); color: white; }
-
-        .toast-message { color: #374151; font-weight: 500; flex-grow: 1; }
-
-        .review-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 12px 16px;
-            border-bottom: 1px solid #e5e7eb;
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 450px;
+            width: 90%;
+            animation: slideIn 0.5s;
         }
-
-        .review-item:last-child { border-bottom: none; }
-        .review-item:hover { background: #f9fafb; }
-
-        .review-label {
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo-icon {
+            font-size: 60px;
+            margin-bottom: 10px;
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            color: #333;
             font-weight: 600;
-            color: #6b7280;
-            font-size: 0.875rem;
+            margin-bottom: 8px;
+            font-size: 14px;
         }
-
-        .review-value { color: #111827; font-weight: 500; }
-
-        .search-hint {
-            background: #eff6ff;
-            border-left: 4px solid var(--primary-light);
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 12px;
-            font-size: 0.875rem;
-            color: #1e40af;
+        
+        input[type="email"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
         }
-
-        @media (max-width: 576px) {
-            body { padding: 10px; }
-            .card-rsvp { border-radius: 15px; }
-            .header-bg { padding: 30px 15px; }
-            .btn-group { flex-direction: column; }
-            .btn-group .btn { margin-right: 0; margin-bottom: 8px; }
-            #toast-container { right: 10px; left: 10px; }
-            .toast-notification { min-width: auto; }
+        
+        input[type="email"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+        }
+        
+        .btn-login {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-login:active {
+            transform: translateY(0);
+        }
+        
+        .btn-login:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .message {
+            display: none;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .message.warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #999;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
-
-<div id="toast-container"></div>
-
-<div class="card-rsvp">
-    <div class="header-bg">
-        <h2 id="nome-evento-titulo" class="fw-bold mb-0">Carregando...</h2>
-        <p class="opacity-75 mb-0 mt-2">Confirmação de Presença</p>
-    </div>
-
-    <div class="card-body p-4 bg-white">
+    
+    <div class="login-container">
+        <div class="logo">
+            <div class="logo-icon">🎉</div>
+            <h1>Sistema RSVP</h1>
+            <p class="subtitle">v16.5 - Sistema com Aprovação</p>
+        </div>
         
-        <div id="loading" class="loading">
-            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
-            <p class="mt-3 text-muted fw-semibold">Processando...</p>
-        </div>
-
-        <!-- Passo 1: Busca -->
-        <div id="passo-1">
-            <p class="text-center text-muted mb-4">Digite seu nome para confirmar sua presença.</p>
-            <form onsubmit="verificarNome(event)">
-                <div class="mb-3">
-                    <input type="text" id="input-nome-busca" class="form-control form-control-lg text-center" 
-                           placeholder="Ex: Gabriel Felizardo" required autofocus>
-                    
-                    <div class="search-hint mt-3" style="display: none;" id="search-hint">
-                        <i class="fas fa-lightbulb me-2"></i>
-                        <strong>Dica:</strong> Tente apenas o primeiro nome ou sobrenome
-                    </div>
-                </div>
-                <div class="d-grid">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-search me-2"></i>Verificar
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Passo 2: Formulário -->
-        <div id="passo-2" style="display:none;">
-            <div class="alert alert-success border-0 text-center mb-4" style="border-radius: 12px;">
-                <i class="fas fa-user-check me-2"></i>Olá, <strong id="nome-encontrado"></strong>!
+        <form id="login-form" onsubmit="return fazerLogin(event)">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    placeholder="seu@email.com" 
+                    required
+                    autocomplete="email"
+                >
             </div>
             
-            <form onsubmit="mostrarConfirmacao(event)">
-                <input type="hidden" id="linha-convidado">
-                
-                <div class="mb-4 text-center">
-                    <label class="form-label fw-bold d-block mb-3">Você poderá comparecer?</label>
-                    <div class="btn-group w-100" role="group">
-                        <input type="radio" class="btn-check" name="resp-Status" id="sim" value="Confirmado" checked>
-                        <label class="btn btn-outline-success py-3" for="sim">
-                            <i class="fas fa-check me-2"></i>Sim, eu vou!
-                        </label>
-
-                        <input type="radio" class="btn-check" name="resp-Status" id="nao" value="Não vai">
-                        <label class="btn btn-outline-danger py-3" for="nao">
-                            <i class="fas fa-times me-2"></i>Não poderei ir
-                        </label>
-                    </div>
-                </div>
-
-                <div id="perguntas-extras"></div>
-
-                <div class="d-grid mt-4">
-                    <button type="submit" class="btn btn-primary btn-lg">
-                        <i class="fas fa-arrow-right me-2"></i>Continuar
-                    </button>
-                </div>
-            </form>
-        </div>
-
-        <!-- Passo 2.5: Confirmação -->
-        <div id="passo-2-5" style="display:none;">
-            <div class="card border-primary mb-3" style="border-radius: 12px;">
-                <div class="card-header bg-primary text-white">
-                    <i class="fas fa-clipboard-check me-2"></i>Confirme seus dados
-                </div>
-                <div class="card-body p-0">
-                    <div id="resumo-confirmacao"></div>
-                </div>
-            </div>
-            
-            <div class="alert alert-info border-0 mb-3" style="border-radius: 12px;">
-                <i class="fas fa-info-circle me-2"></i>
-                <small>Revise antes de enviar</small>
-            </div>
-            
-            <div class="d-grid gap-2">
-                <button class="btn btn-outline-secondary" onclick="voltarParaFormulario()">
-                    <i class="fas fa-arrow-left me-2"></i>Voltar
-                </button>
-                <button class="btn btn-success btn-lg" onclick="confirmarEnvio()">
-                    <i class="fas fa-check-circle me-2"></i>Confirmar
-                </button>
-            </div>
-        </div>
-
-        <!-- Passo 3: Sucesso -->
-        <div id="passo-3" style="display:none;" class="text-center py-5">
-            <i class="fas fa-check-circle text-success success-icon" style="font-size: 5rem;"></i>
-            <h3 class="fw-bold mt-4">Obrigado!</h3>
-            <p class="text-muted">Sua resposta foi registrada.</p>
-            <button class="btn btn-outline-primary mt-3" onclick="window.location.reload()">
-                <i class="fas fa-redo me-2"></i>Nova confirmação
+            <button type="submit" class="btn-login" id="btn-login">
+                Entrar
             </button>
+        </form>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px; color: #667eea;">Aguarde...</p>
+        </div>
+        
+        <div class="message" id="message"></div>
+        
+        <div class="footer">
+            Sistema de Gestão de Eventos<br>
+            Com controle de acesso
         </div>
     </div>
-</div>
-
-<script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbznlB0UzqjzlkneSPFv1mi_0Jqqtv6DkZsbPctw28isyZvAwyXOBv2tHnQUl1SM1QQ/exec"; 
-    const urlParams = new URLSearchParams(window.location.search);
-    const eventoNome = urlParams.get('evento');
-    let dadosFormulario = {};
-    let tentativasBusca = 0;
-
-    function mostrarToast(mensagem, tipo = 'success') {
-        const container = document.getElementById('toast-container');
-        const toast = document.createElement('div');
-        const icons = { success: '✓', error: '✕', warning: '⚠' };
+    
+    <script>
+        // ⚠️ CONFIGURE AQUI:
+        const API_URL = "https://script.google.com/macros/s/AKfycbxmhD7KNGGRkEnB9eTwNBHjYs8kin5eGcnfT-yW9BOPaWJmz74_3aTiUH84IXrPbG39/exec";
         
-        toast.className = 'toast-notification';
-        toast.innerHTML = `
-            <span class="toast-icon ${tipo}">${icons[tipo]}</span>
-            <span class="toast-message">${mensagem}</span>
-        `;
-        container.appendChild(toast);
-        setTimeout(() => {
-            toast.classList.add('slide-out');
-            setTimeout(() => toast.remove(), 300);
-        }, 3500);
-    }
-
-    if (eventoNome) {
-        document.getElementById('nome-evento-titulo').innerText = eventoNome;
-    } else {
-        document.getElementById('nome-evento-titulo').innerText = "Evento";
-        mostrarToast("Link inválido.", "error");
-    }
-
-    async function chamarAPI(acao, dados = {}) {
-        document.getElementById('loading').style.display = 'block';
-        ['passo-1', 'passo-2', 'passo-2-5'].forEach(id => document.getElementById(id).style.display = 'none');
-        
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ acao, ...dados })
-            });
-            const json = await response.json();
-            document.getElementById('loading').style.display = 'none';
-            return json;
-        } catch (e) {
-            mostrarToast("Erro de conexão.", "error");
-            document.getElementById('loading').style.display = 'none';
-            document.getElementById('passo-1').style.display = 'block';
-            return null;
-        }
-    }
-
-    async function verificarNome(e) {
-        e.preventDefault();
-        const nomeBusca = document.getElementById('input-nome-busca').value.trim();
-        
-        if (!nomeBusca) {
-            mostrarToast("Digite um nome.", "warning");
-            return;
-        }
-
-        const res = await chamarAPI('buscarConvidado', { nomeEvento: eventoNome, nomeBusca });
-        
-        if (res && res.encontrado) {
-            document.getElementById('nome-encontrado').innerText = res.nomeCompleto;
-            document.getElementById('linha-convidado').value = res.linha;
-            gerarFormulario(res.colunas, res.dadosAtuais);
-            document.getElementById('passo-2').style.display = 'block';
-            mostrarToast("Nome encontrado!", "success");
-            tentativasBusca = 0;
-        } else {
-            tentativasBusca++;
-            if (tentativasBusca === 1) {
-                document.getElementById('search-hint').style.display = 'block';
-                mostrarToast("Nome não encontrado. Veja a dica.", "warning");
-            } else {
-                mostrarToast("Nome não encontrado.", "error");
-            }
-            document.getElementById('passo-1').style.display = 'block';
-        }
-    }
-
-    function gerarFormulario(colunas, dadosAtuais) {
-        const container = document.getElementById('perguntas-extras');
-        container.innerHTML = "";
-        
-        colunas.forEach((col, index) => {
-            if (["Nome", "Status", "Telefone", "Email"].includes(col)) return;
+        async function fazerLogin(event) {
+            event.preventDefault();
             
-            const valor = dadosAtuais[index] || "";
-            container.innerHTML += `
-                <div class="mb-3">
-                    <label class="form-label fw-bold">${col}</label>
-                    <input type="text" class="form-control" name="extra-${col}" value="${valor}" 
-                           placeholder="Sua resposta...">
-                </div>`;
-        });
-    }
-
-    function mostrarConfirmacao(e) {
-        e.preventDefault();
-        
-        const linha = document.getElementById('linha-convidado').value;
-        const nomeCompleto = document.getElementById('nome-encontrado').innerText;
-        const status = document.querySelector('input[name="resp-Status"]:checked').value;
-        
-        dadosFormulario = {
-            linha: parseInt(linha),
-            nome: nomeCompleto,
-            respostas: { "Status": status }
-        };
-        
-        const extrasHTML = [];
-        document.querySelectorAll('input[name^="extra-"]').forEach(input => {
-            const coluna = input.name.replace("extra-", "");
-            const valor = input.value;
-            dadosFormulario.respostas[coluna] = valor;
-            if (valor) extrasHTML.push({ label: coluna, value: valor });
-        });
-        
-        let resumoHTML = `
-            <div class="review-item">
-                <span class="review-label">Nome</span>
-                <span class="review-value">${nomeCompleto}</span>
-            </div>
-            <div class="review-item">
-                <span class="review-label">Confirmação</span>
-                <span class="review-value">
-                    ${status === 'Confirmado' 
-                        ? '<span class="badge bg-success"><i class="fas fa-check me-1"></i>Confirmado</span>' 
-                        : '<span class="badge bg-danger"><i class="fas fa-times me-1"></i>Não vai</span>'}
-                </span>
-            </div>
-        `;
-        
-        extrasHTML.forEach(item => {
-            resumoHTML += `
-                <div class="review-item">
-                    <span class="review-label">${item.label}</span>
-                    <span class="review-value">${item.value}</span>
-                </div>`;
-        });
-        
-        document.getElementById('resumo-confirmacao').innerHTML = resumoHTML;
-        document.getElementById('passo-2').style.display = 'none';
-        document.getElementById('passo-2-5').style.display = 'block';
-    }
-
-    function voltarParaFormulario() {
-        document.getElementById('passo-2-5').style.display = 'none';
-        document.getElementById('passo-2').style.display = 'block';
-    }
-
-    async function confirmarEnvio() {
-        const res = await chamarAPI('salvarResposta', { 
-            nomeEvento: eventoNome, 
-            linha: dadosFormulario.linha, 
-            respostas: dadosFormulario.respostas 
-        });
-        
-        if (res && res.sucesso) {
-            document.getElementById('passo-2-5').style.display = 'none';
-            document.getElementById('passo-3').style.display = 'block';
-            mostrarToast("Confirmação registrada!", "success");
-        } else {
-            mostrarToast("Erro ao salvar.", "error");
-            document.getElementById('passo-2-5').style.display = 'none';
-            document.getElementById('passo-2').style.display = 'block';
-        }
-    }
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-            const input = document.getElementById('input-nome-busca');
-            if (input && document.getElementById('passo-1').style.display !== 'none') {
-                input.value = '';
-                input.focus();
-                document.getElementById('search-hint').style.display = 'none';
-                tentativasBusca = 0;
+            const email = document.getElementById('email').value.trim();
+            const btnLogin = document.getElementById('btn-login');
+            const loading = document.getElementById('loading');
+            const message = document.getElementById('message');
+            
+            // Validação básica
+            if (!email || !email.includes('@')) {
+                mostrarMensagem('Por favor, insira um email válido.', 'error');
+                return false;
             }
+            
+            // Mostrar loading
+            btnLogin.disabled = true;
+            btnLogin.textContent = 'Autenticando...';
+            loading.style.display = 'block';
+            message.style.display = 'none';
+            
+            try {
+                // Chamar API
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: JSON.stringify({
+                        acao: 'autenticar',
+                        email: email
+                    })
+                });
+                
+                const resultado = await response.json();
+                
+                // Esconder loading
+                loading.style.display = 'none';
+                btnLogin.disabled = false;
+                btnLogin.textContent = 'Entrar';
+                
+                // Tratamento de erro genérico
+                if (resultado.erro) {
+                    mostrarMensagem('Erro: ' + resultado.erro, 'error');
+                    return false;
+                }
+                
+                // ✅ APROVADO - Tem acesso
+                if (resultado.sucesso === true && resultado.status === 'aprovado') {
+                    sessionStorage.setItem('rsvp_user_email', resultado.email);
+                    sessionStorage.setItem('rsvp_user_planilha', resultado.planilhaId);
+                    sessionStorage.setItem('rsvp_user_status', 'aprovado');
+                    
+                    if (resultado.novoUsuario) {
+                        sessionStorage.setItem('rsvp_user_novo', 'true');
+                    }
+                    
+                    mostrarMensagem('✅ Login realizado! Redirecionando...', 'success');
+                    
+                    setTimeout(() => {
+                        window.location.href = 'painel.html';
+                    }, 1000);
+                    
+                    return false;
+                }
+                
+                // 🟡 PENDENTE - Aguardando aprovação
+                if (resultado.sucesso === false && resultado.status === 'pendente') {
+                    sessionStorage.setItem('rsvp_user_email', resultado.email);
+                    sessionStorage.setItem('rsvp_user_status', 'pendente');
+                    
+                    mostrarMensagem(
+                        '⏳ Solicitação enviada! Aguardando aprovação do administrador. Você receberá um email quando for aprovado.',
+                        'warning'
+                    );
+                    
+                    // Após 3 segundos, redirecionar para painel (que mostrará tela de aguardando)
+                    setTimeout(() => {
+                        window.location.href = 'painel.html';
+                    }, 3000);
+                    
+                    return false;
+                }
+                
+                // ❌ REJEITADO - Acesso negado
+                if (resultado.sucesso === false && resultado.status === 'rejeitado') {
+                    sessionStorage.setItem('rsvp_user_email', resultado.email);
+                    sessionStorage.setItem('rsvp_user_status', 'rejeitado');
+                    
+                    mostrarMensagem(
+                        '🚫 Acesso negado. Entre em contato com o administrador.',
+                        'error'
+                    );
+                    
+                    // Após 3 segundos, redirecionar para painel (que mostrará tela de rejeitado)
+                    setTimeout(() => {
+                        window.location.href = 'painel.html';
+                    }, 3000);
+                    
+                    return false;
+                }
+                
+                // Caso inesperado
+                mostrarMensagem('Resposta inesperada do servidor. Tente novamente.', 'error');
+                
+            } catch (erro) {
+                console.error('Erro:', erro);
+                loading.style.display = 'none';
+                btnLogin.disabled = false;
+                btnLogin.textContent = 'Entrar';
+                mostrarMensagem('Erro de conexão. Verifique sua internet e tente novamente.', 'error');
+            }
+            
+            return false;
         }
-    });
-</script>
+        
+        function mostrarMensagem(texto, tipo) {
+            const message = document.getElementById('message');
+            message.textContent = texto;
+            message.className = 'message ' + tipo;
+            message.style.display = 'block';
+        }
+        
+        // Auto-focus no campo de email
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('email').focus();
+        });
+    </script>
 </body>
 </html>
