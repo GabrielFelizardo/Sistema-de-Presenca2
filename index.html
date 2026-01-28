@@ -3,144 +3,163 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestor RSVP Ultimate</title>
+  <title>Check-in Pro</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   
   <style>
-    /* CSS SWISS DESIGN - CLEAN & ROBUST */
-    :root { --primary: #2563eb; --primary-dark: #1e3a8a; --bg: #f8fafc; --text: #0f172a; --white: #ffffff; --green: #10b981; --red: #ef4444; --border: #e2e8f0; }
+    /* BASEADO NO SEU ARQUIVO + MELHORIAS DE UX */
+    :root { --primary: #2563eb; --primary-dark: #1e3a8a; --bg: #f1f5f9; --text: #0f172a; --white: #ffffff; --green: #10b981; --red: #ef4444; }
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
     .hide { display: none !important; }
     
-    /* SIDEBAR */
-    .sidebar { width: 260px; background: var(--white); border-right: 1px solid var(--border); padding: 24px; display: flex; flex-direction: column; flex-shrink: 0; }
-    .logo { font-size: 1.25rem; font-weight: 800; color: var(--primary); margin-bottom: 32px; display: flex; align-items: center; gap: 10px; }
-    .nav-btn { width: 100%; text-align: left; padding: 12px; margin-bottom: 4px; background: none; border: none; border-radius: 8px; color: #64748b; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; }
-    .nav-btn:hover, .nav-btn.active { background: #eff6ff; color: var(--primary); }
-    .user-area { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); }
-    .user-email { font-size: 0.85rem; color: #64748b; margin-bottom: 12px; display: block; overflow: hidden; text-overflow: ellipsis; }
-    
-    /* CONTENT */
-    .main { flex: 1; padding: 32px; overflow-y: auto; position: relative; }
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-    h2 { font-size: 1.5rem; font-weight: 700; }
-    
-    /* CARDS */
-    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
-    .card { background: var(--white); padding: 24px; border-radius: 12px; border: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
-    .card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-    
-    /* TABLES */
-    .table-responsive { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--white); }
-    table { width: 100%; border-collapse: collapse; min-width: 600px; }
-    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
-    th { background: #f8fafc; color: #64748b; font-weight: 600; text-transform: uppercase; font-size: 0.8rem; }
-    tr:hover td { background: #f8fafc; }
-    
-    /* BUTTONS */
-    .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px; }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { background: var(--primary-dark); }
-    .btn-secondary { background: var(--white); border: 1px solid var(--border); color: var(--text); }
-    .btn-secondary:hover { background: #f1f5f9; }
-    .btn-danger { background: #fee2e2; color: var(--red); }
-    .btn-danger:hover { background: #fecaca; }
-    .btn-icon { padding: 6px; border-radius: 4px; background: none; border: none; cursor: pointer; color: #64748b; }
-    .btn-icon:hover { background: #f1f5f9; color: var(--primary); }
-    
-    /* MODALS */
-    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-    .modal { background: var(--white); padding: 32px; border-radius: 16px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
-    .modal-lg { max-width: 900px; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .modal-footer { margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px; }
-    
-    /* INPUTS */
-    input, select { width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.95rem; margin-bottom: 16px; }
-    label { display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: #475569; }
-    
-    /* CHECK-IN MODE */
-    .checkin-view { position: fixed; inset: 0; background: var(--bg); z-index: 2000; display: flex; flex-direction: column; }
-    .checkin-header { background: var(--white); padding: 16px; border-bottom: 1px solid var(--border); display: flex; gap: 16px; align-items: center; }
-    .checkin-grid { flex: 1; padding: 20px; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-content: start; }
-    .guest-card { background: var(--white); padding: 16px; border-radius: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
-    .guest-card.checked { border-color: var(--green); background: #f0fdf4; }
-    .check-circle { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: transparent; }
-    .guest-card.checked .check-circle { background: var(--green); border-color: var(--green); color: white; }
-    
-    /* LOADER & TOAST */
-    .loader { position: fixed; inset: 0; background: rgba(255,255,255,0.8); z-index: 3000; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--primary); }
-    .toast { position: fixed; bottom: 24px; right: 24px; background: #1e293b; color: white; padding: 12px 24px; border-radius: 8px; z-index: 4000; transform: translateY(100px); transition: 0.3s; }
-    .toast.show { transform: translateY(0); }
-    
     /* LOGIN */
-    #view-login { position: fixed; inset: 0; background: linear-gradient(135deg, #1e3a8a, #3b82f6); z-index: 5000; display: flex; align-items: center; justify-content: center; }
-    .login-card { background: white; padding: 40px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; }
+    #tela-login { position: fixed; inset: 0; background: linear-gradient(135deg, #1e3a8a, #3b82f6); z-index: 5000; display: flex; align-items: center; justify-content: center; }
+    .login-box { background: white; padding: 40px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
+    .input-login { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 1rem; }
+    
+    /* LAYOUT PADRÃO (PLANEJAMENTO) */
+    .sidebar { width: 260px; background: var(--white); border-right: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; transition: 0.3s; }
+    .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-bottom: 32px; display: flex; align-items: center; gap: 10px; }
+    .nav-btn { width: 100%; text-align: left; padding: 12px; margin-bottom: 4px; background: none; border: none; border-radius: 8px; color: #64748b; font-weight: 600; cursor: pointer; }
+    .nav-btn:hover, .nav-btn.active { background: #eff6ff; color: var(--primary); }
+    .main { flex: 1; padding: 32px; overflow-y: auto; position: relative; }
+    
+    /* CARDS EVENTOS */
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .card { background: var(--white); padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; }
+    .card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+    .stat-row { display: flex; justify-content: space-between; margin-top: 10px; font-size: 0.9rem; color: #64748b; }
+    .stat-val { font-weight: 700; color: var(--text); }
+    
+    /* MODAIS */
+    .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+    .modal { background: var(--white); padding: 24px; border-radius: 16px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.1); }
+    .modal-lg { max-width: 900px; }
+    .modal-header { display: flex; justify-content: space-between; margin-bottom: 20px; align-items: center; }
+    .btn { padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-secondary { background: white; border: 1px solid #cbd5e1; color: var(--text); }
+    .btn-danger { background: #fee2e2; color: var(--red); }
+    
+    /* TABLE */
+    .table-container { overflow-x: auto; margin-top: 20px; border: 1px solid #e2e8f0; border-radius: 8px; }
+    table { width: 100%; border-collapse: collapse; min-width: 600px; background: white; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #e2e8f0; font-size: 0.9rem; }
+    th { background: #f8fafc; color: #64748b; text-transform: uppercase; font-size: 0.8rem; }
+    
+    /* ================================================= */
+    /* 🚀 MODO CHECK-IN (TRANSFORMAÇÃO VISUAL) */
+    /* ================================================= */
+    
+    body.checkin-active .sidebar { display: none; }
+    body.checkin-active .main { padding: 0; background: var(--bg); }
+    
+    /* BARRA FIXA DE ESTATÍSTICAS */
+    .checkin-stats { 
+        position: sticky; top: 0; z-index: 100; background: white; 
+        padding: 15px 20px; border-bottom: 1px solid #e2e8f0; 
+        display: none; justify-content: space-between; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    body.checkin-active .checkin-stats { display: flex; }
+    
+    .stat-pill { background: #f1f5f9; padding: 8px 16px; border-radius: 50px; font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+    .stat-presente { background: #dcfce7; color: #166534; }
+    
+    /* BUSCA GIGANTE */
+    .big-search { width: 100%; padding: 15px; font-size: 1.2rem; border: 2px solid #cbd5e1; border-radius: 12px; margin: 20px 0; display: none; }
+    body.checkin-active .big-search { display: block; }
+    
+    /* GRID DE CARTÕES (CHECK-IN) */
+    .guest-grid { display: none; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; padding-bottom: 80px; }
+    body.checkin-active .guest-grid { display: grid; }
+    
+    .guest-card { background: white; padding: 20px; border-radius: 12px; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.05); cursor: pointer; transition: 0.2s; display: flex; justify-content: space-between; align-items: center; }
+    .guest-card.checked { background: #f0fdf4; border-color: var(--green); }
+    .guest-name { font-size: 1.1rem; font-weight: 700; color: var(--text); }
+    .guest-info { font-size: 0.9rem; color: #64748b; margin-top: 4px; }
+    
+    .check-btn { width: 50px; height: 50px; border-radius: 50%; background: #e2e8f0; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; color: white; transition: 0.2s; }
+    .guest-card.checked .check-btn { background: var(--green); transform: scale(1.1); }
+    
+    /* BOTÃO SAIR MODO CHECK-IN */
+    .btn-exit-checkin { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text); color: white; padding: 12px 30px; border-radius: 50px; font-weight: 600; box-shadow: 0 10px 20px rgba(0,0,0,0.2); display: none; border: none; cursor: pointer; z-index: 200; }
+    body.checkin-active .btn-exit-checkin { display: block; }
+    
+    /* UTILS */
+    .loader { position: fixed; inset: 0; background: rgba(255,255,255,0.8); z-index: 9999; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--primary); }
+    .toast { position: fixed; bottom: 20px; right: 20px; background: #1e293b; color: white; padding: 12px 24px; border-radius: 8px; z-index: 9999; transform: translateY(100px); transition: 0.3s; }
+    .toast.show { transform: translateY(0); }
   </style>
 </head>
 <body>
 
-  <div id="view-login">
-    <div class="login-card">
-      <h2 style="color:var(--primary-dark); margin-bottom:10px">Gestor RSVP</h2>
-      <p style="color:#64748b; margin-bottom:24px">Faça login para gerenciar seus eventos.</p>
+  <div id="loader" class="loader hide">Carregando...</div>
+  <div id="toast" class="toast">Sucesso!</div>
+
+  <div id="tela-login">
+    <div class="login-box">
+      <div style="font-size:3rem; margin-bottom:10px">📱</div>
+      <h2>Check-in Pro</h2>
+      <p style="color:#64748b; margin-bottom:20px">Gestão de lista e controle de acesso.</p>
       <form onsubmit="handleLogin(event)">
-        <input type="email" id="emailLogin" placeholder="seu@email.com" required>
-        <button type="submit" class="btn btn-primary" style="width:100%; justify-content:center">Entrar / Criar Conta</button>
+        <input type="email" id="emailInput" class="input-login" placeholder="seu@email.com" required>
+        <button type="submit" class="btn btn-primary" style="width:100%">Entrar / Criar</button>
       </form>
     </div>
   </div>
 
-  <div class="sidebar">
-    <div class="logo">📅 Gestor RSVP</div>
-    <button class="nav-btn active" onclick="nav('dashboard')">📊 Meus Eventos</button>
-    <button class="nav-btn" onclick="nav('banco')">👥 Banco de Nomes</button>
+  <div id="app-principal" class="hide" style="display:flex; width:100%; height:100%">
     
-    <div class="user-area">
-      <span id="userEmail" class="user-email"></span>
-      <button class="btn btn-secondary" style="width:100%; justify-content:center" onclick="logout()">Sair</button>
+    <div class="sidebar">
+      <div class="logo">📅 Gestor RSVP</div>
+      <button class="nav-btn active" onclick="nav('dashboard')">📊 Meus Eventos</button>
+      <button class="nav-btn" onclick="nav('banco')">👥 Banco Nomes</button>
+      <div style="margin-top:auto; padding-top:20px; border-top:1px solid #e2e8f0">
+        <small id="userEmail" style="display:block; margin-bottom:10px; color:#64748b"></small>
+        <button onclick="logout()" class="btn btn-secondary" style="width:100%">Sair</button>
+      </div>
     </div>
-  </div>
 
-  <div class="main" id="view-dashboard">
-    <div class="header">
-      <h2>Meus Eventos</h2>
-      <button class="btn btn-primary" onclick="modalNovo()">+ Novo Evento</button>
-    </div>
-    <div id="grid-eventos" class="grid"></div>
-  </div>
+    <div class="main">
+      
+      <div id="view-dashboard">
+        <div class="header">
+          <h2>Meus Eventos</h2>
+          <button class="btn btn-primary" onclick="abrirModalNovo()">+ Novo Evento</button>
+        </div>
+        <div id="lista-eventos" class="grid"></div>
+      </div>
 
-  <div class="main hide" id="view-banco">
-    <div class="header">
-      <h2>Banco de Nomes</h2>
-      <input type="text" id="buscaBanco" placeholder="Buscar..." style="width:200px; margin:0" onkeyup="renderBanco()">
-    </div>
-    <div class="table-responsive">
-      <table id="tabela-banco"><thead><tr><th>Nome</th><th>Email</th><th>Telefone</th></tr></thead><tbody></tbody></table>
+      <div id="view-banco" class="hide">
+        <div class="header"><h2>Banco de Nomes</h2></div>
+        <div class="table-container">
+          <table id="tabela-banco"><thead><tr><th>Nome</th><th>Info Extra</th></tr></thead><tbody></tbody></table>
+        </div>
+      </div>
+
+      <div id="area-checkin" style="display:none">
+        <div class="checkin-stats">
+          <div class="stat-pill" style="color:var(--text)">Total: <span id="ck-total">0</span></div>
+          <div class="stat-pill stat-presente">Presentes: <span id="ck-presentes">0</span></div>
+        </div>
+        <div style="padding:0 20px">
+          <input type="text" class="big-search" id="buscaCheckin" placeholder="🔍 Buscar nome..." onkeyup="renderCheckin()">
+          <div id="grid-checkin" class="guest-grid"></div>
+        </div>
+        <button class="btn-exit-checkin" onclick="sairModoCheckin()">Sair do Modo Check-in</button>
+      </div>
+
     </div>
   </div>
 
   <div id="modal-novo" class="overlay hide">
     <div class="modal">
-      <div class="modal-header"><h3>Criar Evento</h3><button class="btn-icon" onclick="fecharModais()">×</button></div>
-      
+      <div class="modal-header"><h3>Novo Evento</h3><button onclick="fecharModais()" style="background:none;border:none;font-size:1.5rem">×</button></div>
       <label>Nome do Evento</label>
       <input type="text" id="novoNome">
-      
-      <label>Usar Template (Opcional)</label>
-      <select id="selectTemplate" onchange="aplicarTemplate()">
-        <option value="">-- Selecione --</option>
-      </select>
-      
-      <label>Colunas (Separadas por vírgula)</label>
+      <label>Colunas Extras (separadas por vírgula)</label>
       <input type="text" id="novoColunas" placeholder="Empresa, Cargo, Mesa">
-      
-      <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px">
-        <input type="checkbox" id="checkSalvarTemplate" style="width:auto; margin:0">
-        <label style="margin:0; font-weight:400">Salvar como Template</label>
-      </div>
-      
       <div class="modal-footer">
         <button class="btn btn-secondary" onclick="fecharModais()">Cancelar</button>
         <button class="btn btn-primary" onclick="criarEvento()">Criar</button>
@@ -152,63 +171,40 @@
     <div class="modal modal-lg">
       <div class="modal-header">
         <h3 id="tituloEvento">Evento</h3>
-        <button class="btn-icon" onclick="fecharModais()">×</button>
+        <button onclick="fecharModais()" style="background:none;border:none;font-size:1.5rem">×</button>
       </div>
       
-      <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap:wrap">
-        <button class="btn btn-primary" onclick="iniciarCheckin()">📱 Modo Check-in</button>
-        <button class="btn btn-secondary" onclick="modalConvidado()">+ Convidado</button>
-        <button class="btn btn-secondary" onclick="exportarXLS()">📥 Exportar</button>
-        <button class="btn btn-secondary" onclick="document.getElementById('inputImport').click()">📤 Importar</button>
-        <input type="file" id="inputImport" accept=".xlsx" hidden onchange="importarXLS(this)">
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:20px">
+        <button class="btn btn-primary" onclick="entrarModoCheckin()">🚀 INICIAR CHECK-IN</button>
+        <button class="btn btn-secondary" onclick="modalConvidado()">+ Pessoa</button>
+        <button class="btn btn-secondary" onclick="document.getElementById('inputImport').click()">Importar Excel</button>
+        <input type="file" id="inputImport" hidden onchange="importarXLS(this)">
         <button class="btn btn-danger" style="margin-left:auto" onclick="excluirEvento()">Excluir</button>
       </div>
 
-      <div id="tabela-container" class="table-responsive"></div>
+      <div id="tabela-container" class="table-container"></div>
     </div>
   </div>
 
-  <div id="modal-convidado" class="overlay hide">
+  <div id="modal-pessoa" class="overlay hide">
     <div class="modal">
-      <div class="modal-header"><h3 id="tituloModalConv">Convidado</h3><button class="btn-icon" onclick="document.getElementById('modal-convidado').classList.add('hide')">×</button></div>
-      <div id="form-convidado"></div>
-      
-      <div style="margin-top:10px; background:#f1f5f9; padding:10px; border-radius:8px">
-        <small style="display:block; margin-bottom:5px; font-weight:600">Buscar do Banco de Nomes:</small>
-        <input type="text" id="buscaAuto" placeholder="Digite para buscar..." onkeyup="buscarBancoAuto(this.value)" style="margin:0">
-        <div id="sugestoesBanco" style="max-height:100px; overflow-y:auto; background:white; margin-top:5px"></div>
-      </div>
-
+      <div class="modal-header"><h3>Adicionar Pessoa</h3><button onclick="document.getElementById('modal-pessoa').classList.add('hide')" style="background:none;border:none;font-size:1.5rem">×</button></div>
+      <div id="form-pessoa"></div>
       <div class="modal-footer">
-        <button class="btn btn-secondary" onclick="document.getElementById('modal-convidado').classList.add('hide')">Cancelar</button>
-        <button class="btn btn-primary" onclick="salvarConvidado()">Salvar</button>
+        <button class="btn btn-primary" onclick="salvarPessoa()">Salvar</button>
       </div>
     </div>
   </div>
-
-  <div id="view-checkin" class="checkin-view hide">
-    <div class="checkin-header">
-      <button class="btn-icon" style="font-size:1.5rem" onclick="sairCheckin()">←</button>
-      <input type="text" id="buscaCheckin" placeholder="Buscar convidado..." style="flex:1; margin:0" onkeyup="renderCheckin()">
-      <div id="statsCheckin" style="font-weight:700; color:var(--primary)">0 / 0</div>
-    </div>
-    <div id="grid-checkin" class="checkin-grid"></div>
-  </div>
-
-  <div id="loader" class="loader hide">Processando...</div>
-  <div id="toast" class="toast">Ação realizada com sucesso!</div>
 
   <script>
-  
+    // 👇👇 URL DO SEU SCRIPT AQUI 👇👇
     const API_URL = "https://script.google.com/macros/s/AKfycbwGutHWpTh58I3ir4oVh_af3WqzDObYKIOSfH3MPfN2Go15FMu4vsApmg6GWxN_FhBW/exec"; 
-    
-    let ESTADO = { id: null, email: null, eventos: [], eventoAtual: null, dadosEvento: [], colunas: [], banco: [], templates: [] };
-    let editandoLinha = null;
 
-    // INIT
+    let ESTADO = { id: null, email: null, eventos: [], eventoAtual: null, dadosEvento: [], colunas: [], banco: [] };
+
     window.onload = () => {
-      const savedId = localStorage.getItem('rsvp_id');
-      const savedEmail = localStorage.getItem('rsvp_email');
+      const savedId = localStorage.getItem('rsvp_id_v19');
+      const savedEmail = localStorage.getItem('rsvp_email_v19');
       if(savedId) { ESTADO.id = savedId; ESTADO.email = savedEmail; iniciarApp(); }
     };
 
@@ -219,7 +215,6 @@
         const r = await fetch(API_URL, { method:'POST', body:JSON.stringify({acao, ...dados}) });
         const j = await r.json();
         document.getElementById('loader').classList.add('hide');
-        if(!j.sucesso && j.erro) alert(j.erro);
         return j;
       } catch(e) {
         document.getElementById('loader').classList.add('hide');
@@ -230,60 +225,54 @@
     // LOGIN
     async function handleLogin(e) {
       e.preventDefault();
-      const email = document.getElementById('emailLogin').value;
+      const email = document.getElementById('emailInput').value;
       const r = await api('fazerLogin', {email});
       if(r && r.sucesso) {
         ESTADO.id = r.idPlanilha; ESTADO.email = r.email;
-        localStorage.setItem('rsvp_id', r.idPlanilha);
-        localStorage.setItem('rsvp_email', r.email);
+        localStorage.setItem('rsvp_id_v19', r.idPlanilha);
+        localStorage.setItem('rsvp_email_v19', r.email);
         iniciarApp();
       }
     }
-    
+
     function iniciarApp() {
-      document.getElementById('view-login').classList.add('hide');
+      document.getElementById('tela-login').classList.add('hide');
+      document.getElementById('app-principal').classList.remove('hide');
       document.getElementById('userEmail').innerText = ESTADO.email;
       carregarEventos();
-      carregarBanco(); // Carrega banco em background
-      carregarTemplates();
+      carregarBanco();
     }
-    
+
     function logout() { localStorage.clear(); location.reload(); }
 
     // EVENTOS
     async function carregarEventos() {
       const r = await api('listarEventos');
-      if(r && r.sucesso) { ESTADO.eventos = r.eventos; renderEventos(); }
-    }
-    
-    function renderEventos() {
-      const div = document.getElementById('grid-eventos');
-      div.innerHTML = ESTADO.eventos.map(e => `
-        <div class="card" onclick="abrirEvento('${e.nome}')">
-          <h3>${e.nome}</h3>
-          <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:#64748b">
-            <span>Total: <b>${e.total}</b></span>
-            <span style="color:var(--green)">Confirmados: <b>${e.confirmados}</b></span>
+      if(r && r.sucesso) {
+        ESTADO.eventos = r.eventos;
+        const div = document.getElementById('lista-eventos');
+        div.innerHTML = ESTADO.eventos.map(e => `
+          <div class="card" onclick="abrirEvento('${e.nome}')">
+            <h3>${e.nome}</h3>
+            <div class="stat-row"><span>Total: <b>${e.total}</b></span><span style="color:var(--green)">Presentes: <b>${e.presentes}</b></span></div>
           </div>
-        </div>`).join('');
+        `).join('');
+      }
     }
 
     async function criarEvento() {
       const nome = document.getElementById('novoNome').value;
       const cols = document.getElementById('novoColunas').value.split(',').map(c=>c.trim()).filter(c=>c);
-      const salvarT = document.getElementById('checkSalvarTemplate').checked ? nome : null;
-      
-      const r = await api('criarEvento', {nome, colunas:cols, salvarTemplate:salvarT});
-      if(r && r.sucesso) { fecharModais(); carregarEventos(); if(salvarT) carregarTemplates(); showToast("Evento Criado!"); }
+      const r = await api('criarEvento', {nome, colunas:cols});
+      if(r && r.sucesso) { fecharModais(); carregarEventos(); showToast("Criado!"); }
     }
 
-    // DETALHES & CRUD
     async function abrirEvento(nome) {
       ESTADO.eventoAtual = nome;
       document.getElementById('tituloEvento').innerText = nome;
-      const r = await api('obterDetalhesEvento', {nomeEvento:nome});
+      const r = await api('obterEvento', {nomeEvento:nome});
       if(r && r.sucesso) {
-        ESTADO.dadosEvento = r.convidados;
+        ESTADO.dadosEvento = r.lista;
         ESTADO.colunas = r.colunas;
         renderTabela();
         document.getElementById('modal-evento').classList.remove('hide');
@@ -292,200 +281,130 @@
 
     function renderTabela() {
       const div = document.getElementById('tabela-container');
-      if(ESTADO.dadosEvento.length === 0) { div.innerHTML = "<p style='text-align:center;color:#999'>Vazio</p>"; return; }
+      if(ESTADO.dadosEvento.length === 0) { div.innerHTML = "<p style='text-align:center;padding:20px;color:#999'>Vazio</p>"; return; }
       
       let html = '<table><thead><tr>';
       ESTADO.colunas.forEach(c => html += `<th>${c}</th>`);
-      html += '<th>Ações</th></tr></thead><tbody>';
+      html += '<th></th></tr></thead><tbody>';
       
-      ESTADO.dadosEvento.forEach((p, idx) => {
+      ESTADO.dadosEvento.forEach(p => {
         html += `<tr>`;
-        ESTADO.colunas.forEach(c => html += `<td>${c === 'Presença' && p[c] === 'Confirmado' ? '✅' : (p[c]||'')}</td>`);
-        html += `<td>
-          <button class="btn-icon" onclick="editar('${idx}')">✏️</button>
-          <button class="btn-icon" style="color:var(--red)" onclick="excluir(${p._linha})">🗑️</button>
-        </td></tr>`;
+        ESTADO.colunas.forEach(c => html += `<td>${c==="Status" && p[c]==="Presente" ? "✅" : (p[c]||"")}</td>`);
+        html += `<td><button onclick="excluirPessoa(${p._linha})" style="background:none;border:none;cursor:pointer">🗑️</button></td></tr>`;
       });
       div.innerHTML = html + "</tbody></table>";
     }
 
+    // PESSOAS
     function modalConvidado() {
-      editandoLinha = null;
-      document.getElementById('tituloModalConv').innerText = "Novo Convidado";
-      gerarForm();
-      document.getElementById('modal-convidado').classList.remove('hide');
-    }
-
-    function editar(idx) {
-      const pessoa = ESTADO.dadosEvento[idx];
-      editandoLinha = pessoa._linha;
-      document.getElementById('tituloModalConv').innerText = "Editar Convidado";
-      gerarForm(pessoa);
-      document.getElementById('modal-convidado').classList.remove('hide');
-    }
-
-    function gerarForm(dados = {}) {
-      const div = document.getElementById('form-convidado');
+      const div = document.getElementById('form-pessoa');
       div.innerHTML = '';
       ESTADO.colunas.forEach(c => {
-        if(c !== 'Presença') div.innerHTML += `<label>${c}</label><input class="inp-dinamico" data-col="${c}" value="${dados[c]||''}">`;
+        if(c !== "Status") div.innerHTML += `<label>${c}</label><input class="inp-p" data-col="${c}">`;
       });
+      document.getElementById('modal-pessoa').classList.remove('hide');
     }
 
-    async function salvarConvidado() {
-      const inputs = document.querySelectorAll('.inp-dinamico');
+    async function salvarPessoa() {
+      const inputs = document.querySelectorAll('.inp-p');
       let dados = {};
       inputs.forEach(i => dados[i.dataset.col] = i.value);
-      
-      let r;
-      if(editandoLinha) r = await api('editarConvidado', {nomeEvento:ESTADO.eventoAtual, linha:editandoLinha, dados});
-      else r = await api('adicionarConvidado', {nomeEvento:ESTADO.eventoAtual, dados});
-      
+      const r = await api('adicionarPessoa', {nomeEvento:ESTADO.eventoAtual, dados});
       if(r && r.sucesso) {
-        document.getElementById('modal-convidado').classList.add('hide');
+        document.getElementById('modal-pessoa').classList.add('hide');
         abrirEvento(ESTADO.eventoAtual);
-        if(!editandoLinha) carregarBanco(); // Atualiza banco se for novo
       }
     }
 
-    async function excluir(linha) {
+    async function excluirPessoa(linha) {
       if(confirm("Excluir?")) {
-        const r = await api('excluirConvidado', {nomeEvento:ESTADO.eventoAtual, linha});
-        if(r && r.sucesso) abrirEvento(ESTADO.eventoAtual);
+        const r = await api('excluirPessoa', {nomeEvento:ESTADO.eventoAtual, linha});
+        if(r) abrirEvento(ESTADO.eventoAtual);
       }
     }
     
     async function excluirEvento() {
-      if(confirm("Apagar evento todo?")) {
+      if(confirm("Apagar evento?")) {
         const r = await api('excluirEvento', {nomeEvento:ESTADO.eventoAtual});
-        if(r && r.sucesso) { fecharModais(); carregarEventos(); }
+        if(r) { fecharModais(); carregarEventos(); }
       }
     }
 
-    // CHECK-IN
-    function iniciarCheckin() {
-      document.getElementById('view-checkin').classList.remove('hide');
+    // CHECK-IN MODE (MÁGICA ACONTECE AQUI)
+    function entrarModoCheckin() {
+      document.body.classList.add('checkin-active');
+      document.getElementById('modal-evento').classList.add('hide');
+      document.getElementById('view-dashboard').style.display = 'none';
+      document.getElementById('area-checkin').style.display = 'block';
       renderCheckin();
     }
-    
+
+    function sairModoCheckin() {
+      document.body.classList.remove('checkin-active');
+      document.getElementById('area-checkin').style.display = 'none';
+      document.getElementById('view-dashboard').style.display = 'block';
+      abrirEvento(ESTADO.eventoAtual); // Recarrega tabela normal
+    }
+
     function renderCheckin() {
-      const grid = document.getElementById('grid-checkin');
       const termo = document.getElementById('buscaCheckin').value.toLowerCase();
-      let conf = 0;
+      const div = document.getElementById('grid-checkin');
+      let presentes = 0;
       
-      grid.innerHTML = ESTADO.dadosEvento.map(p => {
-        if(p['Presença'] === 'Confirmado') conf++;
-        if(!p['Nome'].toLowerCase().includes(termo)) return '';
+      div.innerHTML = ESTADO.dadosEvento.map(p => {
+        const isPres = p["Status"] === "Presente";
+        if(isPres) presentes++;
+        if(!p["Nome"].toLowerCase().includes(termo)) return '';
         
-        return `<div class="guest-card ${p['Presença'] === 'Confirmado' ? 'checked' : ''}" onclick="toggleCheckin(${p._linha})">
-          <div><div style="font-weight:600; font-size:1.1rem">${p['Nome']}</div><div style="color:#64748b">${p[ESTADO.colunas[1]]||''}</div></div>
-          <div class="check-circle">✓</div>
+        return `<div class="guest-card ${isPres ? 'checked' : ''}" onclick="toggleStatus(${p._linha})">
+          <div>
+            <div class="guest-name">${p["Nome"]}</div>
+            <div class="guest-info">${p[ESTADO.colunas[1]] || ""}</div>
+          </div>
+          <div class="check-btn">✓</div>
         </div>`;
       }).join('');
-      document.getElementById('statsCheckin').innerText = `${conf} / ${ESTADO.dadosEvento.length}`;
+      
+      document.getElementById('ck-presentes').innerText = presentes;
+      document.getElementById('ck-total').innerText = ESTADO.dadosEvento.length;
     }
-    
-    async function toggleCheckin(linha) {
+
+    async function toggleStatus(linha) {
       // Otimista
       const p = ESTADO.dadosEvento.find(x => x._linha === linha);
-      p['Presença'] = p['Presença'] === 'Confirmado' ? '' : 'Confirmado';
+      p["Status"] = p["Status"] === "Presente" ? "Pendente" : "Presente";
       renderCheckin();
-      await api('togglePresenca', {nomeEvento:ESTADO.eventoAtual, linha});
-    }
-    
-    function sairCheckin() {
-      document.getElementById('view-checkin').classList.add('hide');
-      renderTabela(); // Atualiza tabela normal
-    }
-
-    // BANCO DE NOMES & TEMPLATES
-    async function carregarBanco() {
-      const r = await api('listarBancoNomes');
-      if(r && r.sucesso) {
-        ESTADO.banco = r.lista;
-        renderBanco();
-      }
-    }
-    
-    function renderBanco() {
-      const tbody = document.querySelector('#tabela-banco tbody');
-      const termo = document.getElementById('buscaBanco').value.toLowerCase();
-      tbody.innerHTML = ESTADO.banco.map(p => {
-        if(!p.nome.toLowerCase().includes(termo)) return '';
-        return `<tr><td>${p.nome}</td><td>${p.email}</td><td>${p.telefone}</td></tr>`;
-      }).join('');
-    }
-    
-    function buscarBancoAuto(val) {
-      const div = document.getElementById('sugestoesBanco');
-      div.innerHTML = '';
-      if(val.length < 2) return;
-      const matches = ESTADO.banco.filter(p => p.nome.toLowerCase().includes(val.toLowerCase())).slice(0, 3);
-      
-      div.innerHTML = matches.map(p => `
-        <div style="padding:8px; border-bottom:1px solid #eee; cursor:pointer" onclick='preencherForm(${JSON.stringify(p)})'>
-          <b>${p.nome}</b> <small>${p.email}</small>
-        </div>`).join('');
-    }
-    
-    function preencherForm(p) {
-      const inputs = document.querySelectorAll('.inp-dinamico');
-      inputs.forEach(i => {
-        if(i.dataset.col === 'Nome') i.value = p.nome;
-        if(i.dataset.col === 'Email') i.value = p.email;
-        if(i.dataset.col === 'Telefone') i.value = p.telefone;
-      });
-      document.getElementById('sugestoesBanco').innerHTML = '';
-    }
-
-    async function carregarTemplates() {
-      const r = await api('listarTemplates');
-      if(r && r.sucesso) {
-        ESTADO.templates = r.templates;
-        const sel = document.getElementById('selectTemplate');
-        sel.innerHTML = '<option value="">-- Selecione --</option>' + r.templates.map(t => `<option value="${t.nome}">${t.nome}</option>`).join('');
-      }
-    }
-    
-    function aplicarTemplate() {
-      const nomeT = document.getElementById('selectTemplate').value;
-      const t = ESTADO.templates.find(x => x.nome === nomeT);
-      if(t) document.getElementById('novoColunas').value = t.colunas.join(', ');
-    }
-
-    // XLS
-    function exportarXLS() {
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.json_to_sheet(ESTADO.dadosEvento);
-      XLSX.utils.book_append_sheet(wb, ws, "Lista");
-      XLSX.writeFile(wb, `${ESTADO.eventoAtual}.xlsx`);
-    }
-    
-    function importarXLS(input) {
-      const file = input.files[0];
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, {type: 'array'});
-        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-        const r = await api('importarExcel', {nomeEvento:ESTADO.eventoAtual, lista:json});
-        if(r && r.sucesso) { showToast("Importado!"); abrirEvento(ESTADO.eventoAtual); }
-      };
-      reader.readAsArrayBuffer(file);
+      await api('toggleCheckin', {nomeEvento:ESTADO.eventoAtual, linha});
     }
 
     // UTILS
+    function importarXLS(input) {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+        const json = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+        await api('importarExcel', {nomeEvento:ESTADO.eventoAtual, lista:json});
+        abrirEvento(ESTADO.eventoAtual);
+      };
+      reader.readAsArrayBuffer(input.files[0]);
+    }
+    
+    async function carregarBanco() {
+      const r = await api('listarBanco');
+      if(r && r.lista) ESTADO.banco = r.lista;
+      const tb = document.querySelector('#tabela-banco tbody');
+      tb.innerHTML = ESTADO.banco.map(b => `<tr><td>${b.nome}</td><td>${b.info}</td></tr>`).join('');
+    }
+
     function nav(tela) {
       document.getElementById('view-dashboard').classList.add('hide');
       document.getElementById('view-banco').classList.add('hide');
-      document.getElementById(`view-${tela}`).classList.remove('hide');
+      document.getElementById('view-'+tela).classList.remove('hide');
     }
-    function modalNovo() { document.getElementById('modal-novo').classList.remove('hide'); }
+    
+    function abrirModalNovo() { document.getElementById('modal-novo').classList.remove('hide'); }
     function fecharModais() { document.querySelectorAll('.overlay').forEach(m => m.classList.add('hide')); }
-    function showToast(msg) { 
-      const t = document.getElementById('toast'); t.innerText = msg; t.classList.add('show');
-      setTimeout(() => t.classList.remove('show'), 3000);
-    }
+    function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
   </script>
 </body>
 </html>
