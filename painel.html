@@ -623,7 +623,7 @@ Atenciosamente.</textarea></div></div><div class="modal-footer"><button class="b
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbxRFtKe8S_Ptelqji_fMHW8oRAcA7ZvpU6GDm61KSD7kQcrWVLhpma5uMWHxR0Jcyu-/exec"; 
+const API_URL = "https://script.google.com/macros/s/AKfycbxmhD7KNGGRkEnB9eTwNBHjYs8kin5eGcnfT-yW9BOPaWJmz74_3aTiUH84IXrPbG39/exec"; 
 const GITHUB_PAGES_URL = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
 
 // ========== MODIFICAÇÃO v16.3 - AUTENTICAÇÃO ==========
@@ -633,8 +633,27 @@ let usuarioPlanilha = null;
 function verificarLogin() {
     usuarioEmail = sessionStorage.getItem('rsvp_user_email');
     usuarioPlanilha = sessionStorage.getItem('rsvp_user_planilha');
+    const userStatus = sessionStorage.getItem('rsvp_user_status');
     
-    if (!usuarioEmail || !usuarioPlanilha) {
+    // Se não tem email, voltar para login
+    if (!usuarioEmail) {
+        window.location.href = 'login.html';
+        return false;
+    }
+    
+    // ✅ v16.5: Verificar status de aprovação
+    if (userStatus === 'pendente') {
+        mostrarTelaAguardando();
+        return false;
+    }
+    
+    if (userStatus === 'rejeitado') {
+        mostrarTelaRejeitado();
+        return false;
+    }
+    
+    // Se aprovado mas sem planilha, voltar para login
+    if (!usuarioPlanilha) {
         window.location.href = 'login.html';
         return false;
     }
@@ -646,11 +665,62 @@ function verificarLogin() {
     
     const novoUsuario = sessionStorage.getItem('rsvp_user_novo');
     if (novoUsuario === 'true') {
-        mostrarToast('🎉 Bem-vindo! Sua planilha foi encontrada com sucesso.', 'success');
+        mostrarToast('🎉 Bem-vindo! Sua planilha foi criada com sucesso.', 'success');
         sessionStorage.removeItem('rsvp_user_novo');
     }
     
     return true;
+}
+
+function mostrarTelaAguardando() {
+    document.body.innerHTML = `
+        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);font-family:'Segoe UI',sans-serif;">
+            <div style="background:white;border-radius:20px;padding:50px;max-width:500px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <div style="font-size:80px;margin-bottom:20px;">⏳</div>
+                <h1 style="color:#333;margin-bottom:15px;">Aguardando Aprovação</h1>
+                <p style="color:#666;font-size:16px;line-height:1.6;margin-bottom:30px;">
+                    Sua solicitação foi enviada ao administrador.<br>
+                    Você receberá um email quando for aprovado.
+                </p>
+                <div style="background:#f8f9fa;padding:20px;border-radius:10px;margin-bottom:30px;">
+                    <p style="color:#333;font-weight:600;margin-bottom:5px;">Conta solicitada:</p>
+                    <p style="color:#667eea;font-size:14px;">${usuarioEmail}</p>
+                </div>
+                <button onclick="tentarNovamente()" style="background:#667eea;color:white;border:none;padding:15px 40px;border-radius:10px;font-size:16px;cursor:pointer;transition:all 0.3s;">
+                    Tentar Novamente
+                </button>
+                <button onclick="fazerLogout()" style="background:white;color:#667eea;border:2px solid #667eea;padding:15px 40px;border-radius:10px;font-size:16px;cursor:pointer;margin-left:10px;transition:all 0.3s;">
+                    Fazer Logout
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function mostrarTelaRejeitado() {
+    document.body.innerHTML = `
+        <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);font-family:'Segoe UI',sans-serif;">
+            <div style="background:white;border-radius:20px;padding:50px;max-width:500px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                <div style="font-size:80px;margin-bottom:20px;">🚫</div>
+                <h1 style="color:#dc3545;margin-bottom:15px;">Acesso Negado</h1>
+                <p style="color:#666;font-size:16px;line-height:1.6;margin-bottom:30px;">
+                    Sua solicitação foi rejeitada pelo administrador.<br>
+                    Entre em contato para mais informações.
+                </p>
+                <div style="background:#f8f9fa;padding:20px;border-radius:10px;margin-bottom:30px;">
+                    <p style="color:#333;font-weight:600;margin-bottom:5px;">Conta:</p>
+                    <p style="color:#dc3545;font-size:14px;">${usuarioEmail}</p>
+                </div>
+                <button onclick="fazerLogout()" style="background:#dc3545;color:white;border:none;padding:15px 40px;border-radius:10px;font-size:16px;cursor:pointer;transition:all 0.3s;">
+                    Voltar ao Login
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function tentarNovamente() {
+    window.location.reload();
 }
 
 function fazerLogout() {
