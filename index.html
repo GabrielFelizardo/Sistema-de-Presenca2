@@ -3,95 +3,69 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestor RSVP</title>
+  <title>Gestor RSVP - GitHub</title>
   
   <style>
+    /* CSS SWISS DESIGN (Mesmo de antes) */
     :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; --white: #ffffff; --green: #10b981; --red: #ef4444; }
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
-    
-    /* UTILITARIOS */
     .hide { display: none !important; }
-    .btn { padding: 10px 20px; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; transition: 0.2s; }
-    .btn-primary { background: var(--primary); color: white; }
-    .btn-primary:hover { opacity: 0.9; }
-    .btn-secondary { background: white; border: 1px solid #e2e8f0; color: var(--text); }
-    .btn-danger { background: var(--red); color: white; }
-    .btn-icon { background: none; border: none; cursor: pointer; font-size: 1.2rem; }
     
-    /* LOGIN SCREEN */
+    /* LOGIN */
     #tela-login { position: fixed; inset: 0; background: linear-gradient(135deg, #1e3a8a, #3b82f6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
     .login-box { background: white; padding: 40px; border-radius: 16px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
-    .login-box h2 { margin-bottom: 10px; color: var(--text); }
-    .login-box p { color: #64748b; margin-bottom: 24px; font-size: 0.9rem; }
     .input-group { margin-bottom: 16px; text-align: left; }
-    .input-group label { display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: #475569; }
     .input-group input { width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 1rem; }
-    
-    /* APP LAYOUT */
+    .btn { padding: 12px; width: 100%; border: none; border-radius: 8px; background: var(--primary); color: white; cursor: pointer; font-size: 1rem; }
+    .btn:hover { opacity: 0.9; }
+
+    /* APP */
     #app-principal { display: flex; height: 100vh; }
     .sidebar { width: 260px; background: white; border-right: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; }
-    .logo { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 32px; display: flex; align-items: center; gap: 8px; }
-    .nav-item { padding: 12px; margin-bottom: 4px; border-radius: 8px; cursor: pointer; color: #64748b; font-weight: 500; display: flex; align-items: center; gap: 10px; }
-    .nav-item:hover, .nav-item.active { background: #eff6ff; color: var(--primary); }
-    .user-info { margin-top: auto; padding-top: 20px; border-top: 1px solid #e2e8f0; }
-    .user-email { font-size: 0.85rem; color: #64748b; margin-bottom: 8px; display: block; overflow: hidden; text-overflow: ellipsis; }
-    
+    .logo { font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 32px; }
+    .user-info { margin-top: auto; padding-top: 20px; border-top: 1px solid #e2e8f0; font-size: 0.9rem; color: #64748b; }
     .main-content { flex: 1; overflow-y: auto; padding: 32px; }
     
-    /* DASHBOARD */
-    .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px; }
-    .grid-eventos { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    /* CARDS */
+    .grid-eventos { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; margin-top: 20px; }
     .card-evento { background: white; padding: 24px; border-radius: 12px; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; }
-    .card-evento:hover { transform: translateY(-4px); border-color: var(--primary); box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-    .card-evento h3 { font-size: 1.1rem; margin-bottom: 16px; }
-    .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem; color: #64748b; }
-    .stat-val { font-weight: 600; color: var(--text); }
+    .card-evento:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
     
-    /* MODAL */
+    /* MODAIS */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; display: flex; align-items: center; justify-content: center; }
-    .modal-box { background: white; width: 90%; max-width: 500px; border-radius: 12px; padding: 24px; max-height: 90vh; overflow-y: auto; }
+    .modal-box { background: white; width: 90%; max-width: 500px; padding: 24px; border-radius: 12px; max-height: 90vh; overflow-y: auto; }
     .modal-large { max-width: 900px; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .modal-header h3 { font-size: 1.2rem; }
+    
+    /* CHECKIN FULLSCREEN */
+    #view-checkin { position: fixed; inset: 0; background: var(--bg); z-index: 1500; display: flex; flex-direction: column; }
+    .checkin-header { background: white; padding: 16px; border-bottom: 1px solid #e2e8f0; display: flex; gap: 16px; align-items: center; }
+    .checkin-grid { flex: 1; overflow-y: auto; padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-content: start; }
+    .guest-card { background: white; padding: 16px; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+    .guest-card.presente { border-color: var(--green); background: #f0fdf4; }
+    
+    /* LOADER */
+    #loader { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 3000; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: 600; }
     
     /* TABLE */
-    .table-container { overflow-x: auto; margin-top: 20px; border: 1px solid #e2e8f0; border-radius: 8px; }
-    table { width: 100%; border-collapse: collapse; min-width: 600px; }
-    th { background: #f8fafc; padding: 12px 16px; text-align: left; font-size: 0.85rem; color: #64748b; font-weight: 600; border-bottom: 1px solid #e2e8f0; }
-    td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 0.95rem; }
-    tr:last-child td { border-bottom: none; }
-    
-    /* CHECK-IN MODE */
-    .checkin-view { position: fixed; inset: 0; background: var(--bg); z-index: 1500; display: flex; flex-direction: column; }
-    .checkin-header { background: white; padding: 16px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid #e2e8f0; }
-    .stats-bar { display: flex; gap: 10px; flex: 1; justify-content: center; }
-    .stat-pill { background: #f1f5f9; padding: 8px 16px; border-radius: 20px; font-weight: 600; font-size: 0.9rem; }
-    .stat-conf { background: #dcfce7; color: #166534; }
-    .checkin-grid { flex: 1; overflow-y: auto; padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; align-content: start; }
-    .guest-card { background: white; padding: 16px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e2e8f0; }
-    .guest-card.presente { border-color: var(--green); background: #f0fdf4; }
-    .check-btn { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #cbd5e1; background: white; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: transparent; cursor: pointer; transition: 0.2s; }
-    .guest-card.presente .check-btn { background: var(--green); border-color: var(--green); color: white; }
-    
-    /* LOADING */
-    .loader { position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 3000; display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--primary); }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+    th { background: #f8fafc; color: #64748b; font-size: 0.85rem; text-transform: uppercase; }
   </style>
 </head>
 <body>
 
-  <div id="loader" class="loader">Carregando Sistema...</div>
+  <div id="loader" class="hide">Carregando...</div>
 
-  <div id="tela-login" class="hide">
+  <div id="tela-login">
     <div class="login-box">
-      <h2>Bem-vindo</h2>
-      <p>Digite seu e-mail para acessar ou criar sua conta.</p>
+      <h2>Gestor RSVP</h2>
+      <p>Digite seu e-mail para entrar.</p>
       <form onsubmit="handleLogin(event)">
         <div class="input-group">
-          <label>Seu E-mail</label>
-          <input type="email" id="emailInput" placeholder="exemplo@email.com" required>
+          <input type="email" id="emailInput" placeholder="seu@email.com" required>
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Acessar Sistema</button>
+        <button type="submit" class="btn">Entrar / Criar Conta</button>
       </form>
     </div>
   </div>
@@ -99,129 +73,153 @@
   <div id="app-principal" class="hide">
     <div class="sidebar">
       <div class="logo">📅 Gestor RSVP</div>
-      <div class="nav-item active" onclick="mostrarView('dashboard')">📊 Meus Eventos</div>
+      <div style="flex:1"></div>
       <div class="user-info">
-        <span id="userEmailDisplay" class="user-email"></span>
-        <button class="btn btn-secondary" style="width: 100%; font-size: 0.8rem;" onclick="handleLogout()">Sair</button>
+        <div id="userEmailDisplay" style="margin-bottom:10px; font-weight:500"></div>
+        <button onclick="handleLogout()" style="background:none; border:none; color:var(--red); cursor:pointer">Sair</button>
       </div>
     </div>
 
     <div class="main-content">
-      
       <div id="view-dashboard">
-        <div class="header">
+        <div style="display:flex; justify-content:space-between; align-items:center">
           <h2>Meus Eventos</h2>
-          <button class="btn btn-primary" onclick="abrirModalNovo()">+ Novo Evento</button>
+          <button onclick="abrirModalNovo()" class="btn" style="width:auto">+ Novo Evento</button>
         </div>
         <div id="lista-eventos" class="grid-eventos"></div>
       </div>
-
     </div>
   </div>
 
   <div id="modal-novo" class="modal-overlay hide">
     <div class="modal-box">
-      <div class="modal-header"><h3>Criar Evento</h3><button class="btn-icon" onclick="fecharModais()">×</button></div>
-      <div class="input-group">
-        <label>Nome do Evento</label>
-        <input type="text" id="novoNomeEvento">
+      <h3>Novo Evento</h3>
+      <div class="input-group" style="margin-top:20px">
+        <input type="text" id="novoNomeEvento" placeholder="Nome do Evento">
       </div>
       <div class="input-group">
-        <label>Colunas Extras (separadas por vírgula)</label>
-        <input type="text" id="novoColunas" placeholder="Empresa, Cargo, Mesa">
-        <small style="color:#94a3b8">Nome e Presença são automáticos.</small>
+        <input type="text" id="novoColunas" placeholder="Colunas extras (separadas por vírgula)">
+        <small style="color:#64748b">Ex: Empresa, Cargo, Mesa</small>
       </div>
-      <button class="btn btn-primary" style="width:100%" onclick="criarEvento()">Criar</button>
+      <div style="display:flex; gap:10px">
+        <button onclick="fecharModais()" style="background:#e2e8f0; color:#1e293b" class="btn">Cancelar</button>
+        <button onclick="criarEvento()" class="btn">Criar</button>
+      </div>
     </div>
   </div>
 
   <div id="modal-evento" class="modal-overlay hide">
     <div class="modal-box modal-large">
-      <div class="modal-header">
+      <div style="display:flex; justify-content:space-between">
         <h3 id="tituloEventoDetalhe">Evento</h3>
-        <button class="btn-icon" onclick="fecharModais()">×</button>
+        <button onclick="fecharModais()" style="background:none; border:none; font-size:1.5rem; cursor:pointer">×</button>
       </div>
-      
-      <div style="display:flex; gap:10px; margin-bottom:20px; flex-wrap: wrap;">
-        <button class="btn btn-primary" onclick="iniciarCheckin()">📱 Modo Check-in</button>
-        <button class="btn btn-secondary" onclick="abrirModalAddConvidado()">+ Convidado</button>
-        <button class="btn btn-danger" style="margin-left:auto" onclick="excluirEventoAtual()">Excluir Evento</button>
+      <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap">
+        <button onclick="iniciarCheckin()" class="btn" style="width:auto">📱 Check-in</button>
+        <button onclick="abrirModalAddConvidado()" class="btn" style="width:auto; background:#fff; border:1px solid #ddd; color:#333">+ Convidado</button>
+        <button onclick="excluirEventoAtual()" class="btn" style="width:auto; background:var(--red); margin-left:auto">Excluir</button>
       </div>
-
-      <div id="tabela-container" class="table-container"></div>
+      <div id="tabela-container" style="overflow-x:auto"></div>
     </div>
   </div>
 
   <div id="modal-add-convidado" class="modal-overlay hide">
     <div class="modal-box">
-      <div class="modal-header"><h3>Novo Convidado</h3><button class="btn-icon" onclick="document.getElementById('modal-add-convidado').classList.add('hide')">×</button></div>
-      <div id="form-convidado-dinamico"></div>
-      <button class="btn btn-primary" style="width:100%; margin-top:20px;" onclick="salvarConvidado()">Salvar</button>
+      <h3>Novo Convidado</h3>
+      <div id="form-convidado-dinamico" style="margin:20px 0"></div>
+      <button onclick="salvarConvidado()" class="btn">Salvar</button>
+      <button onclick="document.getElementById('modal-add-convidado').classList.add('hide')" class="btn" style="margin-top:10px; background:#fff; color:#333; border:1px solid #ddd">Cancelar</button>
     </div>
   </div>
 
   <div id="view-checkin" class="checkin-view hide">
     <div class="checkin-header">
-      <button class="btn-icon" onclick="sairCheckin()">←</button>
-      <input type="text" id="buscaCheckin" placeholder="Buscar nome..." style="flex:1; padding:10px; border-radius:8px; border:1px solid #cbd5e1;" onkeyup="renderizarCheckin()">
-      <div class="stat-pill stat-conf" id="statCheckin">0 / 0</div>
+      <button onclick="sairCheckin()" style="background:none; border:none; font-size:1.5rem; cursor:pointer">←</button>
+      <input type="text" id="buscaCheckin" placeholder="Buscar nome..." style="flex:1; padding:12px; border:1px solid #e2e8f0; border-radius:8px" onkeyup="renderizarCheckin()">
+      <div id="statCheckin" style="font-weight:bold; color:var(--primary)">0 / 0</div>
     </div>
     <div id="grid-checkin" class="checkin-grid"></div>
   </div>
 
   <script>
-    // ESTADO GLOBAL
-    let ESTADO = {
-      eventos: [],
-      eventoAtual: null,
-      convidados: [],
-      colunas: []
-    };
+    
+    const API_URL = "https://script.google.com/macros/library/d/1RgsMEIu95kTROXIvHUh8ksdHrhHBgPIpo6mkIhupb4BRb46iiKz5ZNqx/48"; 
+  
+    let ESTADO = { eventos: [], eventoAtual: null, convidados: [], colunas: [], idPlanilha: null, email: null };
 
     // INICIALIZAÇÃO
     window.onload = function() {
-      google.script.run.withSuccessHandler(sessao => {
-        document.getElementById('loader').classList.add('hide');
-        if(sessao.autenticado) {
-          mostrarApp(sessao.email);
-        } else {
-          document.getElementById('tela-login').classList.remove('hide');
-        }
-      }).obterSessao();
+      const idSalvo = localStorage.getItem('rsvp_id');
+      const emailSalvo = localStorage.getItem('rsvp_email');
+      
+      if(idSalvo && emailSalvo) {
+        ESTADO.idPlanilha = idSalvo;
+        ESTADO.email = emailSalvo;
+        mostrarApp();
+      }
     };
 
+    // --- FUNÇÃO DE COMUNICAÇÃO (FETCH) ---
+    async function chamarAPI(acao, dados = {}) {
+      if(ESTADO.idPlanilha) dados.idPlanilha = ESTADO.idPlanilha;
+      
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify({ acao: acao, ...dados })
+        });
+        const json = await response.json();
+        if(json.erro || json.sucesso === false) {
+          alert("Erro: " + (json.mensagem || json.erro));
+          return null;
+        }
+        return json;
+      } catch(e) {
+        alert("Erro de conexão. Verifique a URL do Script.");
+        console.error(e);
+        return null;
+      }
+    }
+
     // LOGIN
-    function handleLogin(e) {
+    async function handleLogin(e) {
       e.preventDefault();
       const email = document.getElementById('emailInput').value;
       mostrarLoader(true);
-      google.script.run.withSuccessHandler(res => {
-        if(res.sucesso) {
-          document.getElementById('tela-login').classList.add('hide');
-          mostrarApp(res.email);
-        }
-        mostrarLoader(false);
-      }).fazerLogin(email);
+      
+      const res = await chamarAPI('fazerLogin', { email: email });
+      mostrarLoader(false);
+      
+      if(res && res.sucesso) {
+        ESTADO.idPlanilha = res.idPlanilha;
+        ESTADO.email = res.email;
+        localStorage.setItem('rsvp_id', res.idPlanilha);
+        localStorage.setItem('rsvp_email', res.email);
+        mostrarApp();
+      }
     }
 
     function handleLogout() {
-      google.script.run.withSuccessHandler(() => window.location.reload()).sair();
+      localStorage.clear();
+      location.reload();
     }
 
-    function mostrarApp(email) {
+    function mostrarApp() {
+      document.getElementById('tela-login').classList.add('hide');
       document.getElementById('app-principal').classList.remove('hide');
-      document.getElementById('userEmailDisplay').textContent = email;
+      document.getElementById('userEmailDisplay').textContent = ESTADO.email;
       carregarEventos();
     }
 
     // EVENTOS
-    function carregarEventos() {
+    async function carregarEventos() {
       mostrarLoader(true);
-      google.script.run.withSuccessHandler(res => {
+      const res = await chamarAPI('listarEventos');
+      mostrarLoader(false);
+      if(res) {
         ESTADO.eventos = res.eventos;
         renderizarEventos();
-        mostrarLoader(false);
-      }).listarEventos();
+      }
     }
 
     function renderizarEventos() {
@@ -229,36 +227,40 @@
       div.innerHTML = ESTADO.eventos.map(ev => `
         <div class="card-evento" onclick="abrirEvento('${ev.nome}')">
           <h3>${ev.nome}</h3>
-          <div class="stat-row"><span>Total</span><span class="stat-val">${ev.total}</span></div>
-          <div class="stat-row"><span>Confirmados</span><span class="stat-val" style="color:var(--green)">${ev.confirmados}</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:0.9rem; color:#64748b">
+            <span>Total: <b>${ev.total}</b></span>
+            <span style="color:var(--green)">Confirmados: <b>${ev.confirmados}</b></span>
+          </div>
         </div>
       `).join('');
     }
 
-    function criarEvento() {
+    async function criarEvento() {
       const nome = document.getElementById('novoNomeEvento').value;
       const cols = document.getElementById('novoColunas').value.split(',').map(c=>c.trim()).filter(c=>c);
-      
       mostrarLoader(true);
-      google.script.run.withSuccessHandler(() => {
+      const res = await chamarAPI('criarEvento', { nome: nome, colunas: cols });
+      mostrarLoader(false);
+      if(res) {
         fecharModais();
         carregarEventos();
-      }).criarEvento(nome, cols);
+      }
     }
 
-    // DETALHES DO EVENTO
-    function abrirEvento(nome) {
+    // DETALHES & CONVIDADOS
+    async function abrirEvento(nome) {
       ESTADO.eventoAtual = nome;
       document.getElementById('tituloEventoDetalhe').innerText = nome;
       mostrarLoader(true);
+      const res = await chamarAPI('obterConvidados', { nomeEvento: nome });
+      mostrarLoader(false);
       
-      google.script.run.withSuccessHandler(res => {
+      if(res) {
         ESTADO.convidados = res.convidados;
         ESTADO.colunas = res.colunas;
         renderizarTabela();
-        mostrarLoader(false);
         document.getElementById('modal-evento').classList.remove('hide');
-      }).obterConvidados(nome);
+      }
     }
 
     function renderizarTabela() {
@@ -267,118 +269,101 @@
         div.innerHTML = '<p style="text-align:center; padding:20px; color:#64748b;">Nenhum convidado.</p>';
         return;
       }
-      
       let html = '<table><thead><tr>';
       ESTADO.colunas.forEach(c => html += `<th>${c}</th>`);
       html += '<th></th></tr></thead><tbody>';
-      
       ESTADO.convidados.forEach(conv => {
         html += '<tr>';
         ESTADO.colunas.forEach(col => {
           let val = conv[col];
-          if(col === 'Presença' && val === 'Confirmado') val = '<span style="color:var(--green);font-weight:bold">✓</span>';
+          if(col === 'Presença' && val === 'Confirmado') val = '✅';
           html += `<td>${val || '-'}</td>`;
         });
-        html += `<td><button class="btn-icon" style="color:var(--red)" onclick="excluirConvidado(${conv._linha})">🗑️</button></td></tr>`;
+        html += `<td><button onclick="excluirConvidado(${conv._linha})" style="color:var(--red); border:none; background:none; cursor:pointer">🗑️</button></td></tr>`;
       });
-      
       div.innerHTML = html + '</tbody></table>';
     }
 
-    // ADICIONAR CONVIDADO
-    function abrirModalAddConvidado() {
-      const form = document.getElementById('form-convidado-dinamico');
-      form.innerHTML = '';
-      ESTADO.colunas.forEach(col => {
-        if(col === 'Presença') return;
-        form.innerHTML += `
-          <div class="input-group">
-            <label>${col}</label>
-            <input type="text" class="input-convidado" data-col="${col}">
-          </div>`;
-      });
-      document.getElementById('modal-add-convidado').classList.remove('hide');
-    }
-
-    function salvarConvidado() {
+    async function salvarConvidado() {
       const inputs = document.querySelectorAll('.input-convidado');
       let dados = {};
       inputs.forEach(i => dados[i.dataset.col] = i.value);
-      
       mostrarLoader(true);
-      google.script.run.withSuccessHandler(() => {
+      const res = await chamarAPI('adicionarConvidado', { nomeEvento: ESTADO.eventoAtual, dados: dados });
+      mostrarLoader(false);
+      if(res) {
         document.getElementById('modal-add-convidado').classList.add('hide');
-        abrirEvento(ESTADO.eventoAtual); // Recarrega
-      }).adicionarConvidado(ESTADO.eventoAtual, dados);
+        abrirEvento(ESTADO.eventoAtual);
+      }
     }
 
-    function excluirConvidado(linha) {
+    async function excluirConvidado(linha) {
       if(!confirm("Excluir?")) return;
       mostrarLoader(true);
-      google.script.run.withSuccessHandler(() => abrirEvento(ESTADO.eventoAtual)).excluirConvidado(ESTADO.eventoAtual, linha);
+      await chamarAPI('excluirConvidado', { nomeEvento: ESTADO.eventoAtual, linha: linha });
+      abrirEvento(ESTADO.eventoAtual); // Recarrega
     }
     
-    function excluirEventoAtual() {
-      if(!confirm("Tem certeza? Isso apaga tudo deste evento.")) return;
+    async function excluirEventoAtual() {
+      if(!confirm("Apagar evento inteiro?")) return;
       mostrarLoader(true);
-      google.script.run.withSuccessHandler(() => {
-        fecharModais();
-        carregarEventos();
-      }).excluirEvento(ESTADO.eventoAtual);
+      await chamarAPI('excluirEvento', { nomeEvento: ESTADO.eventoAtual });
+      fecharModais();
+      carregarEventos();
     }
 
-    // CHECK-IN MODE
+    // CHECK-IN
     function iniciarCheckin() {
       document.getElementById('view-checkin').classList.remove('hide');
       renderizarCheckin();
     }
-
     function sairCheckin() {
       document.getElementById('view-checkin').classList.add('hide');
-      abrirEvento(ESTADO.eventoAtual); // Atualiza dados da tabela normal
+      abrirEvento(ESTADO.eventoAtual); // Atualiza tabela
     }
-
     function renderizarCheckin() {
       const grid = document.getElementById('grid-checkin');
       const termo = document.getElementById('buscaCheckin').value.toLowerCase();
       let confirmados = 0;
       
-      grid.innerHTML = ESTADO.convidados.map(conv => {
-        if(conv['Presença'] === 'Confirmado') confirmados++;
-        if(!conv['Nome'].toLowerCase().includes(termo)) return '';
-        
-        const isConf = conv['Presença'] === 'Confirmado';
+      grid.innerHTML = ESTADO.convidados.map(c => {
+        const isConf = c['Presença'] === 'Confirmado';
+        if(isConf) confirmados++;
+        if(!c['Nome'].toLowerCase().includes(termo)) return '';
         
         return `
-          <div class="guest-card ${isConf ? 'presente' : ''}" onclick="toggleCheckin(${conv._linha})">
+          <div class="guest-card ${isConf ? 'presente' : ''}" onclick="togglePresenca(${c._linha})">
             <div>
-              <div style="font-weight:600; font-size:1.1rem">${conv['Nome']}</div>
-              <div style="color:#64748b; font-size:0.9rem">${conv[ESTADO.colunas[1]] || ''}</div> 
+              <div style="font-weight:600; font-size:1.1rem">${c['Nome']}</div>
+              <div style="color:#64748b; font-size:0.9rem">${c[ESTADO.colunas[1]] || ''}</div>
             </div>
             <div class="check-btn">✓</div>
-          </div>
-        `;
+          </div>`;
       }).join('');
-      
       document.getElementById('statCheckin').innerText = `${confirmados} / ${ESTADO.convidados.length}`;
     }
 
-    function toggleCheckin(linha) {
-      // Otimista UI Update
+    async function togglePresenca(linha) {
+      // Otimista (Muda na tela antes do servidor)
       const conv = ESTADO.convidados.find(c => c._linha === linha);
       conv['Presença'] = conv['Presença'] === 'Confirmado' ? '' : 'Confirmado';
       renderizarCheckin();
       
-      // Server Call silencioso
-      google.script.run.togglePresenca(ESTADO.eventoAtual, linha);
+      // Envia ao servidor
+      await chamarAPI('togglePresenca', { nomeEvento: ESTADO.eventoAtual, linha: linha });
     }
 
     // UTILS
-    function abrirModalNovo() { document.getElementById('modal-novo').classList.remove('hide'); }
+    function mostrarLoader(b) { document.getElementById('loader').classList.toggle('hide', !b); }
     function fecharModais() { document.querySelectorAll('.modal-overlay').forEach(m => m.classList.add('hide')); }
-    function mostrarLoader(show) { 
-      if(show) document.getElementById('loader').classList.remove('hide');
-      else document.getElementById('loader').classList.add('hide');
+    function abrirModalNovo() { document.getElementById('modal-novo').classList.remove('hide'); }
+    function abrirModalAddConvidado() {
+      const div = document.getElementById('form-convidado-dinamico');
+      div.innerHTML = '';
+      ESTADO.colunas.forEach(c => {
+        if(c!=='Presença') div.innerHTML += `<div style="margin-bottom:10px"><label style="display:block;font-size:0.8rem;color:#64748b">${c}</label><input class="input-convidado" data-col="${c}" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:6px"></div>`;
+      });
+      document.getElementById('modal-add-convidado').classList.remove('hide');
     }
   </script>
 </body>
