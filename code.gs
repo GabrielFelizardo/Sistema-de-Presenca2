@@ -1,14 +1,22 @@
 // =======================================================================
-// CODE.GS v16.3 - USA PLANILHA EXISTENTE SE TIVER
-// Busca planilha "Meus Eventos (Sistema RSVP)" existente
-// Se não achar, aí cria nova
+// CODE.GS v16.5.1 - CORRIGIDO - SISTEMA COM APROVAÇÃO MANUAL
+// Bug fix: TypeError data[i][3].split is not a function
 // =======================================================================
 
-// ⚠️ CONFIGURE APENAS ESTA LINHA:
-const ID_PLANILHA_CONTROLE = "1fl6amvg3i7_N6q2VDfgfFNgLpp-OfVJKwICvAggwY-c";
+// ⚠️ CONFIGURAÇÕES:
+const ID_PLANILHA_CONTROLE = ""; // ← Deixe vazio no primeiro deploy
+const EMAIL_ADMIN = "gfelizardo14@gmail.com"; // ← SEU EMAIL PARA NOTIFICAÇÕES
+
+// ========== FUNÇÃO AUXILIAR - GARANTIR STRING ==========
+function garantirString(valor) {
+  if (valor === null || valor === undefined) {
+    return "";
+  }
+  return valor.toString();
+}
 
 function doGet(e) {
-  return ContentService.createTextOutput("Sistema RSVP v16.3 Online!")
+  return ContentService.createTextOutput("Sistema RSVP v16.5.1 Online!")
       .setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -121,7 +129,7 @@ function doPost(e) {
 }
 
 // =======================================================================
-// AUTENTICAÇÃO v16.3 - DETECTA PLANILHA EXISTENTE
+// AUTENTICAÇÃO v16.5 - COM SISTEMA DE APROVAÇÃO
 // =======================================================================
 
 function autenticarUsuario(email) {
@@ -132,131 +140,292 @@ function autenticarUsuario(email) {
   const emailLimpo = email.toLowerCase().trim();
   Logger.log('🔐 Autenticando: ' + emailLimpo);
   
-  const ssControle = SpreadsheetApp.openById(ID_PLANILHA_CONTROLE);
-  let sheetUsuarios = ssControle.getSheetByName("Usuarios");
+  // ✅ PASSO 1: Criar ou abrir planilha de controle
+  let ssControle;
   
-  if (!sheetUsuarios) {
-    sheetUsuarios = ssControle.insertSheet("Usuarios");
-    sheetUsuarios.appendRow(["Email", "ID_Planilha", "Data_Cadastro", "Ultimo_Acesso", "Total_Eventos"]);
-    sheetUsuarios.getRange(1, 1, 1, 5).setFontWeight("bold").setBackground("#667eea").setFontColor("white");
+  if (!ID_PLANILHA_CONTROLE || ID_PLANILHA_CONTROLE === "") {
+    // 🆕 PRIMEIRA VEZ - Criar planilha de controle
+    Logger.log('🆕 Criando planilha de controle...');
+    ssControle = SpreadsheetApp.create("Controle_Usuarios_RSVP");
+    const idControle = ssControle.getId();
+    
+    Logger.log('✅ Planilha de controle criada!');
+    Logger.log('📋 ID: ' + idControle);
+    Logger.log('');
+    Logger.log('⚠️ IMPORTANTE - COPIE E COLE NO CÓDIGO:');
+    Logger.log('const ID_PLANILHA_CONTROLE = "' + idControle + '";');
+    Logger.log('');
+    
+    // Configurar aba com coluna Status
+    const sheetUsuarios = ssControle.getSheets()[0];
+    sheetUsuarios.setName("Usuarios");
+    sheetUsuarios.appendRow(["Email", "Status", "ID_Planilha", "Data_Cadastro", "Data_Aprovacao", "Ultimo_Acesso"]);
+    sheetUsuarios.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#667eea").setFontColor("white");
     sheetUsuarios.setFrozenRows(1);
+    sheetUsuarios.setColumnWidth(1, 250);
+    sheetUsuarios.setColumnWidth(2, 100);
+    sheetUsuarios.setColumnWidth(3, 300);
+    
+  } else {
+    // ✅ JÁ EXISTE - Abrir planilha de controle
+    ssControle = SpreadsheetApp.openById(ID_PLANILHA_CONTROLE);
+  }
+  
+  let sheetUsuarios = ssControle.getSheetByName("Usuarios");
+  if (!sheetUsuarios) {
+    sheetUsuarios = ssControle.getSheets()[0];
+    sheetUsuarios.setName("Usuarios");
+    if (sheetUsuarios.getLastRow() === 0) {
+      sheetUsuarios.appendRow(["Email", "Status", "ID_Planilha", "Data_Cadastro", "Data_Aprovacao", "Ultimo_Acesso"]);
+      sheetUsuarios.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#667eea").setFontColor("white");
+      sheetUsuarios.setFrozenRows(1);
+    }
   }
 
-  // Buscar usuário existente
+  // ✅ PASSO 2: Verificar se usuário já existe
   const data = sheetUsuarios.getDataRange().getValues();
   
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] && data[i][0].toString().toLowerCase() === emailLimpo) {
-      // ✅ USUÁRIO JÁ REGISTRADO
-      const planilhaId = data[i][1];
-      const agora = new Date();
-      sheetUsuarios.getRange(i + 1, 4).setValue(agora);
+    if (data[i][0] && garantirString(data[i][0]).toLowerCase() === emailLimpo) {
+      const status = garantirString(data[i][1]);
+      const planilhaId = garantirString(data[i][2]);
       
-      Logger.log('✅ Usuário existente - Planilha: ' + planilhaId);
+      Logger.log('👤 Usuário encontrado - Status: ' + status);
       
-      return {
-        sucesso: true,
-        novoUsuario: false,
-        planilhaId: planilhaId,
-        email: emailLimpo
-      };
+      // ⚠️ VERIFICAR STATUS
+      if (status === 'Pendente') {
+        Logger.log('🟡 Acesso pendente de aprovação');
+        return {
+          sucesso: false,
+          status: 'pendente',
+          mensagem: 'Seu acesso está aguardando aprovação do administrador.'
+        };
+      }
+      
+      if (status === 'Rejeitado') {
+        Logger.log('❌ Acesso rejeitado');
+        return {
+          sucesso: false,
+          status: 'rejeitado',
+          mensagem: 'Seu acesso foi negado. Entre em contato com o administrador.'
+        };
+      }
+      
+      if (status === 'Aprovado') {
+        // ✅ APROVADO - Verificar se já tem planilha
+        if (!planilhaId || planilhaId === '-' || planilhaId === '') {
+          // Criar planilha agora
+          Logger.log('✅ Aprovado mas sem planilha - criando agora...');
+          const novaPlanilha = SpreadsheetApp.create("Meus Eventos (Sistema RSVP)");
+          const novoId = novaPlanilha.getId();
+          
+          configurarPlanilhaNova(novaPlanilha);
+          
+          // Adicionar usuário como editor
+          novaPlanilha.addEditor(emailLimpo);
+          Logger.log('✅ Usuário adicionado como editor');
+          
+          // Atualizar planilha de controle
+          sheetUsuarios.getRange(i + 1, 3).setValue(novoId);
+          sheetUsuarios.getRange(i + 1, 5).setValue(new Date());
+          sheetUsuarios.getRange(i + 1, 6).setValue(new Date());
+          
+          // Enviar email para admin transferir propriedade
+          enviarEmailTransferencia(emailLimpo, novoId);
+          
+          Logger.log('✅ Planilha criada: ' + novoId);
+          
+          return {
+            sucesso: true,
+            novoUsuario: true,
+            planilhaId: novoId,
+            email: emailLimpo,
+            status: 'aprovado'
+          };
+        }
+        
+        // Já tem planilha - atualizar último acesso
+        const agora = new Date();
+        sheetUsuarios.getRange(i + 1, 6).setValue(agora);
+        
+        Logger.log('✅ Usuário aprovado - Planilha: ' + planilhaId);
+        
+        return {
+          sucesso: true,
+          novoUsuario: false,
+          planilhaId: planilhaId,
+          email: emailLimpo,
+          status: 'aprovado'
+        };
+      }
     }
   }
   
-  // 🆕 NOVO USUÁRIO - Buscar planilha existente
-  Logger.log('🆕 Novo usuário - buscando planilha existente...');
+  // 🆕 PASSO 3: NOVO USUÁRIO - Registrar como PENDENTE
+  Logger.log('🆕 Novo usuário - registrando como PENDENTE');
   
-  let planilhaId = buscarPlanilhaExistente();
-  
-  if (planilhaId) {
-    Logger.log('✅ Planilha existente encontrada: ' + planilhaId);
-    Logger.log('📊 Usando planilha atual do usuário');
-  } else {
-    Logger.log('⚠️ Nenhuma planilha encontrada - criando nova');
-    const novaPlanilha = SpreadsheetApp.create("Meus Eventos (Sistema RSVP)");
-    planilhaId = novaPlanilha.getId();
-    configurarPlanilhaNova(novaPlanilha);
-  }
-  
-  // Registrar na planilha de controle
   const agora = new Date();
   sheetUsuarios.appendRow([
     emailLimpo,
-    planilhaId,
+    'Pendente',
+    '-',
     agora,
-    agora,
-    0
+    '-',
+    agora
   ]);
   
-  Logger.log('✅ Usuário registrado - ID: ' + planilhaId);
+  // Colorir linha como amarelo (pendente)
+  const ultimaLinha = sheetUsuarios.getLastRow();
+  sheetUsuarios.getRange(ultimaLinha, 1, 1, 6).setBackground("#fff3cd");
+  
+  Logger.log('✅ Usuário registrado como PENDENTE');
+  
+  // 📧 ENVIAR EMAIL PARA ADMIN
+  enviarEmailNovoUsuario(emailLimpo);
   
   return {
-    sucesso: true,
-    novoUsuario: true,
-    planilhaId: planilhaId,
+    sucesso: false,
+    status: 'pendente',
+    mensagem: 'Solicitação enviada! Aguarde a aprovação do administrador. Você receberá um email quando for aprovado.',
     email: emailLimpo
   };
 }
 
-function buscarPlanilhaExistente() {
+function enviarEmailNovoUsuario(emailUsuario) {
+  if (!EMAIL_ADMIN || EMAIL_ADMIN === "seu.email@gmail.com") {
+    Logger.log('⚠️ EMAIL_ADMIN não configurado - pulando notificação');
+    return;
+  }
+  
   try {
-    // Buscar planilhas no Drive do usuário
-    const arquivos = DriveApp.getFilesByName("Meus Eventos (Sistema RSVP)");
+    const urlPlanilha = `https://docs.google.com/spreadsheets/d/${ID_PLANILHA_CONTROLE}/edit`;
     
-    while (arquivos.hasNext()) {
-      const arquivo = arquivos.next();
-      const mimeType = arquivo.getMimeType();
-      
-      // Verificar se é Google Sheets
-      if (mimeType === 'application/vnd.google-apps.spreadsheet') {
-        const id = arquivo.getId();
-        Logger.log('🔍 Planilha encontrada: ' + id);
-        
-        // Verificar se consegue abrir
-        try {
-          const ss = SpreadsheetApp.openById(id);
-          const sheets = ss.getSheets();
-          
-          Logger.log('📋 Planilha tem ' + sheets.length + ' abas');
-          
-          // Se tem abas, é válida
-          if (sheets.length > 0) {
-            return id;
-          }
-        } catch (e) {
-          Logger.log('⚠️ Não conseguiu abrir: ' + e);
-          continue;
-        }
-      }
-    }
+    const assunto = "🔔 Nova solicitação de acesso - Sistema RSVP";
     
-    return null;
+    const corpo = `
+Olá,
+
+Um novo usuário solicitou acesso ao Sistema RSVP:
+
+👤 Email: ${emailUsuario}
+📅 Data: ${new Date().toLocaleString('pt-BR')}
+
+Para aprovar ou rejeitar o acesso:
+
+1. Abra a Planilha de Controle:
+   ${urlPlanilha}
+
+2. Localize a linha do usuário
+
+3. Altere a coluna "Status":
+   - "Aprovado" → Usuário poderá fazer login
+   - "Rejeitado" → Usuário será bloqueado
+
+Após aprovar, o usuário fará login novamente e você receberá outro email com o link da planilha dele para transferir a propriedade.
+
+---
+Sistema RSVP v16.5.1
+Notificação Automática
+    `.trim();
+    
+    MailApp.sendEmail({
+      to: EMAIL_ADMIN,
+      subject: assunto,
+      body: corpo
+    });
+    
+    Logger.log('📧 Email de notificação enviado para admin');
     
   } catch (erro) {
-    Logger.log('❌ Erro ao buscar planilha: ' + erro);
-    return null;
+    Logger.log('⚠️ Erro ao enviar email: ' + erro);
+  }
+}
+
+function enviarEmailTransferencia(emailUsuario, planilhaId) {
+  if (!EMAIL_ADMIN || EMAIL_ADMIN === "seu.email@gmail.com") {
+    Logger.log('⚠️ EMAIL_ADMIN não configurado - pulando notificação');
+    return;
+  }
+  
+  try {
+    const urlPlanilha = `https://docs.google.com/spreadsheets/d/${planilhaId}/edit`;
+    
+    const assunto = "✅ Planilha criada - Transferir propriedade para " + emailUsuario;
+    
+    const corpo = `
+Olá,
+
+A planilha foi criada com sucesso para o usuário aprovado:
+
+👤 Usuário: ${emailUsuario}
+📊 Planilha: Meus Eventos (Sistema RSVP)
+🔗 Link direto: ${urlPlanilha}
+
+O usuário já foi adicionado como EDITOR e pode usar o sistema normalmente.
+
+Para transferir a PROPRIEDADE da planilha:
+
+1. Abra a planilha (clique no link acima)
+
+2. Clique no botão "Compartilhar" (canto superior direito)
+
+3. Ao lado do email "${emailUsuario}", clique no ícone ⋮ (três pontinhos)
+
+4. Selecione "Transferir propriedade"
+
+5. Confirme a transferência
+
+Após a transferência:
+- O usuário será o dono da planilha
+- A planilha aparecerá no Drive dele
+- Você perderá acesso à planilha (correto!)
+
+Observação: Se você tiver conta Gmail gratuita, pode ser que a opção "Transferir propriedade" não apareça. Neste caso, deixe o usuário como Editor - ele terá controle total mesmo assim.
+
+---
+Sistema RSVP v16.5.1
+Notificação Automática
+    `.trim();
+    
+    MailApp.sendEmail({
+      to: EMAIL_ADMIN,
+      subject: assunto,
+      body: corpo
+    });
+    
+    Logger.log('📧 Email de transferência enviado para admin');
+    
+  } catch (erro) {
+    Logger.log('⚠️ Erro ao enviar email: ' + erro);
   }
 }
 
 function configurarPlanilhaNova(ss) {
-  // Configurar planilha nova básica
+  // Aba Exemplo
   const sheetExemplo = ss.getSheets()[0];
   sheetExemplo.setName("Exemplo");
+  sheetExemplo.clear();
   sheetExemplo.appendRow(["Nome", "Email", "Telefone", "Status"]);
   sheetExemplo.getRange(1, 1, 1, 4).setFontWeight("bold").setBackground("#f3f4f6");
+  sheetExemplo.setColumnWidth(1, 200);
+  sheetExemplo.setColumnWidth(2, 250);
   
-  // Templates
+  // Aba Templates
   const sheetTemplates = ss.insertSheet("Templates");
   sheetTemplates.appendRow(["Nome Template", "Colunas (JSON)", "Email Assunto", "Email Mensagem", "Data Criação", "Vezes Usado"]);
   sheetTemplates.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#dbeafe");
   sheetTemplates.setFrozenRows(1);
+  sheetTemplates.setColumnWidth(2, 300);
   
-  // Banco de Nomes
+  // Aba Banco de Nomes
   const sheetBanco = ss.insertSheet("Banco_Nomes");
   sheetBanco.appendRow(["Nome Completo", "Email", "Telefone", "Eventos Participou", "Último Evento", "Data Última Participação"]);
   sheetBanco.getRange(1, 1, 1, 6).setFontWeight("bold").setBackground("#dcfce7");
   sheetBanco.setFrozenRows(1);
+  sheetBanco.setColumnWidth(1, 200);
   sheetBanco.setColumnWidth(4, 300);
+  
+  Logger.log('✅ Planilha configurada com 3 abas');
 }
 
 function getPlanilhaUsuario(email) {
@@ -264,7 +433,11 @@ function getPlanilhaUsuario(email) {
     throw new Error("Email não fornecido.");
   }
   
-  const emailLimpo = email.toString().toLowerCase().trim();
+  if (!ID_PLANILHA_CONTROLE || ID_PLANILHA_CONTROLE === "") {
+    throw new Error("Sistema não configurado. Faça login primeiro para criar a planilha de controle.");
+  }
+  
+  const emailLimpo = garantirString(email).toLowerCase().trim();
   
   const ssControle = SpreadsheetApp.openById(ID_PLANILHA_CONTROLE);
   const sheetUsuarios = ssControle.getSheetByName("Usuarios");
@@ -276,14 +449,25 @@ function getPlanilhaUsuario(email) {
   const data = sheetUsuarios.getDataRange().getValues();
   
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] && data[i][0].toString().toLowerCase() === emailLimpo) {
-      const planilhaId = data[i][1];
+    if (data[i][0] && garantirString(data[i][0]).toLowerCase() === emailLimpo) {
+      const status = garantirString(data[i][1]);
+      const planilhaId = garantirString(data[i][2]);
+      
+      // Verificar status
+      if (status !== 'Aprovado') {
+        throw new Error("Acesso não autorizado.");
+      }
+      
+      if (!planilhaId || planilhaId === '-' || planilhaId === '') {
+        throw new Error("Planilha não configurada. Faça login novamente.");
+      }
+      
       Logger.log('📊 Abrindo planilha: ' + planilhaId);
       return SpreadsheetApp.openById(planilhaId);
     }
   }
   
-  throw new Error("Usuário não encontrado.");
+  throw new Error("Usuário não encontrado. Faça login novamente.");
 }
 
 function getSheetByNameSafe(ss, nome) {
@@ -291,11 +475,11 @@ function getSheetByNameSafe(ss, nome) {
     Logger.log('⚠️ Nome de aba inválido');
     return null;
   }
-  return ss.getSheetByName(nome.toString().trim());
+  return ss.getSheetByName(garantirString(nome).trim());
 }
 
 // =======================================================================
-// RESTO DO CÓDIGO (igual v16.2) - COMPACTADO
+// FUNÇÕES DE EVENTOS (Com correções de .split())
 // =======================================================================
 
 function listarEventos(email) {
@@ -461,11 +645,11 @@ function enviarEmails(email, nomeEvento, indices, assunto, mensagem, linkBase) {
   const rows = data.slice(1);
   const indexEmail = headers.findIndex(h => {
     if (!h) return false;
-    const limpo = h.toString().trim().toLowerCase();
+    const limpo = garantirString(h).trim().toLowerCase();
     return limpo === 'email' || limpo === 'e-mail';
   });
   if (indexEmail === -1) throw new Error("Coluna Email não encontrada");
-  const indexNome = headers.findIndex(h => h && h.toString().trim().toLowerCase() === 'nome');
+  const indexNome = headers.findIndex(h => h && garantirString(h).trim().toLowerCase() === 'nome');
   let enviados = 0, erros = 0, detalhesErros = [];
   indices.forEach((index, i) => {
     try {
@@ -475,7 +659,7 @@ function enviarEmails(email, nomeEvento, indices, assunto, mensagem, linkBase) {
         return;
       }
       const row = rows[index];
-      const emailDestino = row[indexEmail] ? row[indexEmail].toString().trim() : '';
+      const emailDestino = row[indexEmail] ? garantirString(row[indexEmail]).trim() : '';
       const nome = indexNome > -1 ? row[indexNome] : "Convidado";
       if (!emailDestino || !emailDestino.includes("@")) {
         erros++;
@@ -508,9 +692,9 @@ function buscarConvidado(email, nomeEvento, nomeBusca) {
   const nomeLimpo = nomeBusca.toLowerCase().trim();
   for (let i = 0; i < linhas.length; i++) {
     const row = linhas[i];
-    const indexNome = headers.findIndex(h => h && h.toString().trim().toLowerCase() === 'nome');
+    const indexNome = headers.findIndex(h => h && garantirString(h).trim().toLowerCase() === 'nome');
     const valNome = indexNome > -1 ? row[indexNome] : row[0];
-    if (valNome && valNome.toString().toLowerCase().includes(nomeLimpo)) {
+    if (valNome && garantirString(valNome).toLowerCase().includes(nomeLimpo)) {
       return { sucesso: true, encontrado: true, nomeCompleto: valNome, linha: i + 2, colunas: headers, dadosAtuais: row };
     }
   }
@@ -536,7 +720,8 @@ function excluirEvento(email, nomeEvento) {
   if (sheetBanco) {
     const data = sheetBanco.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
-      const eventosAtuais = data[i][3] || "";
+      // ✅ CORREÇÃO: Garantir string antes de split
+      const eventosAtuais = garantirString(data[i][3]);
       const eventosArray = eventosAtuais ? eventosAtuais.split(';').filter(e => e.trim()) : [];
       const eventosAtualizados = eventosArray.filter(e => e !== nomeEvento);
       if (eventosAtualizados.length !== eventosArray.length) {
@@ -552,7 +737,10 @@ function excluirEvento(email, nomeEvento) {
   return { sucesso: true };
 }
 
-// Templates e Banco (funções resumidas por espaço - funcionalidade mantida)
+// =======================================================================
+// TEMPLATES E BANCO DE NOMES (COM CORREÇÕES)
+// =======================================================================
+
 function inicializarAbaTemplates(email) {
   const ss = getPlanilhaUsuario(email);
   let sheetTemplates = ss.getSheetByName("Templates");
@@ -647,10 +835,20 @@ function buscarNoBanco(email, termo) {
   const termoLimpo = termo.toLowerCase().trim();
   const resultados = [];
   for (let i = 1; i < data.length; i++) {
-    const nome = data[i][0] ? data[i][0].toString().toLowerCase() : "";
+    const nome = data[i][0] ? garantirString(data[i][0]).toLowerCase() : "";
     if (nome.includes(termoLimpo)) {
-      const eventosArray = data[i][3] ? data[i][3].split(';').filter(e => e.trim()) : [];
-      resultados.push({ nome: data[i][0], email: data[i][1], telefone: data[i][2], eventosParticipou: eventosArray, ultimoEvento: data[i][4] || "Nenhum", dataUltimaParticipacao: data[i][5] || "N/A", totalEventos: eventosArray.length });
+      // ✅ CORREÇÃO: Garantir string antes de split
+      const eventosAtuais = garantirString(data[i][3]);
+      const eventosArray = eventosAtuais ? eventosAtuais.split(';').filter(e => e.trim()) : [];
+      resultados.push({ 
+        nome: data[i][0], 
+        email: data[i][1], 
+        telefone: data[i][2], 
+        eventosParticipou: eventosArray, 
+        ultimoEvento: data[i][4] || "Nenhum", 
+        dataUltimaParticipacao: data[i][5] || "N/A", 
+        totalEventos: eventosArray.length 
+      });
     }
   }
   if (resultados.length === 0) return { encontrado: false };
@@ -663,8 +861,9 @@ function adicionarAoBancoNomes(email, nome, emailContato, telefone, eventoAtual)
   const nomeLimpo = nome.trim();
   const dataAtual = new Date().toLocaleDateString('pt-BR');
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] && data[i][0].toString().toLowerCase() === nomeLimpo.toLowerCase()) {
-      const eventosAtuais = data[i][3] || "";
+    if (data[i][0] && garantirString(data[i][0]).toLowerCase() === nomeLimpo.toLowerCase()) {
+      // ✅ CORREÇÃO: Garantir string antes de split
+      const eventosAtuais = garantirString(data[i][3]);
       const eventosArray = eventosAtuais ? eventosAtuais.split(';').filter(e => e.trim()) : [];
       if (!eventosArray.includes(eventoAtual)) eventosArray.push(eventoAtual);
       sheetBanco.getRange(i + 1, 2).setValue(emailContato || data[i][1]);
@@ -685,8 +884,19 @@ function listarBancoNomes(email) {
   if (data.length < 2) return { nomes: [] };
   const nomes = [];
   for (let i = 1; i < data.length; i++) {
-    const eventosArray = data[i][3] ? data[i][3].split(';').filter(e => e.trim()) : [];
-    nomes.push({ nome: data[i][0], email: data[i][1] || "", telefone: data[i][2] || "", eventosParticipou: eventosArray, ultimoEvento: data[i][4] || "Nenhum", dataUltimaParticipacao: data[i][5] || "N/A", totalEventos: eventosArray.length, linha: i + 1 });
+    // ✅ CORREÇÃO: Garantir string antes de split
+    const eventosAtuais = garantirString(data[i][3]);
+    const eventosArray = eventosAtuais ? eventosAtuais.split(';').filter(e => e.trim()) : [];
+    nomes.push({ 
+      nome: data[i][0], 
+      email: data[i][1] || "", 
+      telefone: data[i][2] || "", 
+      eventosParticipou: eventosArray, 
+      ultimoEvento: data[i][4] || "Nenhum", 
+      dataUltimaParticipacao: data[i][5] || "N/A", 
+      totalEventos: eventosArray.length, 
+      linha: i + 1 
+    });
   }
   return { nomes: nomes };
 }
@@ -696,9 +906,11 @@ function editarNoBanco(email, nomeAntigo, nomeNovo, emailContato, telefone, prop
   const data = sheetBanco.getDataRange().getValues();
   let linhaPessoa = -1, eventosParticipou = [];
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] && data[i][0].toString().toLowerCase() === nomeAntigo.toLowerCase()) {
+    if (data[i][0] && garantirString(data[i][0]).toLowerCase() === nomeAntigo.toLowerCase()) {
       linhaPessoa = i + 1;
-      eventosParticipou = data[i][3] ? data[i][3].split(';').filter(e => e.trim()) : [];
+      // ✅ CORREÇÃO: Garantir string antes de split
+      const eventosAtuais = garantirString(data[i][3]);
+      eventosParticipou = eventosAtuais ? eventosAtuais.split(';').filter(e => e.trim()) : [];
       break;
     }
   }
@@ -714,10 +926,10 @@ function editarNoBanco(email, nomeAntigo, nomeNovo, emailContato, telefone, prop
       if (!sheet) return;
       const dataEvento = sheet.getDataRange().getValues();
       const headers = dataEvento[0];
-      const indexNome = headers.findIndex(h => h && h.toString().toLowerCase().includes('nome'));
+      const indexNome = headers.findIndex(h => h && garantirString(h).toLowerCase().includes('nome'));
       if (indexNome === -1) return;
       for (let i = 1; i < dataEvento.length; i++) {
-        if (dataEvento[i][indexNome] && dataEvento[i][indexNome].toString().toLowerCase() === nomeAntigo.toLowerCase()) {
+        if (dataEvento[i][indexNome] && garantirString(dataEvento[i][indexNome]).toLowerCase() === nomeAntigo.toLowerCase()) {
           sheet.getRange(i + 1, indexNome + 1).setValue(nomeNovo);
           eventosAtualizados++;
         }
@@ -732,7 +944,7 @@ function excluirDoBanco(email, nome) {
   const sheetBanco = inicializarBancoNomes(email);
   const data = sheetBanco.getDataRange().getValues();
   for (let i = 1; i < data.length; i++) {
-    if (data[i][0] && data[i][0].toString().toLowerCase() === nome.toLowerCase()) {
+    if (data[i][0] && garantirString(data[i][0]).toLowerCase() === nome.toLowerCase()) {
       sheetBanco.deleteRow(i + 1);
       return { sucesso: true };
     }
@@ -752,13 +964,19 @@ function migrarEventosParaBanco(email) {
     if (data.length < 2) return;
     const headers = data[0];
     const indexNome = headers.indexOf('Nome') >= 0 ? headers.indexOf('Nome') : 0;
-    const indexEmail = headers.findIndex(h => h && h.toString().trim().toLowerCase().match(/^e?-?mail$/));
+    const indexEmail = headers.findIndex(h => h && garantirString(h).trim().toLowerCase().match(/^e?-?mail$/));
     const indexTelefone = headers.indexOf('Telefone');
     for (let i = 1; i < data.length; i++) {
       const nome = data[i][indexNome];
-      if (!nome || !nome.toString().trim()) continue;
+      if (!nome || !garantirString(nome).trim()) continue;
       try {
-        const resultado = adicionarAoBancoNomes(email, nome.toString().trim(), indexEmail >= 0 ? (data[i][indexEmail] || "").toString().trim() : '', indexTelefone >= 0 ? (data[i][indexTelefone] || "").toString().trim() : '', nomeEvento);
+        const resultado = adicionarAoBancoNomes(
+          email, 
+          garantirString(nome).trim(), 
+          indexEmail >= 0 ? garantirString(data[i][indexEmail] || "").trim() : '', 
+          indexTelefone >= 0 ? garantirString(data[i][indexTelefone] || "").trim() : '', 
+          nomeEvento
+        );
         if (resultado.atualizado) totalAtualizados++; else totalAdicionados++;
       } catch (e) { }
     }
