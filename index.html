@@ -1,351 +1,313 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Sistema RSVP v16.5</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        .login-container {
-            background: white;
-            border-radius: 20px;
-            padding: 50px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            max-width: 450px;
-            width: 90%;
-            animation: slideIn 0.5s;
-        }
-        
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-        
-        .logo {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-        
-        .logo-icon {
-            font-size: 60px;
-            margin-bottom: 10px;
-        }
-        
-        h1 {
-            color: #333;
-            text-align: center;
-            margin-bottom: 10px;
-            font-size: 28px;
-        }
-        
-        .subtitle {
-            color: #666;
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 14px;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-        }
-        
-        label {
-            display: block;
-            color: #333;
-            font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 14px;
-        }
-        
-        input[type="email"] {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
-            font-size: 16px;
-            transition: all 0.3s;
-        }
-        
-        input[type="email"]:focus {
-            outline: none;
-            border-color: #667eea;
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
-        }
-        
-        .btn-login {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-login:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        }
-        
-        .btn-login:active {
-            transform: translateY(0);
-        }
-        
-        .btn-login:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-        
-        .loading {
-            display: none;
-            text-align: center;
-            margin-top: 20px;
-        }
-        
-        .spinner {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #667eea;
-            border-radius: 50%;
-            width: 40px;
-            height: 40px;
-            animation: spin 1s linear infinite;
-            margin: 0 auto;
-        }
-        
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        
-        .message {
-            display: none;
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
-            text-align: center;
-            font-size: 14px;
-        }
-        
-        .message.success {
-            background: #d4edda;
-            color: #155724;
-            border: 1px solid #c3e6cb;
-        }
-        
-        .message.error {
-            background: #f8d7da;
-            color: #721c24;
-            border: 1px solid #f5c6cb;
-        }
-        
-        .message.warning {
-            background: #fff3cd;
-            color: #856404;
-            border: 1px solid #ffeeba;
-        }
-        
-        .footer {
-            text-align: center;
-            margin-top: 30px;
-            color: #999;
-            font-size: 12px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel RSVP v17.0</title>
+  <?!= HtmlService.createHtmlOutputFromFile('styles').getContent(); ?>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
-    
-    <div class="login-container">
-        <div class="logo">
-            <div class="logo-icon">🎉</div>
-            <h1>Sistema RSVP</h1>
-            <p class="subtitle">v16.5 - Sistema com Aprovação</p>
-        </div>
-        
-        <form id="login-form" onsubmit="return fazerLogin(event)">
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input 
-                    type="email" 
-                    id="email" 
-                    placeholder="seu@email.com" 
-                    required
-                    autocomplete="email"
-                >
-            </div>
-            
-            <button type="submit" class="btn-login" id="btn-login">
-                Entrar
-            </button>
-        </form>
-        
-        <div class="loading" id="loading">
-            <div class="spinner"></div>
-            <p style="margin-top: 15px; color: #667eea;">Aguarde...</p>
-        </div>
-        
-        <div class="message" id="message"></div>
-        
-        <div class="footer">
-            Sistema de Gestão de Eventos<br>
-            Com controle de acesso
-        </div>
+
+  <header class="header">
+    <div class="header-left">
+      <h1>Sistema RSVP</h1>
+      <span class="versao">v17.0</span>
     </div>
+    <div class="header-right">
+      <span id="emailUsuario"></span>
+    </div>
+  </header>
+
+  <div id="modoPlanejamento" class="modo-ativo">
+    <section class="section">
+      <div class="section-header">
+        <h2>Meus Eventos</h2>
+        <button class="btn-primary" onclick="abrirModalNovoEvento()">+ Novo Evento</button>
+      </div>
+      <div id="listaEventos" class="eventos-grid"></div>
+    </section>
+  </div>
+
+  <div id="modoCheckin" class="modo-inativo">
+    <div class="stats-banner">
+      <div class="stat-item stat-total">
+        <div class="stat-value" id="statTotal">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-item stat-confirmados">
+        <div class="stat-value" id="statConfirmados">0</div>
+        <div class="stat-label">Presentes</div>
+      </div>
+      <div class="stat-item stat-pendentes">
+        <div class="stat-value" id="statPendentes">0</div>
+        <div class="stat-label">Faltam</div>
+      </div>
+    </div>
+
+    <div class="search-container" style="max-width: 600px; margin: 20px auto; padding: 0 16px;">
+      <input type="text" id="inputBusca" placeholder="Buscar convidado..." onkeyup="filtrarCheckin()">
+    </div>
+
+    <div id="listaCheckin" class="checkin-grid"></div>
+
+    <button class="btn-secondary" style="position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);" onclick="alternarModo(false)">
+      ← Voltar ao Planejamento
+    </button>
+  </div>
+
+  <div id="modalNovoEvento" class="modal">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Novo Evento</h3><button class="modal-close" onclick="fecharModal('modalNovoEvento')">×</button></div>
+      <div class="modal-body">
+        <div class="form-group" style="margin-bottom: 15px;">
+          <label>Nome do Evento</label>
+          <input type="text" id="inputNomeEvento">
+        </div>
+        <div class="form-group">
+          <label>Colunas Personalizadas (Além de Nome e Presença)</label>
+          <div id="colunasContainer"></div>
+          <button class="btn-secondary btn-small" onclick="addColField()">+ Coluna</button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="fecharModal('modalNovoEvento')">Cancelar</button>
+        <button class="btn-primary" onclick="salvarNovoEvento()">Criar Evento</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalEvento" class="modal">
+    <div class="modal-content modal-large" style="max-width: 900px;">
+      <div class="modal-header">
+        <h3 id="tituloEvento"></h3>
+        <button class="modal-close" onclick="fecharModal('modalEvento')">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+          <button class="btn-primary" onclick="alternarModo(true)">📱 Modo Check-in</button>
+          <button class="btn-secondary" onclick="abrirModalConvidado()">+ Convidado</button>
+          <button class="btn-secondary" onclick="document.getElementById('inputExcel').click()">Importar Excel</button>
+          <input type="file" id="inputExcel" accept=".xlsx" style="display:none" onchange="lerExcel(this)">
+          <button class="btn-danger" onclick="excluirEventoAtual()">Excluir Evento</button>
+        </div>
+        <div id="tabelaConvidados" class="table-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalConvidado" class="modal">
+    <div class="modal-content">
+      <div class="modal-header"><h3>Adicionar Convidado</h3><button class="modal-close" onclick="fecharModal('modalConvidado')">×</button></div>
+      <div class="modal-body" id="formConvidado"></div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="fecharModal('modalConvidado')">Cancelar</button>
+        <button class="btn-primary" onclick="salvarConvidado()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="loadingOverlay" class="loading-overlay"><p>Carregando...</p></div>
+  <div id="toast" class="toast"></div>
+
+  <script>
+    let ESTADO = { eventos: [], eventoAtual: null, convidados: [], colunas: [] };
+
+    window.onload = inicializar;
+
+    function inicializar() {
+      mostrarLoading(true);
+      google.script.run.withSuccessHandler(sessao => {
+        if (!sessao.autenticado) {
+          alert('Faça login no Google para continuar.');
+          return;
+        }
+        document.getElementById('emailUsuario').textContent = sessao.email;
+        carregarEventos();
+      }).obterSessao();
+    }
+
+    function carregarEventos() {
+      google.script.run.withSuccessHandler(res => {
+        if (res.sucesso) {
+          ESTADO.eventos = res.eventos;
+          renderizarEventos();
+        }
+        mostrarLoading(false);
+      }).listarEventos();
+    }
+
+    function renderizarEventos() {
+      const container = document.getElementById('listaEventos');
+      container.innerHTML = ESTADO.eventos.map(ev => `
+        <div class="evento-card" onclick="abrirEvento('${ev.nome}')">
+          <h3>${ev.nome}</h3>
+          <div class="info-item"><span class="label">Total:</span><span class="value">${ev.totalConvidados}</span></div>
+          <div class="info-item"><span class="label">Confirmados:</span><span class="value">${ev.confirmados}</span></div>
+        </div>
+      `).join('');
+    }
+
+    function abrirEvento(nome) {
+      mostrarLoading(true);
+      ESTADO.eventoAtual = nome;
+      google.script.run.withSuccessHandler(res => {
+        if (res.sucesso) {
+          ESTADO.convidados = res.convidados;
+          ESTADO.colunas = res.colunas;
+          document.getElementById('tituloEvento').textContent = nome;
+          renderizarTabela();
+          document.getElementById('modalEvento').classList.add('ativo');
+        }
+        mostrarLoading(false);
+      }).obterConvidados(nome);
+    }
+
+    function renderizarTabela() {
+      const tb = document.getElementById('tabelaConvidados');
+      let html = '<table class="table"><thead><tr>';
+      ESTADO.colunas.forEach(c => html += `<th>${c}</th>`);
+      html += '<th>Ação</th></tr></thead><tbody>';
+      
+      ESTADO.convidados.forEach(c => {
+        html += '<tr>';
+        ESTADO.colunas.forEach(col => html += `<td>${c[col]}</td>`);
+        html += `<td><button onclick="excluirConvidado(${c._linha})">🗑️</button></td></tr>`;
+      });
+      tb.innerHTML = html + '</tbody></table>';
+    }
+
+    // CHECK-IN MODE
+    function alternarModo(ativo) {
+      document.getElementById('modoPlanejamento').className = ativo ? 'modo-inativo' : 'modo-ativo';
+      document.getElementById('modoCheckin').className = ativo ? 'modo-ativo' : 'modo-inativo';
+      if (ativo) {
+        fecharModal('modalEvento');
+        renderizarCheckin();
+        atualizarStats();
+      }
+    }
+
+    function renderizarCheckin() {
+      const container = document.getElementById('listaCheckin');
+      const termo = document.getElementById('inputBusca').value.toLowerCase();
+      
+      container.innerHTML = ESTADO.convidados.map(c => {
+        if (!c['Nome'].toLowerCase().includes(termo)) return '';
+        const confirmado = c['Presença'] === 'Confirmado';
+        return `
+          <div class="checkin-card ${confirmado ? 'confirmado' : ''}" onclick="togglePresenca(${c._linha})">
+            <div>
+              <div class="checkin-nome">${c['Nome']}</div>
+              <div style="color:var(--cinza-medio)">${c[ESTADO.colunas[1]] || ''}</div>
+            </div>
+            <div class="badge-checkin" style="background:${confirmado?'var(--verde)':'var(--cinza-claro)'; color:${confirmado?'white':'var(--cinza-medio)'}">
+              ${confirmado ? '✓ PRESENTE' : 'PENDENTE'}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function togglePresenca(linha) {
+      google.script.run.withSuccessHandler(res => {
+        if (res.sucesso) {
+          const conv = ESTADO.convidados.find(c => c._linha === linha);
+          conv['Presença'] = res.novoStatus;
+          renderizarCheckin();
+          atualizarStats();
+        }
+      }).togglePresenca(ESTADO.eventoAtual, linha);
+    }
+
+    function atualizarStats() {
+      const total = ESTADO.convidados.length;
+      const conf = ESTADO.convidados.filter(c => c['Presença'] === 'Confirmado').length;
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statConfirmados').innerText = conf;
+      document.getElementById('statPendentes').innerText = total - conf;
+    }
+
+    // UTILS
+    function mostrarLoading(b) { document.getElementById('loadingOverlay').classList.toggle('ativo', b); }
+    function fecharModal(id) { document.getElementById(id).classList.remove('ativo'); }
     
-    <script>
-        // ⚠️ CONFIGURE AQUI:
-        const API_URL = "https://script.google.com/macros/s/AKfycbyS3khi5I0vPcPPKCoVmbnuwK82_-wE4y8uid-qWd-Tz7Z2rD5wRCZsWHHZuohRh0s2/exec";
-        
-        async function fazerLogin(event) {
-            event.preventDefault();
-            
-            const email = document.getElementById('email').value.trim();
-            const btnLogin = document.getElementById('btn-login');
-            const loading = document.getElementById('loading');
-            const message = document.getElementById('message');
-            
-            // Validação básica
-            if (!email || !email.includes('@')) {
-                mostrarMensagem('Por favor, insira um email válido.', 'error');
-                return false;
-            }
-            
-            // Mostrar loading
-            btnLogin.disabled = true;
-            btnLogin.textContent = 'Autenticando...';
-            loading.style.display = 'block';
-            message.style.display = 'none';
-            
-            try {
-                // Chamar API
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=utf-8'
-                    },
-                    body: JSON.stringify({
-                        acao: 'autenticar',
-                        email: email
-                    })
-                });
-                
-                const resultado = await response.json();
-                
-                // Esconder loading
-                loading.style.display = 'none';
-                btnLogin.disabled = false;
-                btnLogin.textContent = 'Entrar';
-                
-                // Tratamento de erro genérico
-                if (resultado.erro) {
-                    mostrarMensagem('Erro: ' + resultado.erro, 'error');
-                    return false;
-                }
-                
-                // ✅ APROVADO - Tem acesso
-                if (resultado.sucesso === true && resultado.status === 'aprovado') {
-                    sessionStorage.setItem('rsvp_user_email', resultado.email);
-                    sessionStorage.setItem('rsvp_user_planilha', resultado.planilhaId);
-                    sessionStorage.setItem('rsvp_user_status', 'aprovado');
-                    
-                    if (resultado.novoUsuario) {
-                        sessionStorage.setItem('rsvp_user_novo', 'true');
-                    }
-                    
-                    mostrarMensagem('✅ Login realizado! Redirecionando...', 'success');
-                    
-                    setTimeout(() => {
-                        window.location.href = 'painel.html';
-                    }, 1000);
-                    
-                    return false;
-                }
-                
-                // 🟡 PENDENTE - Aguardando aprovação
-                if (resultado.sucesso === false && resultado.status === 'pendente') {
-                    sessionStorage.setItem('rsvp_user_email', resultado.email);
-                    sessionStorage.setItem('rsvp_user_status', 'pendente');
-                    
-                    mostrarMensagem(
-                        '⏳ Solicitação enviada! Aguardando aprovação do administrador. Você receberá um email quando for aprovado.',
-                        'warning'
-                    );
-                    
-                    // Após 3 segundos, redirecionar para painel (que mostrará tela de aguardando)
-                    setTimeout(() => {
-                        window.location.href = 'painel.html';
-                    }, 3000);
-                    
-                    return false;
-                }
-                
-                // ❌ REJEITADO - Acesso negado
-                if (resultado.sucesso === false && resultado.status === 'rejeitado') {
-                    sessionStorage.setItem('rsvp_user_email', resultado.email);
-                    sessionStorage.setItem('rsvp_user_status', 'rejeitado');
-                    
-                    mostrarMensagem(
-                        '🚫 Acesso negado. Entre em contato com o administrador.',
-                        'error'
-                    );
-                    
-                    // Após 3 segundos, redirecionar para painel (que mostrará tela de rejeitado)
-                    setTimeout(() => {
-                        window.location.href = 'painel.html';
-                    }, 3000);
-                    
-                    return false;
-                }
-                
-                // Caso inesperado
-                mostrarMensagem('Resposta inesperada do servidor. Tente novamente.', 'error');
-                
-            } catch (erro) {
-                console.error('Erro:', erro);
-                loading.style.display = 'none';
-                btnLogin.disabled = false;
-                btnLogin.textContent = 'Entrar';
-                mostrarMensagem('Erro de conexão. Verifique sua internet e tente novamente.', 'error');
-            }
-            
-            return false;
+    // CRIAR EVENTO
+    function abrirModalNovoEvento() { 
+      document.getElementById('modalNovoEvento').classList.add('ativo'); 
+      document.getElementById('colunasContainer').innerHTML = '';
+    }
+    function addColField() {
+      const div = document.createElement('div');
+      div.innerHTML = `<input type="text" class="col-input" placeholder="Nome Coluna" style="margin-bottom:5px">`;
+      document.getElementById('colunasContainer').appendChild(div);
+    }
+    function salvarNovoEvento() {
+      const nome = document.getElementById('inputNomeEvento').value;
+      const cols = Array.from(document.querySelectorAll('.col-input')).map(i => i.value).filter(v => v);
+      mostrarLoading(true);
+      google.script.run.withSuccessHandler(res => {
+        if(res.sucesso) { fecharModal('modalNovoEvento'); carregarEventos(); }
+        else alert(res.mensagem);
+        mostrarLoading(false);
+      }).criarEvento(nome, cols);
+    }
+
+    // CONVIDADOS
+    function abrirModalConvidado() {
+      const div = document.getElementById('formConvidado');
+      let html = '';
+      ESTADO.colunas.forEach(c => {
+        if (c !== 'Presença') html += `<label>${c}</label><input class="inp-conv" data-col="${c}" style="width:100%;margin-bottom:10px">`;
+      });
+      div.innerHTML = html;
+      document.getElementById('modalConvidado').classList.add('ativo');
+    }
+    function salvarConvidado() {
+      const inputs = document.querySelectorAll('.inp-conv');
+      const dados = {};
+      inputs.forEach(i => dados[i.dataset.col] = i.value);
+      mostrarLoading(true);
+      google.script.run.withSuccessHandler(res => {
+        if(res.sucesso) {
+          fecharModal('modalConvidado');
+          abrirEvento(ESTADO.eventoAtual); // Recarrega
         }
-        
-        function mostrarMensagem(texto, tipo) {
-            const message = document.getElementById('message');
-            message.textContent = texto;
-            message.className = 'message ' + tipo;
-            message.style.display = 'block';
-        }
-        
-        // Auto-focus no campo de email
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('email').focus();
-        });
-    </script>
+        mostrarLoading(false);
+      }).adicionarConvidado(ESTADO.eventoAtual, dados);
+    }
+    function excluirConvidado(linha) {
+      if(confirm('Excluir?')) {
+        google.script.run.withSuccessHandler(() => abrirEvento(ESTADO.eventoAtual)).excluirConvidado(ESTADO.eventoAtual, linha);
+      }
+    }
+    function excluirEventoAtual() {
+      if(confirm('Excluir evento inteiro?')) {
+        google.script.run.withSuccessHandler(() => {
+          fecharModal('modalEvento');
+          carregarEventos();
+        }).excluirEvento(ESTADO.eventoAtual);
+      }
+    }
+
+    // IMPORTAÇÃO EXCEL
+    function lerExcel(input) {
+      const file = input.files[0];
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+        mostrarLoading(true);
+        google.script.run.withSuccessHandler(() => {
+          abrirEvento(ESTADO.eventoAtual);
+          mostrarLoading(false);
+        }).importarConvidadosExcel(ESTADO.eventoAtual, json);
+      };
+      reader.readAsArrayBuffer(file);
+    }
+    
+    function filtrarCheckin() { renderizarCheckin(); }
+  </script>
 </body>
 </html>
-
